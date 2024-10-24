@@ -41,11 +41,14 @@ export class EventsGateway
     );
   }
 
-  afterInit() {
-  }
+  afterInit() {}
 
-  handleDisconnect() {
+  handleDisconnect(socket: Socket) {
     this.connectedSockets--;
+    const apiKey: string | undefined = socket.handshake.auth?.app;
+    if (apiKey) {
+      this.server.to(apiKey).emit('logReaderStop', socket.id);
+    }
   }
 
   // Handles when a user connects via the app, joins public and their private channel
@@ -107,11 +110,11 @@ export class EventsGateway
     this.server.to(apiKey).emit('location', location);
   }
 
-  @SubscribeMessage('logReaderId')
+  @SubscribeMessage('logReaderStart')
   async handleSetApiKey(@ConnectedSocket() socket: Socket) {
     const apiKey: string | undefined = socket.handshake.auth?.app;
     if (apiKey) {
-      this.server.to(apiKey).emit('logReaderId', socket.id);
+      this.server.to(apiKey).emit('logReaderStart', socket.id);
     }
   }
 }

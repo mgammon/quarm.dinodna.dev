@@ -46,7 +46,29 @@
     </div>
     <div class="p-toolbar-group-center"></div>
     <div class="p-toolbar-group-end">
-      <p-button
+      <div style="text-align: center">
+        <span *ngIf="logReaderService.isReading && logReaderService.directory" style="font-size:0.85em">
+          Reading logs from: {{ logReaderService.directory.name }}
+        </span>
+        <span *ngIf="!logReaderService.isReading && logReaderService.directory" style="font-size:0.85em">
+          EQ directory: {{ logReaderService.directory.name }}
+        </span>
+        <span *ngIf="!logReaderService.directory" style="font-size:0.85em"> No EQ directory set </span>
+        <button
+          (click)="openDirectoryPicker()"
+          style="color: white; font-weight: bold; vertical-align: middle"
+          type="button"
+          [pTooltip]="
+            'Setting your EQ directory gives access to your EQ logs to show your location on the map.  After setting your directory, you may need to re-log or re-zone before your location shows.'
+          "
+          tooltipPosition="left"
+          pButton
+          size="small"
+        >
+          {{ logReaderService.directory ? "Change" : "Set" }} EQ Directory
+        </button>
+      </div>
+      <!-- <p-button
         type="button"
         (onClick)="settingsMenu.toggle($event)"
         icon="pi pi-cog"
@@ -54,27 +76,8 @@
         [outlined]="true"
       ></p-button>
       <p-overlayPanel #settingsMenu>
-        <ng-template pTemplate="content">
-          <div style="text-align:center;">          
-            <div style="padding-bottom:0.5em;" *ngIf="logReaderService.directory">
-              Reading logs from {{ logReaderService.directory.name }}
-            </div>
-            <div style="padding-bottom:0.5em;" *ngIf="!logReaderService.directory">No EQ directory set</div>
-            <button
-              (click)="openDirectoryPicker()"
-              style="color: white; font-weight: bold"
-              type="button"
-              [pTooltip]="
-                'Setting your EQ directory gives access to your EQ logs to show your location on the map'
-              "
-              tooltipPosition="bottom"
-              pButton
-            >
-              {{ logReaderService.directory ? "Change" : "Set" }} EQ Directory
-            </button>
-          </div>
-        </ng-template>
-      </p-overlayPanel>
+        <ng-template pTemplate="content"> </ng-template>
+      </p-overlayPanel> -->
       <p-menu #fontSizeMenu [model]="themeService.fontSizes" [popup]="true">
         <ng-template pTemplate="recentPage" let-fontSize>
           <div

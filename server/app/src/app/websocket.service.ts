@@ -11,7 +11,9 @@ export class WebsocketService {
 
   public locationEvents = new EventEmitter<Location>();
   public logEvents = new EventEmitter<Log[]>();
-  public logReaderIdEvent = new EventEmitter<string>();
+  public logReaderStartEvent = new EventEmitter<string>();
+  public logReaderStopEvent = new EventEmitter<string>();
+  public socketConnect = new EventEmitter<string>();
 
   constructor(apiService: ApiService) {
     // Create the socket
@@ -26,13 +28,13 @@ export class WebsocketService {
       this.locationEvents.emit(location)
     );
     // Listen for if another tab has started reading logs
-    this.socket.on('logReaderId', (logReaderId: string) =>
-      this.logReaderIdEvent.emit(logReaderId)
+    this.socket.on('logReaderStart', (logReaderId: string) =>
+      this.logReaderStartEvent.emit(logReaderId)
     );
-
-    // this.socket.on('connect', () => {
-    //   console.log(this.socket);
-    // });
+    // Listen if another tab POTENTIALLY stopped reading logs.  Sent to all tabs when a socket disconnects.
+    this.socket.on('logReaderStop', (logReaderId) => {
+      this.logReaderStopEvent.emit(logReaderId);
+    });
 
     // Connect
     this.socket.connect();
@@ -45,7 +47,7 @@ export class WebsocketService {
   }
 
   // Called when we start reading logs for this tab; its ID will be sent to the other tabs so they stop reading.
-  setLogReaderId() {
-    this.socket?.emit('logReaderId');
+  startedLogReader() {
+    this.socket?.emit('logReaderStart');
   }
 }
