@@ -19,6 +19,7 @@ import { FormsModule } from '@angular/forms';
 import { LogReaderService } from './logs/log-reader.service';
 import { LocationService } from './logs/location.service';
 import { ApiService } from './api/api.service';
+import { BadgeModule } from 'primeng/badge';
 
 @Component({
   selector: 'app-root',
@@ -40,6 +41,7 @@ import { ApiService } from './api/api.service';
     OverlayPanelModule,
     InputTextModule,
     InputGroupModule,
+    BadgeModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
