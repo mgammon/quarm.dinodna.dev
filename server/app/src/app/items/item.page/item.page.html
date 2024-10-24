@@ -1,0 +1,209 @@
+<div *ngIf="item" id="item-page">
+  <div class="left">
+    <p-panel>
+      <ng-template pTemplate="header">
+        <div class="flex align-items-center gap-2 px-2 header">
+          <div class="header-text">
+            <span
+              class="font-bold"
+              style="font-size: 1.5em; vertical-align: middle"
+              >{{item.name}}
+            </span>
+          </div>
+          <div>
+            <!-- <app-price [price]="item.price" /> -->
+            <span class="header-detail" *ngIf="item.stacksize > 1"
+              >Stack size: {{item.stacksize}}</span
+            >
+          </div>
+        </div>
+      </ng-template>
+      <div class="item-container">
+        <app-item [item]="item" />
+      </div>
+      <!-- Drop / Sell Tabs -->
+      <p-tabView styleClass="tabview-custom" [(activeIndex)]="tabIndex">
+        <!-- Drops -->
+        <p-tabPanel [disabled]="!dropsFrom.length">
+          <ng-template pTemplate="header">
+            <span>Drops from </span>
+            <span *ngIf="dropsFrom.length">&nbsp;({{dropsFrom.length}})</span>
+          </ng-template>
+          <p-table [value]="dropsFrom" sortField="avgCount" [sortOrder]="-1">
+            <ng-template pTemplate="header">
+              <tr>
+                <th pSortableColumn="npcName">
+                  Name <p-sortIcon field="npcName"></p-sortIcon>
+                </th>
+                <th pSortableColumn="level">
+                  Level <p-sortIcon field="npcLevel"></p-sortIcon
+                  ><p-columnFilter
+                    type="numeric"
+                    field="level"
+                    display="menu"
+                    [maxFractionDigits]="0"
+                  ></p-columnFilter>
+                </th>
+                <th pSortableColumn="zone">
+                  Zone <p-sortIcon field="zone"></p-sortIcon>
+                  <p-columnFilter
+                    field="zone"
+                    matchMode="in"
+                    display="menu"
+                    [showMatchModes]="false"
+                    [showOperator]="false"
+                    [showAddButton]="false"
+                  >
+                    <ng-template
+                      pTemplate="filter"
+                      let-value
+                      let-filter="filterCallback"
+                    >
+                      <p-multiSelect
+                        [ngModel]="value"
+                        [options]="getDroppedZones()"
+                        placeholder="Any"
+                        [showHeader]="false"
+                        (onChange)="filter($event.value)"
+                      >
+                        <ng-template let-option pTemplate="item">
+                          <div class="inline-block vertical-align-middle">
+                            <span>{{ option.label }}</span>
+                          </div>
+                        </ng-template>
+                      </p-multiSelect>
+                    </ng-template>
+                  </p-columnFilter>
+                </th>
+                <th pSortableColumn="chancePerCount">
+                  Chance % <p-sortIcon field="chancePerCount"></p-sortIcon>
+                </th>
+                <!-- <th pSortableColumn="price">
+                    Value <p-sortIcon field="price"></p-sortIcon>
+                  </th> -->
+                <th pSortableColumn="maxCount">
+                  Max # <p-sortIcon field="maxCount"></p-sortIcon>
+                </th>
+                <th pSortableColumn="avgCount">
+                  Avg # <p-sortIcon field="avgCount"></p-sortIcon>
+                </th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-drop>
+              <tr>
+                <td>
+                  <a
+                    style="
+                      cursor: pointer;
+                      color: inherit;
+                      text-decoration: inherit;
+                    "
+                    routerLink="/npcs/{{drop.npcId}}"
+                  >
+                    <span style="vertical-align: middle; font-weight: 500"
+                      >{{drop.npcName}}</span
+                    >
+                  </a>
+                </td>
+                <td>{{getLevel(drop.level, drop.maxlevel)}}</td>
+                <td>
+                  <a
+                    style="
+                      cursor: pointer;
+                      color: inherit;
+                      text-decoration: inherit;
+                    "
+                    routerLink="/zones/{{drop.zone}}"
+                  >
+                    <span style="vertical-align: middle; font-weight: 500"
+                      >{{getZone(drop.zone)}}</span
+                    >
+                  </a>
+                </td>
+                <td>{{drop.chancePerCount | percent: '1.0-2'}}</td>
+                <!-- <td><app-price [price]="drop.price" /></td> -->
+                <td>{{drop.maxCount}}</td>
+                <td>
+                  {{drop.avgCount < 0.25 ? '1 / ' + (1/drop.avgCount | number:
+                  '1.0-0') : (drop.avgCount | number: '1.0-2')}}
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-tabPanel>
+        <!-- Merchant info -->
+        <p-tabPanel [disabled]="!soldBy.length">
+          <ng-template pTemplate="header">
+            <span>Sold by</span>
+            <span *ngIf="soldBy.length">&nbsp;({{soldBy.length}})</span>
+          </ng-template>
+          <p-table [value]="soldBy" sortField="name">
+            <ng-template pTemplate="header">
+              <tr>
+                <th pSortableColumn="npcName">
+                  Name <p-sortIcon field="npcName"></p-sortIcon>
+                </th>
+                <th pSortableColumn="zone">
+                  Zone <p-sortIcon field="zone"></p-sortIcon>
+                  <p-columnFilter
+                    field="zone"
+                    matchMode="in"
+                    display="menu"
+                    [showMatchModes]="false"
+                    [showOperator]="false"
+                    [showAddButton]="false"
+                  >
+                    <ng-template
+                      pTemplate="filter"
+                      let-value
+                      let-filter="filterCallback"
+                    >
+                      <p-multiSelect
+                        [ngModel]="value"
+                        [options]="getMerchantZones()"
+                        placeholder="Any"
+                        [showHeader]="false"
+                        (onChange)="filter($event.value)"
+                      >
+                        <ng-template let-option pTemplate="item">
+                          <div class="inline-block vertical-align-middle">
+                            <span>{{ option.label }}</span>
+                          </div>
+                        </ng-template>
+                      </p-multiSelect>
+                    </ng-template>
+                  </p-columnFilter>
+                </th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-merchant>
+              <tr>
+                <td>
+                  <a
+                    style="
+                      cursor: pointer;
+                      color: inherit;
+                      text-decoration: inherit;
+                    "
+                    routerLink="/npcs/{{merchant.npcId}}"
+                  >
+                    <span style="vertical-align: middle; font-weight: 500"
+                      >{{merchant.npcName}}</span
+                    >
+                  </a>
+                </td>
+                <td>{{getZone(merchant.zone)}}</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-tabPanel>
+      </p-tabView>
+    </p-panel>
+  </div>
+  <div class="right">
+    <!-- Map -->
+    <!-- <app-map></app-map> -->
+    <!-- Spawns -->
+    <!-- idk yet -->
+  </div>
+</div>

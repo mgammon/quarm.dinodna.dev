@@ -1,0 +1,215 @@
+<div *ngIf="zone" id="zone-page">
+  <p-panel>
+    <ng-template pTemplate="header">
+      <div class="flex align-items-center gap-2 px-2 header">
+        <div class="header-text">
+          <span
+            class="font-bold"
+            style="font-size: 1.5em; vertical-align: middle"
+            >{{zone.long_name}}
+          </span>
+          <span class="level-race-class" style="vertical-align: middle">
+            {{zone.short_name}}
+          </span>
+          <div class="header-icons">
+            <span
+              *ngIf="zone.canbind"
+              class="special-icon bind"
+              pTooltip="Bind Affinity works here"
+              tooltipPosition="bottom"
+            ></span>
+            <span
+              *ngIf="!zone.canbind"
+              class="special-icon bind"
+              pTooltip="Bind Affinity does not work here"
+              tooltipPosition="bottom"
+            >
+              <i class="pi pi-times"></i>
+            </span>
+            <span
+              *ngIf="zone.castoutdoor"
+              class="special-icon outdoor"
+              pTooltip="Outdoor zone"
+              tooltipPosition="bottom"
+            >
+            </span>
+            <span
+              *ngIf="!zone.castoutdoor"
+              class="special-icon outdoor"
+              pTooltip="Not an outdoor zone"
+              tooltipPosition="bottom"
+            >
+              <i class="pi pi-times"></i>
+            </span>
+            <span
+              *ngIf="zone.castdungeon"
+              class="special-icon dungeon"
+              pTooltip="Dungeon zone"
+              tooltipPosition="bottom"
+            >
+            </span>
+            <span
+              *ngIf="zone.canlevitate"
+              class="special-icon levitate"
+              pTooltip="Levitate works here"
+              tooltipPosition="bottom"
+            >
+            </span>
+            <span
+              *ngIf="!zone.canlevitate"
+              class="special-icon levitate"
+              pTooltip="Levitate does not work here"
+              tooltipPosition="bottom"
+              ><i class="pi pi-times"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+    <!-- <app-respawns *ngIf="zone.spawns" [spawns]="zone.spawns" /> -->
+    <app-map
+      [zoneShortName]="zone.file_name || zone.short_name"
+      [spawns]="filteredSpawns"
+      [onZRangeChange]="onZRangeChange"
+      [markedNpcIds]="markedNpcIds"
+      [hideHeader]="true"
+    ></app-map>
+    <div class="filter-container" (keydown.enter)="filterSpawnsAndNpcs()">
+      <span class="p-float-label p-input-icon-right">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          id="npcName"
+          [(ngModel)]="filterOptions.search"
+          pAutoFocus
+          [autofocus]="true"
+        />
+        <label for="npcName">NPC Name</label>
+      </span>
+      <span class="p-float-label with-search">
+        <p-multiSelect
+          inputId="races"
+          [options]="raceOptions"
+          [(ngModel)]="filterOptions.races"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Any Race"
+          [virtualScroll]="true"
+          [virtualScrollItemSize]="getVirtualScrollItemSize()"
+        ></p-multiSelect>
+        <label for="races">Races</label>
+      </span>
+      <span class="p-float-label">
+        <p-multiSelect
+          inputId="classes"
+          [options]="classOptions"
+          [(ngModel)]="filterOptions.classes"
+          optionLabel="label"
+          optionValue="value"
+          [showHeader]="false"
+          [showClear]="true"
+          placeholder="Any Class"
+        ></p-multiSelect>
+        <label for="classes">Classes</label>
+      </span>
+      <span class="p-float-label level">
+        <p-inputNumber
+          inputId="minLevel"
+          [(ngModel)]="filterOptions.minLevel"
+          [max]="100"
+          [min]="1"
+        /><label for="minLevel">Min Level</label>
+      </span>
+      <span class="p-float-label level">
+        <p-inputNumber
+          inputId="maxLevel"
+          [(ngModel)]="filterOptions.maxLevel"
+          [max]="100"
+          [min]="1"
+        /><label for="maxLevel">Max Level</label>
+      </span>
+      <span class="p-float-label">
+        <p-multiSelect
+          inputId="runspeeds"
+          [options]="runspeedOptions"
+          [(ngModel)]="filterOptions.runspeeds"
+          optionLabel="label"
+          optionValue="value"
+          [showHeader]="false"
+          [showClear]="true"
+          placeholder="Any Runspeed"
+        ></p-multiSelect>
+        <label for="runspeeds">Runspeed</label>
+      </span>
+      <span class="tricheckbox">
+        <label for="seesInvis">Sees invis </label>
+        <p-triStateCheckbox
+          [(ngModel)]="filterOptions.seesInvis"
+          inputId="seesInvis"
+        ></p-triStateCheckbox>
+      </span>
+      <p-button
+        label="Search"
+        icon="pi pi-search"
+        iconPos="right"
+        size="small"
+        (click)="filterSpawnsAndNpcs()"
+      ></p-button>
+      <p-button
+        label="Reset"
+        size="small"
+        [text]="true"
+        (click)="reset()"
+      ></p-button>
+    </div>
+    <p-table
+      *ngIf="filteredNpcs"
+      [value]="filteredNpcs"
+      sortField="searchable_name"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="searchable_name">
+            Name <p-sortIcon field="name"></p-sortIcon>
+          </th>
+          <th pSortableColumn="level">
+            Level <p-sortIcon field="level"></p-sortIcon>
+          </th>
+          <th>Race</th>
+          <th>Class</th>
+          <th pSortableColumn="spawns.spawnIds.length">
+            Spawns <p-sortIcon field="spawns.spawnIds.length"></p-sortIcon>
+          </th>
+          <th pSortableColumn="runspeed">
+            Runspeed <p-sortIcon field="runspeed"></p-sortIcon>
+          </th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-npc>
+        <tr
+          class="npc"
+          (mouseenter)="onNpcMouseEnter(npc)"
+          (mouseleave)="onNpcMouseLeave(npc)"
+        >
+          <td>
+            <a
+              routerLink="/npcs/{{ npc.id }}"
+              class="flex align-items-center"
+              style="color: inherit; text-decoration: inherit"
+              >{{npc.name}}</a
+            >
+          </td>
+          <td>{{getLevel(npc)}}</td>
+          <td>{{getRace(npc)}}</td>
+          <td>{{getClassString(npc)}}</td>
+          <td>
+            <span>{{npc.spawns.text}}</span>
+          </td>
+          <td>
+            <span>{{getRunspeedLabel(npc.runspeed)}}</span>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-panel>
+</div>

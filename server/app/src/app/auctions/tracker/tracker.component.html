@@ -1,0 +1,235 @@
+<div class="tracker">
+  <p-panel header="Item Tracking">
+    <ng-template pTemplate="icons">
+      <button
+        class="p-panel-header-icon p-link mr-2"
+        (click)="trackerService.toggleAlertType()"
+      >
+        <span
+          [pTooltip]="'Voice notifications enabled'"
+          *ngIf="trackerService.alertType === 'voice'"
+          class="pi pi-comment"
+          style="color: var(--primary-color)"
+        ></span>
+        <span
+          [pTooltip]="'Notification sound enabled'"
+          *ngIf="trackerService.alertType === 'sound'"
+          class="pi pi-bell"
+          style="color: var(--primary-color)"
+        ></span>
+        <span
+          [pTooltip]="'Notifications muted'"
+          *ngIf="trackerService.alertType === 'none'"
+          class="pi pi-ban"
+        ></span>
+      </button>
+    </ng-template>
+    <div
+      style="
+        text-align: center;
+        overflow-y: scroll;
+        height: calc(100vh - 11.7rem - 8px);
+      "
+    >
+      <p-button
+        type="button"
+        (click)="addItemTracker()"
+        icon="pi pi-plus"
+        label="New Tracker"
+        [outlined]="true"
+      ></p-button>
+      <p-table
+        [reorderableColumns]="true"
+        (onRowReorder)="this.trackerService.saveTrackers()"
+        [value]="itemTrackers"
+        styleClass="p-datatable-striped"
+      >
+        <ng-template pTemplate="body" let-tracker let-index="rowIndex">
+          <tr [pReorderableRow]="index">
+            <td>
+              <span
+                class="pi pi-bars"
+                style="display: inline-block; padding-left: 1rem"
+                pReorderableRowHandle
+              ></span>
+            </td>
+            <td>
+              <div>
+                <div *ngIf="tracker.item" style="padding: 0.5em">
+                  <!-- Tracker  -->
+                  <div class="saved-tracker">
+                    <div
+                      class="left"
+                      style="
+                        text-wrap: nowrap;
+                        align-items: center;
+                        display: flex;
+                      "
+                    >
+                      <app-item-link
+                        [itemId]="tracker.item.id"
+                        [itemName]="tracker.item.name"
+                        [itemIcon]="tracker.item.icon"
+                        [subtitle]="
+                          (tracker.wts === true
+                            ? 'Selling'
+                            : tracker.wts === false
+                            ? 'Buying'
+                            : 'Any status') +
+                          (tracker.price.value
+                            ? ' for ' +
+                              tracker.price.operator +
+                              tracker.price.value
+                            : ' for any price')
+                        "
+                      ></app-item-link>
+                    </div>
+                    <div
+                      class="right"
+                      style="display: flex; align-items: center"
+                    >
+                      <a
+                        *ngIf="!tracker.saved"
+                        style="
+                          font-size: 0.8rem;
+                          cursor: pointer;
+                          text-decoration: underline;
+                          padding-left: 0.5em;
+                        "
+                        (click)="
+                          tracker.item = undefined; tracker.saved = false
+                        "
+                        >Change Item</a
+                      >
+                      <p-button
+                        *ngIf="tracker.saved"
+                        type="button"
+                        size="small"
+                        (click)="editItemTracker(tracker)"
+                        icon="pi pi-pencil"
+                        [outlined]="true"
+                      ></p-button>
+                      <p-button
+                        *ngIf="tracker.saved"
+                        type="button"
+                        size="small"
+                        (click)="deleteItemTracker(tracker)"
+                        icon="pi pi-trash"
+                        [outlined]="true"
+                      ></p-button>
+                    </div>
+                  </div>
+                </div>
+                <!-- Tracker inputs -->
+                <div style="text-align: center">
+                  <app-search
+                    *ngIf="!tracker.item"
+                    [types]="['items']"
+                    [skipNavigation]="true"
+                    placeholder="Select an item"
+                    (onItemSelected)="onItemSelected($event, tracker)"
+                  ></app-search>
+                </div>
+                <div
+                  style="text-align: center"
+                  (keydown.enter)="saveTracker(tracker)"
+                >
+                  <p-button
+                    *ngIf="!tracker.saved"
+                    type="button"
+                    size="small"
+                    (click)="toggleWts(tracker)"
+                    [outlined]="true"
+                    >{{
+                      tracker.wts === true
+                        ? "WTS"
+                        : tracker.wts === false
+                        ? "WTB"
+                        : "Any"
+                    }}</p-button
+                  >
+                  <app-comparable-number-input
+                    *ngIf="!tracker.saved"
+                    [comparableNumber]="tracker.price"
+                    (onChange)="this.trackerService.saveTrackers()"
+                    placeholder="plat"
+                    [min]="0"
+                    [max]="10000000"
+                  />
+                  <p-button
+                    *ngIf="!tracker.saved"
+                    type="button"
+                    size="small"
+                    (click)="saveTracker(tracker)"
+                    icon="pi pi-check"
+                    [outlined]="true"
+                    [disabled]="!tracker.item"
+                  ></p-button>
+                  <p-button
+                    *ngIf="!tracker.saved"
+                    type="button"
+                    size="small"
+                    (click)="deleteItemTracker(tracker)"
+                    icon="pi pi-times"
+                    [outlined]="true"
+                  ></p-button>
+                </div>
+                <!-- Matching Logs -->
+                <div
+                  class="matching-logs"
+                  style="margin-left: 2em; margin-right: 0.5em"
+                  *ngIf="tracker.saved"
+                >
+                  <div *ngFor="let log of tracker.matchingLogs">
+                    <div class="matching-log">
+                      <div class="left" style="display: inline-block">
+                        <p-button
+                          [pTooltip]="'Copy message to clipboard'"
+                          type="button"
+                          size="small"
+                          (click)="sendTell(log, tracker)"
+                          icon="pi pi-comment"
+                          [outlined]="true"
+                        ></p-button>
+                        <div
+                          style="
+                            display: inline-block;
+                            font-size: 0.85rem;
+                            cursor: pointer;
+                            padding-left: 0.5em;
+                          "
+                          [pTooltip]="log.text"
+                          (click)="scrollToLog(log)"
+                        >
+                          <span style="font-weight: bold">{{
+                            log.player
+                          }}</span>
+                          {{ getMatchingAuctionStatusString(log, tracker) }}
+                          {{ getMatchingAuctionPriceString(log, tracker) }}
+                        </div>
+                      </div>
+                      <div>
+                        <app-date-from-now
+                          [date]="log.sentAt"
+                          style="font-size: 0.85rem"
+                        ></app-date-from-now>
+                        <p-button
+                          *ngIf="tracker.saved"
+                          type="button"
+                          size="small"
+                          (click)="deleteMatchingLog(log, tracker)"
+                          icon="pi pi-times"
+                          [outlined]="true"
+                        ></p-button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </p-panel>
+</div>

@@ -1,0 +1,16 @@
+<span>
+  
+  <span *ngIf="platinum"
+    >{{ platinum }}<img alt="platinum" src="/assets/icons/default/644.png"
+  /></span>
+  <span *ngIf="noZeroes ? gold : (platinum || gold)"
+    >{{ gold }}<img alt="gold" src="/assets/icons/default/645.png"
+  /></span>
+  <span *ngIf="noZeroes ? silver : (platinum || gold || silver)"
+    >{{ silver }}<img alt="silver" src="/assets/icons/default/646.png"
+  /></span>
+  <span *ngIf="noZeroes ? copper : true"
+    >{{ copper }}<img alt="copper" src="/assets/icons/default/647.png"
+  /></span>
+  <span *ngIf="label" class="label">{{ label }}</span>
+</span>

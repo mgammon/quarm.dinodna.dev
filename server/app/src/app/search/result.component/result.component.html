@@ -1,0 +1,55 @@
+<div (click)="goToEntityPage()" [style]="isLink ? 'cursor:pointer' : ''">
+  <div
+    *ngIf="isItem()"
+    class="search-item-container"
+    [pTooltip]="destroyed ? undefined : entityTooltip"
+    [showDelay]="isLoading === false ? 0 : 300"
+    (mouseenter)="onHover()"
+  >
+    <img
+      class="icon"
+      src="/assets/icons/default/{{ getEntityAsItem().icon }}.png"
+    />
+    <span class="name">{{ displayName(getEntityAsItem().name) }}</span>
+    <span class="tag">Item</span>
+  </div>
+  <div *ngIf="isNpc()" class="search-item-container">
+    <div class="icon">
+      <i *ngIf="!getNpcClass()" class="pi pi-user"></i
+      ><p-badge
+        class="class"
+        *ngIf="getNpcClass()"
+        [value]="getNpcClass()"
+        severity="info"
+      ></p-badge>
+    </div>
+    <div class="name">
+      <span>{{ displayName(getEntityAsNpc().name) }}</span>
+      <div class="zone">{{ getNpcZone() }}</div>
+    </div>
+    <span class="tag">NPC</span>
+  </div>
+  <div *ngIf="isZone()" class="search-item-container">
+    <div class="icon"><i class="pi pi-map"></i></div>
+    <span class="name">{{ displayName(getEntityAsZone().long_name) }}</span>
+    <span class="tag">Zone</span>
+  </div>
+  <div
+    *ngIf="isSpell()"
+    class="search-item-container"
+    [pTooltip]="entityTooltip"
+    (mouseenter)="onHover()"
+    [showDelay]="isLoading === false ? 0 : 300"
+  >
+    <img
+      class="icon"
+      src="/assets/icons/default/{{ getEntityAsSpell().new_icon }}.png"
+    />
+    <span class="name">{{ displayName(getEntityAsSpell().name) }}</span>
+    <span class="tag">Spell</span>
+  </div>
+</div>
+<ng-template #entityTooltip>
+  <app-item *ngIf="fullEntity && isItem()" [item]="getEntityAsItem()" />
+  <app-spell *ngIf="fullEntity && isSpell()" [spell]="getEntityAsSpell()" />
+</ng-template>

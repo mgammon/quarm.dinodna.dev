@@ -1,0 +1,41 @@
+.item {
+  border-bottom: 1px solid #ccc;
+  padding: 0.5em;
+  cursor: pointer;
+  .name {
+    font-weight: 500;
+  }
+  .respawn {
+    font-size: 0.9em;
+  }
+
+  &:hover {
+    background-color: palegoldenrod;
+  }
+}
+
+.header {
+  font-weight: bold;
+  padding-bottom: 0.5em;
+}
+
+#respawns {
+  position: absolute;
+  z-index: 1000;
+  margin-top: 2em;
+  right: 0.5em;
+}
+
+.item-container {
+  overflow-y: scroll;
+  max-height: 470px;
+}
+
+:host ::ng-deep  .p-accordion-content {
+  padding:0;
+  min-width: 175px;
+}
+
+:host ::ng-deep .p-accordion-header-link {
+  padding:0.5em;
+}

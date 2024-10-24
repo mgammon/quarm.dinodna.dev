@@ -1,0 +1,22 @@
+<div class="stat-container">
+  <div class="label">{{ stat | uppercase }}</div>
+  <div class="value">
+    <span class="number" [pTooltip]="tooltip()">{{ character.stats[stat] }}</span>
+    <span
+      class="minus"
+      [ngClass]="{ disabled: !canDecrement, down: minusDown }"
+      (mousedown)="minusDown = true"
+      (mouseout)="minusDown = false"
+      (mouseup)="minusDown = false"
+      (click)="decrement()"
+    ></span>
+    <span
+      class="plus"
+      [ngClass]="{ disabled: !canIncrement, down: plusDown }"
+      (mousedown)="plusDown = true"
+      (mouseout)="plusDown = false"
+      (mouseup)="plusDown = false"
+      (click)="increment()"
+    ></span>
+  </div>
+</div>

@@ -1,0 +1,27 @@
+<div
+  class="chat-log {{ log.channel }} {{ colorScheme }}"
+  [class.highlight]="highlightLog"
+  id="chat-log-{{ log.id }}"
+>
+  <!-- Timestamps -->
+  <span *ngIf="logService.timestampType === 'time'" class="time">
+    [{{ timestamp }}]
+  </span>
+  <span *ngIf="logService.timestampType === 'relative'" class="time"> </span>
+  <!-- Rest of the chunks -->
+  <span *ngFor="let chunk of logChunks">
+    <span *ngIf="chunk.type === 'player'" class="player">{{ log.player }}</span>
+    <span *ngIf="chunk.type === 'text'" class="text">{{
+      chunk.displayText
+    }}</span>
+    <span
+      *ngIf="chunk.type === 'item'"
+      class="item"
+      [class.highlight]="chunk.highlight"
+      ><app-item-link
+        [itemId]="chunk.item!.itemId"
+        [itemName]="chunk.displayText!"
+      ></app-item-link
+    ></span>
+  </span>
+</div>

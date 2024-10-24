@@ -1,0 +1,42 @@
+<div
+  class="slot {{ !isEquippable() ? 'not-equippable' : '' }}"
+  (click)="search.toggle($event)"
+  style="background-image: url('assets/slots/{{ slot.slotId }}.png')"
+>
+  <span *ngIf="!slot.item" style="color: #ddd" class="name">{{
+    slot.slotName
+  }}</span>
+  <app-item-link
+    *ngIf="slot.item"
+    [itemId]="slot.item.id"
+    [itemName]="slot.item.name"
+    [itemIcon]="slot.item.icon"
+    [noNav]="true"
+    [hideText]="true"
+  />
+  <span class="item-text" *ngIf="slot.item && !hideText">{{
+    slot.item.name
+  }}</span>
+  <p-overlayPanel #search>
+    <div class="item-search">
+      <app-search
+        [types]="['items']"
+        [skipNavigation]="true"
+        [itemSearchOptions]="{
+          slots: slot.slotIds,
+          classes: [character.classId],
+          races: [character.raceId]
+        }"
+        placeholder="Select {{ slot.slotName }}"
+        (onItemSelected)="onSelected($event, slot, search)"
+      ></app-search>
+      <p-button
+        type="button"
+        size="small"
+        (click)="onSelected(undefined, slot, search)"
+        icon="pi pi-times"
+        [outlined]="true"
+      ></p-button>
+    </div>
+  </p-overlayPanel>
+</div>

@@ -1,0 +1,44 @@
+#zone-page {
+  .expansion {
+    height: fit-content;
+    margin-bottom: 1em;
+
+    .zone {
+      padding: 0.25em 0 0.5em 2em;
+    }
+  }
+}
+
+a {
+  text-decoration: none;
+}
+
+.clear {
+  margin-left: -1.5em;
+  cursor: pointer;
+  opacity: 0.65;
+}
+
+.link {
+  cursor: pointer;
+  color: -webkit-link;
+}
+
+:host ::ng-deep .expansion .p-panel-content {
+  column-width: 25em;
+  // column-rule: 1px solid #777777AA;
+}
+
+:host ::ng-deep .p-datatable-wrapper {
+  margin-top: 1em;
+}
+
+.view-as {
+  font-weight: 500;
+  padding-left: 1em;
+}
+
+.search {
+  padding-top: 1em;
+  padding-bottom: 1em;
+}

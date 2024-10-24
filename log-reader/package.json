@@ -1,0 +1,23 @@
+{
+  "name": "pq-log-provider",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack && node dist/bundle.js",
+    "build:admin": "webpack build --config ./webpack.admin.config.js && pkg --compress -t node18-win-x64 dist/bundle.js && mv bundle.exe admin-log-reader.exe"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/socket.io-client": "^3.0.0",
+    "pkg": "^5.8.1",
+    "ts-loader": "^9.5.0",
+    "typescript": "^5.2.2",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "socket.io-client": "^4.7.4"
+  }
+}

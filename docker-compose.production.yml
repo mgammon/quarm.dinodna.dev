@@ -1,0 +1,38 @@
+version: "3.8"
+# FOR PROD DEPLOYMENT WITH PROXY, SERVING UI FROM API
+# MAKE A docker-compose.override.yml WITH ENV VARS ON THE PROD SERVER
+services:
+  server:
+    build: 
+      context: ./server
+      target: production
+    depends_on:
+      - mysql
+    ports:
+      - "3000:3000"
+      - "4200:4200"
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+  mysql:
+    image: mysql:8.0.35-debian
+    command: --max_allowed_packet=325058560
+    environment:
+      MYSQL_USER: mysql
+      MYSQL_PASSWORD: mysql
+      MYSQL_ROOT_PASSWORD: mysql 
+      MYSQL_DATABASE: quarm_data
+    volumes:
+      - ./mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80' # Public HTTP Port
+      - '443:443' # Public HTTPS Port
+      - '81:81' # Admin Web Port
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt

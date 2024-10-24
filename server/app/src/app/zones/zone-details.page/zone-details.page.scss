@@ -1,0 +1,121 @@
+.special-icon {
+  vertical-align: middle;
+  display: inline-block;
+  border: 1px solid #333;
+  border-radius: 0.25em;
+  width: 2em;
+  height: 2em;
+  margin: 0.25em;
+  background-size: cover;
+
+  &.bind {
+    background-image: url(/assets/icons/default/161.png);
+  }
+
+  &.levitate {
+    background-image: url(/assets/icons/default/80.png);
+  }
+
+  &.outdoor {
+    background-image: url(/assets/icons/default/144.png);
+  }
+
+  &.dungeon {
+    background-image: url(/assets/icons/default/125.png);
+  }
+
+  .pi-times {
+    color: red;
+  }
+
+  .pi-angle-double-up,
+  .pi-eye-slash,
+  .pi-question,
+  .pi-question-circle {
+    color: white;
+  }
+
+  .pi {
+    margin-left: 1em;
+    margin-top: 1em;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-shadow: 1px 0px black, -1px -0px black, 0 1px black, 0 -1px black;
+  }
+}
+
+:host ::ng-deep .p-panel {
+  max-width:90em;
+  margin: 0 auto;
+}
+
+.filter-container {
+  display:flex;
+  flex-wrap: wrap;
+}
+
+.filter-container > * {
+  padding:0.5em 0 0.5em 0;
+}
+
+.header-icons {
+  display:inline-block;
+}
+
+.tricheckbox {
+  padding: 0;
+  margin-top:0.5em;
+  margin-right: 0.25em;
+  white-space: nowrap;
+  padding: inherit;
+}
+
+:host ::ng-deep .p-panel-header {
+  padding:0.75rem;
+}
+
+:host ::ng-deep .p-multiselect,
+:host ::ng-deep .item-info .p-dropdown {
+  min-width: 125px;
+}
+
+:host ::ng-deep .with-search .p-multiselect-items-wrapper {
+  min-width: 375px;
+}
+
+:host ::ng-deep .level .p-inputtext {
+  width: 100px;
+}
+
+:host ::ng-deep .p-float-label {
+  display: inline-block;
+  margin-right: 1em;
+}
+
+:host ::ng-deep .item-info .p-float-label {
+  margin-bottom: 1em;
+}
+
+:host ::ng-deep .p-checkbox {
+  vertical-align: middle;
+  margin-right: 0.5em;
+  margin-left: 0.25em;
+}
+
+:host ::ng-deep .p-button-sm {
+  vertical-align: baseline;
+}
+
+:host ::ng-deep .p-panel-content {
+  position:relative;
+}
+
+
+tr.npc:hover {
+  background-color:rgba(255, 248, 220, 0.20)
+}
+
+:host ::ng-deep .p-multiselect,
+:host ::ng-deep .p-dropdown {
+  width: 10px;
+}

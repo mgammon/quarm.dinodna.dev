@@ -1,0 +1,11 @@
+a {
+  cursor: pointer;
+  color: inherit;
+  text-decoration: inherit;
+  position:relative;
+
+  &.link {
+    color: lightskyblue;
+    text-decoration: underline;
+  }
+}

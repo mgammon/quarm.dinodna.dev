@@ -1,0 +1,230 @@
+<div id="item-search-page">
+  <p-panel header="Search NPCs" styleClass="container">
+    <!-- Search -->
+    <div style="padding: 1.5em 0.5em 0 0.5em">
+      <span class="p-float-label p-input-icon-right">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          id="npcName"
+          [(ngModel)]="options.search"
+          (keydown.enter)="search()"
+          pAutoFocus
+          [autofocus]="true"
+        />
+        <label for="npcName">NPC Name</label>
+      </span>
+      <p-button
+        label="Search"
+        icon="pi pi-search"
+        iconPos="right"
+        size="small"
+        (click)="search()"
+      ></p-button>
+      <p-button
+        label="Reset"
+        size="small"
+        [text]="true"
+        (click)="reset()"
+      ></p-button>
+    </div>
+    <p-divider align="left" (click)="showFilters = !showFilters">
+      <i class="pi {{showFilters ? 'pi-angle-down' : 'pi-angle-right'}}"></i>
+      <b> Additional filters</b>
+    </p-divider>
+    <!-- Additional Filters -->
+    <div
+      *ngIf="showFilters"
+      style="padding: 0 0.5em"
+      class="item-info"
+      (keydown.enter)="search()"
+    >
+      <span class="p-float-label">
+        <p-multiSelect
+          inputId="classes"
+          [options]="classOptions"
+          [(ngModel)]="options.classes"
+          optionLabel="label"
+          optionValue="value"
+          [showHeader]="false"
+          [showClear]="true"
+          placeholder="Any Class"
+        ></p-multiSelect>
+        <label for="classes">Classes</label>
+      </span>
+      <span class="p-float-label">
+        <p-multiSelect
+          inputId="bodyType"
+          [options]="bodyTypeOptions"
+          [(ngModel)]="options.bodyTypes"
+          optionLabel="label"
+          optionValue="value"
+          [showHeader]="false"
+          [showClear]="true"
+          placeholder="Any Type"
+        ></p-multiSelect>
+        <label for="bodyType">Type</label>
+      </span>
+      <span class="p-float-label with-search">
+        <p-multiSelect
+          inputId="zones"
+          [options]="zoneOptions"
+          [(ngModel)]="options.zones"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Any Zone"
+          [virtualScroll]="true"
+          [virtualScrollItemSize]="getVirtualScrollItemSize()"
+        ></p-multiSelect>
+        <label for="zones">Zones</label>
+      </span>
+      <span class="p-float-label with-search">
+        <p-multiSelect
+          inputId="races"
+          [options]="raceOptions"
+          [(ngModel)]="options.races"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Any Race"
+          [virtualScroll]="true"
+          [virtualScrollItemSize]="getVirtualScrollItemSize()"
+        ></p-multiSelect>
+        <label for="races">Races</label>
+      </span>
+      <span class="p-float-label">
+        <p-multiSelect
+          inputId="runspeeds"
+          [options]="runspeedOptions"
+          [(ngModel)]="options.runspeeds"
+          optionLabel="label"
+          optionValue="value"
+          [showHeader]="false"
+          [showClear]="true"
+          placeholder="Any Runspeed"
+        ></p-multiSelect>
+        <label for="runspeeds">Runspeed</label>
+      </span>
+      <span class="p-float-label level">
+        <p-inputNumber
+          inputId="minLevel"
+          [(ngModel)]="options.minLevel.value"
+          [max]="100"
+          [min]="1"
+        /><label for="minLevel">Min Level</label>
+      </span>
+      <span class="p-float-label level">
+        <p-inputNumber
+          inputId="maxLevel"
+          [(ngModel)]="options.maxLevel.value"
+          [max]="100"
+          [min]="1"
+        /><label for="maxLevel">Max Level</label>
+      </span>
+      <span class="tricheckbox">
+        <label for="seesInvis">Sees invis </label>
+        <p-triStateCheckbox
+          [(ngModel)]="options.seesInvis"
+          inputId="seesInvis"
+        ></p-triStateCheckbox>
+      </span>
+      <!-- <span class="tricheckbox">
+        <label for="seesIvu">Sees IVU </label>
+        <p-triStateCheckbox
+          [(ngModel)]="options.seesIvu"
+          inputId="seesIvu"
+        ></p-triStateCheckbox>
+      </span> -->
+      <!-- <span class="tricheckbox">
+        <label for="charmable">Charmable </label>
+        <p-triStateCheckbox
+          [(ngModel)]="options.charmable"
+          inputId="charmable"
+        ></p-triStateCheckbox>
+      </span> -->
+      <!-- <span class="tricheckbox">
+        <label for="fast">Fast</label>
+        <p-triStateCheckbox
+          [(ngModel)]="options.fast"
+          inputId="fast"
+        ></p-triStateCheckbox>
+      </span>
+      <span class="tricheckbox">
+        <label for="slow">Slow</label>
+        <p-triStateCheckbox
+          [(ngModel)]="options.slow"
+          inputId="slow"
+        ></p-triStateCheckbox>
+      </span> -->
+    </div>
+    <!-- NPC Table -->
+    <p-divider class="no-bottom-margin"></p-divider>
+    <p-table
+      [value]="npcs"
+      sortField="searchable_name"
+      (onSort)="onSort($event)"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="searchable_name">
+            Name <p-sortIcon field="name"></p-sortIcon>
+          </th>
+          <th pSortableColumn="level">
+            Level <p-sortIcon field="level"></p-sortIcon>
+          </th>
+          <th>Race</th>
+          <th>Class</th>
+          <th>Zone</th>
+          <!-- <th pSortableColumn="level">
+            Min Level <p-sortIcon field="level"></p-sortIcon>
+          </th>
+          <th pSortableColumn="maxlevel">
+            Max Level <p-sortIcon field="maxlevel"></p-sortIcon>
+          </th> -->
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-npc>
+        <tr>
+          <td>
+            <a
+              routerLink="/npcs/{{ npc.id }}"
+              class="flex align-items-center"
+              style="color: inherit; text-decoration: inherit"
+              >{{npc.name}}</a
+            >
+          </td>
+          <td>{{getLevel(npc)}}</td>
+          <td>{{getRace(npc)}}</td>
+          <td>{{getClassString(npc.class)}}</td>
+          <td>
+            <span *ngFor="let zone of npc.spawns">
+              <a
+                [pTooltip]="mapTooltip"
+                routerLink="/zones/{{ zone.zoneId }}"
+                class="flex align-items-center"
+                style="color: inherit; text-decoration: inherit"
+                >{{zone.zoneName}}</a
+              >
+              <ng-template #mapTooltip>
+                <app-map [hideControls]="true" [zoneShortName]="zone.zoneId" [spawns]="zone.spawns" />
+              </ng-template>
+            </span>
+          </td>
+          <!-- <td>{{npc.level}}</td>
+          <td>{{npc.maxlevel}}</td> -->
+        </tr>
+      </ng-template>
+    </p-table>
+    <div class="no-results" *ngIf="npcs.length === 0">No results</div>
+    <!-- <p-button
+      label="Load more"
+      size="small"
+      (click)="nextPage()"
+      *ngIf="hasMoreToLoad && !loading"
+    ></p-button> -->
+    <p-divider align="center" *ngIf="!hasMoreToLoad && npcs.length">
+      <!-- <i class="pi pi-angle-up"></i> -->
+      <b> End of results </b>
+      <!-- <i class="pi pi-angle-up"></i> -->
+    </p-divider>
+  </p-panel>
+</div>

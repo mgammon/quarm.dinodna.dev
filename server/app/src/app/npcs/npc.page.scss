@@ -1,0 +1,118 @@
+#npc-page {
+  display: flex;
+  flex-direction: row;
+  padding: 0.5em;
+
+  .left {
+    min-width: 720px;
+    width: 60%;
+    margin-right: 0.5em;
+    .level-race-class {
+      font-size: 0.85em;
+    }
+
+    .header {
+      font-weight: bold;
+      min-width: 505px;
+      display: flex;
+      flex-direction: row;
+      .header-text {
+        min-width: fit-content;
+        margin-right: 1em;
+      }
+      > div {
+        vertical-align: middle;
+      }
+    }
+
+    .more-info {
+      padding: 1em;
+      border-bottom: 1px solid #e5e7eb;
+
+      td:first-child {
+        padding-right: 1em;
+        font-weight: bold;
+        font-size: 0.9em;
+      }
+    }
+
+    .npc-details {
+      min-width: fit-content;
+      font-size: 0.8em;
+      margin-left: 1em;
+      margin-top: 1em;
+      margin-right: 1em;
+    }
+  }
+
+  .right {
+    width: 100%;
+  }
+
+  .special-icon {
+    vertical-align: middle;
+    display: inline-block;
+    border: 1px solid #333;
+    border-radius: 0.25em;
+    width: 32px;
+    height: 32px;
+    margin: 0.25em;
+    background-size: cover;
+
+    &.fear {
+      background-image: url(/assets/icons/default/154.png);
+    }
+
+    &.snare {
+      background-image: url(/assets/icons/default/5.png);
+    }
+
+    &.see-invis {
+      background-image: url(/assets/icons/default/19.png);
+    }
+
+    &.see-ivu {
+      background-image: url(/assets/icons/default/74.png);
+    }
+
+    &.fast {
+      background-image: url(/assets/icons/default/4.png);
+    }
+
+    &.charm {
+      background-image: url(/assets/icons/default/38.png);
+    }
+
+    &.mez {
+      background-image: url(/assets/icons/default/11.png);
+    }
+
+    &.lull {
+      background-image: url(/assets/icons/default/13.png);
+    }
+
+    .pi-times {
+      color: red;
+    }
+
+    .pi-angle-double-up,
+    .pi-eye-slash,
+    .pi-question,
+    .pi-question-circle {
+      color: white;
+    }
+
+    .pi {
+      margin-left: 1em;
+      margin-top: 1em;
+      font-size: 0.9em;
+      font-weight: bold;
+      text-shadow: 1px 0px black, -1px -0px black, 0 1px black, 0 -1px black;
+    }
+  }
+}
+
+
+tr.spawn:hover {
+  background-color:rgba(255, 248, 220, 0.20)
+}

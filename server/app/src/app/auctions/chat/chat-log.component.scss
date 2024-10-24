@@ -1,0 +1,78 @@
+.chat-log {
+  //   color: rgb(0, 140, 0);
+  color: green;
+
+  &.shout {
+    color: red;
+  }
+
+  &.say {
+    color: whitesmoke;
+  }
+
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.9rem;
+
+  .item {
+    color: magenta;
+
+    &.highlight {
+      color: #ff8000;
+    }
+  }
+
+  .time {
+    color: ivory;
+    font-size: 0.8rem;
+  }
+
+  &.highlight,
+  &.highlight .time {
+    font-size: 1.25rem;
+    background-color: black;
+    &.flash {
+      background-color: #333;
+    }
+  }
+
+
+  transition: background-color 333ms ease-in;
+}
+
+.light.chat-log {
+  &.say {
+    color: #333;
+  }
+
+  &.highlight,
+  &.highlight .time {
+    font-size: 1.25rem;
+    background-color: #f1f1b4;
+    &.flash {
+      background-color: gold;
+    }
+  }
+
+  .time {
+    color: #333;
+  }
+}
+
+.dark.chat-log {
+  &.say {
+    color: whitesmoke;
+  }
+
+  &.highlight,
+  &.highlight .time {
+    font-size: 1.25rem;
+    background-color: black;
+    &.flash {
+      background-color: #333;
+    }
+  }
+
+  .time {
+    color: ivory;
+  }
+}

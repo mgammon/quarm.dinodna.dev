@@ -1,0 +1,20 @@
+<div *ngIf="item">
+  <div *ngFor="let effect of effects">
+    <span *ngIf="effect.click">Click Effect: </span>
+    <span *ngIf="effect.proc">Combat Effect: </span>
+    <span *ngIf="effect.worn">Worn Effect: </span>
+    <span *ngIf="effect.scroll">Spell Scroll: </span>
+    <app-spell-link
+      [spellId]="effect.id"
+      [spellName]="effect.name"
+      [level]="effect.level"
+      [levelSource]="item.name"
+      [linkStyle]="true"
+    />
+    <!-- <a style="color: lightskyblue" [routerLink]="'/spells/' + effect.id">{{
+      effect.name
+    }}</a> -->
+    <span> {{ getParenthesis(effect) }}</span>
+  </div>
+  <div *ngIf="getWornHasteText()">{{ getWornHasteText() }}</div>
+</div>

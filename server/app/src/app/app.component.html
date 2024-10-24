@@ -1,0 +1,127 @@
+<div id="main" class="light-theme" role="main">
+  <p-toolbar
+    styleClass="bg-gray-900 shadow-2"
+    [style]="{
+      'background-image':
+        'linear-gradient(to right, var(--bluegray-500), var(--bluegray-800))'
+    }"
+  >
+    <div class="p-toolbar-group-start">
+      <div class="card flex justify-content-center">
+        <p-menu
+          #recentMenu
+          [model]="navigationService.recentPages"
+          [popup]="true"
+        >
+          <ng-template pTemplate="recentPage" let-recentPage>
+            <div style="padding: 0.5em">
+              <app-result [entity]="recentPage.entity" [isLink]="true" />
+            </div>
+            <!-- <a [routerLink]="recentPage.url">{{ recentPage.entity.name }}</a> -->
+          </ng-template>
+        </p-menu>
+        <p-button
+          type="button"
+          (click)="recentMenu.toggle($event)"
+          icon="pi pi-history"
+          [outlined]="true"
+          styleClass="white"
+        ></p-button>
+        <a class="header-link" [routerLink]="'auctions'">Auctions</a>
+        <a class="header-link" [routerLink]="'items'">Items</a>
+        <a class="header-link" [routerLink]="'npcs'">NPCs</a>
+        <a class="header-link" [routerLink]="'zones'">Zones</a>
+        <a class="header-link" [routerLink]="'characters'">Characters</a>
+        <p-button
+          *ngIf="locationService.currentLocation.zoneId"
+          (click)="goToLiveMap()"
+          type="button"
+          icon="pi pi-map-marker"
+          [outlined]="true"
+          styleClass="white"
+        ></p-button>
+        <!-- <a class="header-link" [routerLink]="'spells'">Spells</a> -->
+        <app-search style="margin-left: 1em"></app-search>
+      </div>
+    </div>
+    <div class="p-toolbar-group-center"></div>
+    <div class="p-toolbar-group-end">
+      <p-button
+        type="button"
+        (onClick)="settingsMenu.toggle($event)"
+        icon="pi pi-cog"
+        styleClass="white"
+        [outlined]="true"
+      ></p-button>
+      <p-overlayPanel #settingsMenu>
+        <ng-template pTemplate="content">
+          <div style="text-align:center;">          
+            <div style="padding-bottom:0.5em;" *ngIf="logReaderService.directory">
+              Reading logs from {{ logReaderService.directory.name }}
+            </div>
+            <div style="padding-bottom:0.5em;" *ngIf="!logReaderService.directory">No EQ directory set</div>
+            <button
+              (click)="openDirectoryPicker()"
+              style="color: white; font-weight: bold"
+              type="button"
+              [pTooltip]="
+                'Setting your EQ directory gives access to your EQ logs to show your location on the map'
+              "
+              tooltipPosition="bottom"
+              pButton
+            >
+              {{ logReaderService.directory ? "Change" : "Set" }} EQ Directory
+            </button>
+          </div>
+        </ng-template>
+      </p-overlayPanel>
+      <p-menu #fontSizeMenu [model]="themeService.fontSizes" [popup]="true">
+        <ng-template pTemplate="recentPage" let-fontSize>
+          <div
+            class="menu-option {{
+              themeService.fontSize === fontSize.value ? 'selected' : ''
+            }}"
+            (click)="themeService.switchFontSize(fontSize.value)"
+          >
+            {{ fontSize.label }}
+          </div>
+        </ng-template>
+      </p-menu>
+      <p-button
+        type="button"
+        (click)="fontSizeMenu.toggle($event)"
+        icon="pi pi-search-plus"
+        styleClass="white"
+        [outlined]="true"
+      ></p-button>
+      <p-menu #themeMenu [model]="themeService.themes" [popup]="true">
+        <ng-template pTemplate="recentPage" let-theme>
+          <div
+            class="menu-option {{
+              themeService.theme === theme.value ? 'selected' : ''
+            }}"
+            (click)="themeService.switchTheme(theme.value)"
+          >
+            {{ theme.label }}
+          </div>
+        </ng-template>
+      </p-menu>
+      <p-button
+        type="button"
+        (click)="themeMenu.toggle($event)"
+        icon="pi pi-palette"
+        styleClass="white"
+        [outlined]="true"
+      ></p-button>
+    </div>
+  </p-toolbar>
+  <!-- <div style="display: flex; flex-direction: row">
+    <div style="width: 250px; height: 100%; background: #374151;">
+      <div *ngFor="let recent of navigationService.recentPages" style="padding:0.5em;padding-bottom:0;">
+        <app-result [entity]="recent.entity" />
+      </div>
+    </div>
+    <div><router-outlet></router-outlet></div>
+  </div> -->
+  <router-outlet></router-outlet>
+</div>

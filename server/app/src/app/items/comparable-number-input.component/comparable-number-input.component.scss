@@ -1,0 +1,21 @@
+:host ::ng-deep .comparable-number .p-inputnumber-input {
+  width: 75px;
+}
+
+:host ::ng-deep .comparable-number .p-dropdown-trigger {
+  width: 2em;
+}
+
+:host ::ng-deep .comparable-number .p-dropdown-items-wrapper {
+  max-height: 250px !important;
+}
+
+.comparable-number {
+  padding:0.5em;
+  display:inline-block;
+}
+
+.label {
+  display:inline-block;
+  width: 50px;
+}

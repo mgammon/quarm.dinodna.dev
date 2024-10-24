@@ -1,0 +1,119 @@
+<div *ngIf="item" class="item">
+  <div class="item-name">{{ item.name }}</div>
+  <div class="item-details" style="position: relative">
+    <span
+      style="position: absolute; display: inline-block; top: 1em; right: 1em"
+      ><img src="/assets/icons/default/{{ item.icon }}.png" />
+    </span>
+    <span
+      style="
+        position: absolute;
+        display: inline-block;
+        bottom: 1em;
+        right: 1em;
+        text-align: right;
+      "
+    >
+      <app-price style="display: block" [price]="item.price" label="Vendor" />
+      <app-price
+        *ngIf="item.average7d || item.average30d"
+        style="display: block; padding-top: 0.5em"
+        [price]="(item.average7d || item.average30d || 0)"
+        [noZeroes]="true"
+        label="Auction"
+      />
+    </span>
+    <div>
+      <span *ngIf="item.magic > 0">MAGIC ITEM </span>
+      <span *ngIf="item.lore && item.lore[0] === '*'">LORE ITEM </span>
+      <span *ngIf="item.nodrop === 0">NO DROP </span>
+      <span *ngIf="item.norent === 0">NO RENT </span>
+    </div>
+    <div *ngIf="getSlotsString()">Slot: {{ getSlotsString() | uppercase }}</div>
+    <div *ngIf="showCharges()">Charges: {{ item.maxcharges }}</div>
+    <div *ngIf="getSkill()">
+      <span *ngIf="!item.bardvalue">Skill: {{ getSkill() }}&nbsp;</span>
+      <span *ngIf="item.bardvalue"
+        >{{ getSkill() }}: {{ item.bardvalue }}&nbsp;</span
+      >
+      <span *ngIf="item.delay">Delay: {{ item.delay }}</span>
+    </div>
+    <div>
+      <span *ngIf="item.damage">DMG: {{ item.damage }}</span>
+      <span *ngIf="!getSkill() && item.delay"> Delay: {{ item.delay }}</span>
+    </div>
+    <div>
+      <span *ngIf="item.ac">AC: {{ item.ac }}</span>
+    </div>
+    <div>
+      <span *ngIf="item.asta !== 0"
+        >STA: {{ item.asta > 0 ? "+" : "" }}{{ item.asta }}&nbsp;</span
+      >
+      <span *ngIf="item.astr !== 0"
+        >STR: {{ item.astr > 0 ? "+" : "" }}{{ item.astr }}&nbsp;</span
+      >
+      <span *ngIf="item.adex !== 0"
+        >DEX: {{ item.adex > 0 ? "+" : "" }}{{ item.adex }}&nbsp;</span
+      >
+      <span *ngIf="item.aagi !== 0"
+        >AGI: {{ item.aagi > 0 ? "+" : "" }}{{ item.aagi }}&nbsp;</span
+      >
+      <span *ngIf="item.acha !== 0"
+        >CHA: {{ item.acha > 0 ? "+" : "" }}{{ item.acha }}&nbsp;</span
+      >
+      <span *ngIf="item.awis !== 0"
+        >WIS: {{ item.awis > 0 ? "+" : "" }}{{ item.awis }}&nbsp;</span
+      >
+      <span *ngIf="item.aint !== 0"
+        >INT: {{ item.aint > 0 ? "+" : "" }}{{ item.aint }}&nbsp;</span
+      >
+      <span *ngIf="item.hp !== 0"
+        >HP: {{ item.hp > 0 ? "+" : "" }}{{ item.hp }}&nbsp;</span
+      >
+      <span *ngIf="item.mana !== 0"
+        >MANA: {{ item.mana > 0 ? "+" : "" }}{{ item.mana }}&nbsp;</span
+      >
+    </div>
+    <div>
+      <span *ngIf="item.fr !== 0"
+        >SV FIRE: {{ item.fr > 0 ? "+" : "" }}{{ item.fr }}&nbsp;</span
+      >
+      <span *ngIf="item.dr !== 0"
+        >SV DISEASE: {{ item.dr > 0 ? "+" : "" }}{{ item.dr }}&nbsp;</span
+      >
+      <span *ngIf="item.cr !== 0"
+        >SV COLD: {{ item.cr > 0 ? "+" : "" }}{{ item.cr }}&nbsp;</span
+      >
+      <span *ngIf="item.mr !== 0"
+        >SV MAGIC: {{ item.mr > 0 ? "+" : "" }}{{ item.mr }}&nbsp;</span
+      >
+      <span *ngIf="item.pr !== 0"
+        >SV POISON: {{ item.pr > 0 ? "+" : "" }}{{ item.pr }}&nbsp;</span
+      >
+    </div>
+    <div>
+      <span *ngIf="item.reclevel > 0"
+        >Recommended level of {{ item.reclevel }}.&nbsp;</span
+      >
+      <span *ngIf="item.reqlevel > 0"
+        >Required level of {{ item.reqlevel }}.&nbsp;</span
+      >
+    </div>
+    <app-item-effects [item]="item" />
+    <div *ngIf="getDrinkDescription()">{{ getDrinkDescription() }}</div>
+    <div *ngIf="getFoodDescription()">{{ getFoodDescription() }}</div>
+    <div>
+      WT: {{ item.weight / 10 | number : "1.1-1" }}
+      <span *ngIf="item.bagslots <= 0">Size: {{ getItemSize() }}</span>
+      <span *ngIf="item.bagslots > 0"
+        >Weight Reduction: {{ item.bagwr / 100 | percent }}</span
+      >
+    </div>
+    <div *ngIf="item.bagslots > 0">
+      Capacity: {{ item.bagslots }} Size Capacity: {{ getBagSize() }}
+    </div>
+    <div *ngIf="getClasses()">Class: {{ getClasses() }}</div>
+    <div *ngIf="getPlayableRaces()">Race: {{ getPlayableRaces() }}</div>
+    <div *ngIf="getDeity()">Deity: {{ getDeity() }}</div>
+  </div>
+</div>

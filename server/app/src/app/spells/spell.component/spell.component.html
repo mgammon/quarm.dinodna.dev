@@ -1,0 +1,76 @@
+<div *ngIf="spell" class="info">
+  <div class="name">
+    {{ spell.name }}<span *ngIf="levelSource"> ({{ levelSource }})</span
+    ><span *ngIf="level && !levelSource"> (Level {{ level }})</span>
+  </div>
+  <div class="details">
+    <img class="icon" src="/assets/icons/default/{{ spell.new_icon }}.png" />
+    <table>
+      <tr>
+        <td class="effects">Effects</td>
+        <td colspan="3">
+          <div class="effect" *ngFor="let effect of effectDescriptions">
+            {{ effect.text }}
+            <app-item-link
+              *ngIf="effect.item"
+              [itemId]="effect.item.id"
+              [itemName]="effect.item.name"
+              [linkStyle]="true"
+            />
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Mana</td>
+        <td>{{ spell.mana }}</td>
+        <td>Skill</td>
+        <td>{{ getSkill() }}</td>
+      </tr>
+      <tr>
+        <td>Casting Time</td>
+        <td>{{ formatTime(spell.cast_time) }}</td>
+        <td>Target Type</td>
+        <td>{{ getTargetType() }}</td>
+      </tr>
+      <tr>
+        <td>Recast Time</td>
+        <td>{{ formatTime(spell.recast_time) }}</td>
+        <td>Range</td>
+        <td>{{ spell.range }}</td>
+      </tr>
+      <tr>
+        <td>Recovery Time</td>
+        <td>{{ formatTime(spell.recovery_time) }}</td>
+        <td>Resist Type</td>
+        <td>{{ getResist() }}</td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top">Duration</td>
+        <td colspan="3">
+          <div *ngIf="getMinDuration()">{{ getMinDuration() }}</div>
+          <div *ngIf="getMaxDuration()">{{ getMaxDuration() }}</div>
+        </td>
+      </tr>
+      <tr *ngIf="spell.components.length > 0">
+        <td style="vertical-align: top">Reagents</td>
+        <td colspan="3">
+          <span *ngFor="let component of spell.components; index as i">
+            <app-item-link
+              *ngIf="component.item"
+              [itemName]="component.item.name"
+              [itemId]="component.item.id"
+              [linkStyle]="true"
+            />
+            <span *ngIf="component.counts > 1"> x{{ component.counts }}</span>
+            <span *ngIf="!component.isExpended"> (not consumed)</span>
+            <span *ngIf="i < spell.components.length - 1">, </span>
+          </span>
+        </td>
+      </tr>
+      <tr *ngIf="getClasses()">
+        <td style="vertical-align: top">Class</td>
+        <td colspan="3">{{ getClasses() }}</td>
+      </tr>
+    </table>
+  </div>
+</div>

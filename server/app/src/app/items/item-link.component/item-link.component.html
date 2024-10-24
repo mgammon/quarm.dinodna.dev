@@ -1,0 +1,24 @@
+<a
+  class="{{ linkStyle ? 'link' : '' }}"
+  [routerLink]="noNav ? undefined : '/items/' + itemId"
+  [pTooltip]="itemTooltip"
+  [showDelay]="loading === false ? 0 : 300"
+  (mouseenter)="onMouseEnter()"
+  (mouseleave)="onMouseLeave()"
+  tooltipStyleClass="item-link-tooltip"
+>
+  <img
+    *ngIf="itemIcon"
+    [style]="!hideText ? 'vertical-align: middle; padding-right: 1em; height: 2.5em' : ''"
+    src="/assets/icons/default/{{ itemIcon }}.png"
+  />
+  <div *ngIf="!hideText" style="display: inline-block; vertical-align: middle; text-align: left">
+    <span>{{ itemName }}</span
+    ><span *ngIf="subtitle" style="font-size: 0.75em; display: block">{{
+      subtitle
+    }}</span>
+  </div>
+  <ng-template #itemTooltip>
+    <app-item *ngIf="item" [item]="item" />
+  </ng-template>
+</a>

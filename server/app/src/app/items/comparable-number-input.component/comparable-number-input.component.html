@@ -1,0 +1,18 @@
+<span class="comparable-number">
+  <span *ngIf="label" class="label">{{ label }}</span>
+  <p-dropdown
+    class="p-inputtext-sm"
+    [options]="comparableNumberOperators"
+    [(ngModel)]="comparableNumber.operator"
+    (ngModelChange)="onChange.emit(comparableNumber)"
+  />
+  <p-inputNumber
+    class="p-inputtext-sm"
+    [(ngModel)]="comparableNumber.value"
+    [max]="max"
+    [min]="min"
+    [maxFractionDigits]="decimals"
+    [placeholder]="placeholder"
+    (ngModelChange)="onChange.emit(comparableNumber)"
+  />
+</span>

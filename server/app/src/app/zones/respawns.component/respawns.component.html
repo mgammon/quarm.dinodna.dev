@@ -1,0 +1,32 @@
+<div *ngIf="respawns" id="respawns">
+  <!-- <div class="header">Respawns</div>
+  <div class="item-container">
+    <div *ngFor="let respawn of respawns">
+      <div
+        class="item"
+        (mouseenter)="onRespawnMouseEnter(respawn)"
+        (mouseleave)="onRespawnMouseLeave(respawn)"
+      >
+        <div class="name">{{ respawn.npcMatches[0].name }}</div>
+        <div class="respawn">{{ getRespawnTimeText(respawn) }}</div>
+      </div>
+    </div>
+  </div> -->
+
+  <p-accordion [activeIndex]="0">
+    <p-accordionTab header="Respawns">
+      <div class="item-container">
+        <div *ngFor="let respawn of respawns">
+          <div
+            class="item"
+            (mouseenter)="onRespawnMouseEnter(respawn)"
+            (mouseleave)="onRespawnMouseLeave(respawn)"
+          >
+            <div class="name">{{ respawn.npcMatches[0].name }}</div>
+            <div class="respawn">{{ getRespawnTimeText(respawn) }}</div>
+          </div>
+        </div>
+      </div>
+    </p-accordionTab>
+  </p-accordion>
+</div>

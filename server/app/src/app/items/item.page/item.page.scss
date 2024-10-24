@@ -1,0 +1,25 @@
+.item-container {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  background: #222;
+  width: 100%;
+}
+
+.stack-size {
+  display: inline-block;
+  font-size: 0.8em;
+  background-color: #eee;
+  border-radius: 0.25em;
+  width: 0.8em;
+  height: 0.8em;
+}
+
+.header-detail {
+  font-size: 0.9em;
+  font-weight: 600;
+  vertical-align: middle;
+  padding-left: 1em;
+}

@@ -1,0 +1,31 @@
+#auctions-page {
+  display: flex;
+  flex-direction: row;
+  width:auto;
+  max-width:100em;
+  margin:auto;
+  margin-top:0.5em;
+
+  app-chat {
+    width:100%;
+  }
+}
+
+
+
+:host ::ng-deep .p-splitter {
+  // max-height:80vh;
+  height: calc(100vh - 7rem - 8px);
+}
+
+:host ::ng-deep p-splitter {
+  width:100%;
+}
+
+tr.spawn:hover {
+  background-color:rgba(255, 248, 220, 0.20)
+}
+
+.idk {
+  width:100%;
+}

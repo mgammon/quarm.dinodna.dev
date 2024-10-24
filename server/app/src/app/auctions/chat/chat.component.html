@@ -1,0 +1,58 @@
+<div class="chat-container">
+  <p-panel header="East Commonlands Chat">
+    <ng-template pTemplate="icons">
+      <button
+        class="p-panel-header-icon p-link mr-2"
+        (click)="
+          logService.timestampType =
+            logService.timestampType === 'none' ? 'time' : 'none'
+        "
+      >
+        <span
+          [pTooltip]="
+            logService.timestampType === 'none'
+              ? 'Hiding timestamps'
+              : 'Showing timestamps'
+          "
+          class="pi pi-clock"
+          [style]="
+            logService.timestampType === 'time'
+              ? 'color: var(--primary-color);'
+              : 'color: var(--secondary-color);'
+          "
+        >
+        </span>
+      </button>
+      <button
+        class="p-panel-header-icon p-link mr-2"
+        (click)="toggleFilterMessagesWithAlerts()"
+      >
+        <span
+          [pTooltip]="
+            filterMessagesWithAlerts
+              ? 'Only showing messages with alerts'
+              : 'Showing all messages'
+          "
+          class="pi pi-filter"
+          [style]="
+            filterMessagesWithAlerts
+              ? 'color: var(--primary-color)'
+              : 'color: var(--secondary-color)'
+          "
+        >
+        </span>
+        <!-- <span
+          [pTooltip]="'Showing all messages'"
+          *ngIf="!logService.filterMessagesWithAlerts"
+          class="pi pi-ban"
+        ></span> -->
+      </button>
+    </ng-template>
+
+    <div #chatWindow id="chat-window" (scroll)="onScroll($event)">
+      <div *ngFor="let log of logs" class="chat-log">
+        <app-chat-log [log]="log"></app-chat-log>
+      </div>
+    </div>
+  </p-panel>
+</div>

@@ -1,0 +1,144 @@
+<div *ngIf="spell" id="spell-page">
+  <div class="left">
+    <p-panel>
+      <ng-template pTemplate="header">
+        <div class="flex align-items-center gap-2 px-2 header">
+          <div class="header-text">
+            <span
+              class="font-bold"
+              style="font-size: 1.5em; vertical-align: middle"
+              >{{spell.name}}
+            </span>
+          </div>
+        </div>
+      </ng-template>
+      <div class="spell-container">
+        <app-spell [spell]="spell" />
+      </div>
+      <p-tabView styleClass="tabview-custom" [(activeIndex)]="tabIndex">
+        <!-- Clicked Items -->
+        <p-tabPanel [disabled]="!spell.clickItems.length">
+          <ng-template pTemplate="header">
+            <span>Clicked</span>
+            <span *ngIf="spell.clickItems"
+              >&nbsp;({{spell.clickItems.length}})</span
+            >
+          </ng-template>
+          <p-table [value]="spell.clickItems" sortField="name">
+            <ng-template pTemplate="header">
+              <tr>
+                <th pSortableColumn="name">
+                  Name <p-sortIcon field="name"></p-sortIcon>
+                </th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+              <tr>
+                <td>
+                  <app-item-link
+                    [itemId]="item.id"
+                    [itemIcon]="item.icon"
+                    [itemName]="item.name"
+                  />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-tabPanel>
+        <!-- Worn Items -->
+        <p-tabPanel [disabled]="!spell.wornItems.length">
+          <ng-template pTemplate="header">
+            <span>Worn</span>
+            <span *ngIf="spell.wornItems"
+              >&nbsp;({{spell.wornItems.length}})</span
+            >
+          </ng-template>
+          <p-table [value]="spell.wornItems" sortField="name">
+            <ng-template pTemplate="header">
+              <tr>
+                <th pSortableColumn="name">
+                  Name <p-sortIcon field="name"></p-sortIcon>
+                </th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+              <tr>
+                <td>
+                  <app-item-link
+                    [itemId]="item.id"
+                    [itemIcon]="item.icon"
+                    [itemName]="item.name"
+                  />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-tabPanel>
+        <!-- Proc Items -->
+        <p-tabPanel [disabled]="!spell.procItems.length">
+          <ng-template pTemplate="header">
+            <span>Proc effect</span>
+            <span *ngIf="spell.procItems"
+              >&nbsp;({{spell.procItems.length}})</span
+            >
+          </ng-template>
+          <p-table [value]="spell.procItems" sortField="name">
+            <ng-template pTemplate="header">
+              <tr>
+                <th pSortableColumn="name">
+                  Name <p-sortIcon field="name"></p-sortIcon>
+                </th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+              <tr>
+                <td>
+                  <app-item-link
+                    [itemId]="item.id"
+                    [itemIcon]="item.icon"
+                    [itemName]="item.name"
+                  />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-tabPanel>
+        <!-- Spell / Scrolls -->
+        <p-tabPanel [disabled]="!spell.scrollItems.length">
+          <ng-template pTemplate="header">
+            <span>Scrolls</span>
+            <span *ngIf="spell.scrollItems"
+              >&nbsp;({{spell.scrollItems.length}})</span
+            >
+          </ng-template>
+          <p-table [value]="spell.scrollItems" sortField="name">
+            <ng-template pTemplate="header">
+              <tr>
+                <th pSortableColumn="name">
+                  Name <p-sortIcon field="name"></p-sortIcon>
+                </th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+              <tr>
+                <td>
+                  <app-item-link
+                    [itemId]="item.id"
+                    [itemIcon]="item.icon"
+                    [itemName]="item.name"
+                  />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-tabPanel>
+      </p-tabView>
+    </p-panel>
+  </div>
+  <div class="right">
+    <!-- Map -->
+    <!-- <app-map></app-map> -->
+    <!-- Spawns -->
+    <!-- idk yet -->
+  </div>
+</div>

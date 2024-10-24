@@ -1,0 +1,321 @@
+<div class="dps-container">
+  <div class="character-container">
+    <div class="left" style="margin-right: 1em">
+      <div class="character-inputs">
+        <!-- Name -->
+        <p-floatLabel>
+          <input
+            pInputText
+            id="name"
+            class="p-inputtext-sm"
+            [(ngModel)]="character.name"
+          />
+          <label for="name">Name</label>
+        </p-floatLabel>
+      </div>
+      <div class="character-inputs">
+        <!-- Level -->
+        <span class="p-float-label">
+          <p-inputNumber
+            inputId="level"
+            class="p-inputtext-sm"
+            [(ngModel)]="character.level"
+            max="65"
+            min="1"
+            maxFractionDigits="0"
+            placeholder="Level"
+            (ngModelChange)="onCharacterChange()"
+          /><label for="level">Level</label>
+        </span>
+        <!-- Race -->
+        <span class="p-float-label">
+          <p-dropdown
+            inputId="race"
+            [options]="raceOptions"
+            [(ngModel)]="character.raceId"
+            optionLabel="label"
+            optionValue="value"
+            [showClear]="true"
+            placeholder="Race"
+            class="p-inputtext-sm"
+            (ngModelChange)="onCharacterChange()"
+          ></p-dropdown>
+          <label for="race">Race</label>
+        </span>
+        <!-- Class -->
+        <span class="p-float-label">
+          <p-dropdown
+            inputId="class"
+            [options]="classOptions"
+            [(ngModel)]="character.classId"
+            optionLabel="label"
+            optionValue="value"
+            [showClear]="true"
+            placeholder="Class"
+            class="p-inputtext-sm"
+            (ngModelChange)="onCharacterChange()"
+          ></p-dropdown>
+          <label for="class">Class</label>
+        </span>
+      </div>
+      <!-- Calculated Stats -->
+      <ul class="hp-mana-ac-atk" *ngIf="character.isReadyToSimulate">
+        <li>
+          <span class="label">HP</span
+          ><span class="value">{{ character.stats.hp }}</span>
+        </li>
+        <li>
+          <span class="label">MANA</span
+          ><span class="value">{{ character.stats.mana }}</span>
+        </li>
+        <li>
+          <span class="label">AC</span
+          ><span class="value">{{ character.stats.ac }}</span>
+        </li>
+        <li>
+          <span class="label">ATK</span
+          ><span class="value">{{ character.stats.atk }}</span>
+        </li>
+        <li>
+          <span class="label">Haste</span
+          ><span class="value">{{ character.stats.haste | percent }}</span>
+        </li>
+      </ul>
+      <!-- Stats -->
+      <div class="stats" *ngFor="let stat of allocatableStats">
+        <app-character-stat [stat]="stat" [character]="character" />
+      </div>
+      <div
+        class="stats"
+        style="color: #ccc; font-size: 0.85em; text-align: right"
+        *ngIf="character.unallocatedStatPoints"
+      >
+        {{ character.unallocatedStatPoints }} starting points left
+      </div>
+      <!-- Resists -->
+      <ul class="resists">
+        <li>
+          <span class="label">POISON</span
+          ><span class="value">{{ character.stats.pr }}</span>
+        </li>
+        <li>
+          <span class="label">MAGIC</span
+          ><span class="value">{{ character.stats.mr }}</span>
+        </li>
+        <li>
+          <span class="label">DISEASE</span
+          ><span class="value">{{ character.stats.dr }}</span>
+        </li>
+        <li>
+          <span class="label">FIRE</span
+          ><span class="value">{{ character.stats.fr }}</span>
+        </li>
+        <li>
+          <span class="label">COLD</span
+          ><span class="value">{{ character.stats.cr }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Slots -->
+    <div class="slots-container">
+      <div class="top">
+        <div *ngFor="let slotId of [1, 5, 2, 3, 4]">
+          <app-character-slot
+            [character]="character"
+            [slot]="character.slots[slotId]"
+            (onItemSelected)="onItemSelected($event)"
+            [hideText]="hideText"
+          ></app-character-slot>
+        </div>
+      </div>
+      <div class="middle">
+        <div class="left">
+          <div *ngFor="let slotId of [17, 7, 9, 20, 15]">
+            <app-character-slot
+              [character]="character"
+              [slot]="character.slots[slotId]"
+              (onItemSelected)="onItemSelected($event)"
+              [hideText]="hideText"
+            ></app-character-slot>
+          </div>
+        </div>
+        <div class="class-icon">
+          <img
+            *ngIf="character.classId"
+            src="assets/classes/{{ character.classId }}.gif"
+          />
+        </div>
+        <div class="right">
+          <div *ngFor="let slotId of [8, 6, 10, 12, 16]">
+            <app-character-slot
+              [character]="character"
+              [slot]="character.slots[slotId]"
+              (onItemSelected)="onItemSelected($event)"
+              [hideText]="hideText"
+            ></app-character-slot>
+          </div>
+        </div>
+      </div>
+      <div class="bottom">
+        <div *ngFor="let slotId of [18, 19]">
+          <app-character-slot
+            [character]="character"
+            [slot]="character.slots[slotId]"
+            (onItemSelected)="onItemSelected($event)"
+            [hideText]="hideText"
+          ></app-character-slot>
+        </div>
+      </div>
+      <div class="bottom" style="position: relative">
+        <div *ngFor="let slotId of [13, 14, 11]">
+          <app-character-slot
+            [character]="character"
+            [slot]="character.slots[slotId]"
+            (onItemSelected)="onItemSelected($event)"
+            [hideText]="hideText"
+          ></app-character-slot>
+        </div>
+        <button
+          class="p-panel-header-icon p-link mr-2"
+          style="position: absolute; bottom: 0; right: 32px"
+          (click)="hideText = !hideText"
+        >
+          <span
+            class="pi pi-info-circle"
+            [pTooltip]="hideText ? 'Hiding item names' : 'Showing item names'"
+            [style]="
+              !hideText
+                ? 'color: var(--primary-color)'
+                : 'color: var(--secondary-color)'
+            "
+          >
+          </span>
+        </button>
+      </div>
+    </div>
+    <!-- Simulation -->
+    <div style="margin-top: 1em; margin-left: 1em; margin-bottom: 1em">
+      <div class="item-search">
+        <app-search
+          [types]="['npcs']"
+          [skipNavigation]="true"
+          placeholder="Select an NPC to attack"
+          (onNpcSelected)="onNpcSelected($event)"
+        ></app-search>
+        <p-button
+          type="button"
+          size="small"
+          (click)="onNpcSelected(undefined)"
+          icon="pi pi-times"
+          [outlined]="true"
+        ></p-button>
+        <p-button
+          [disabled]="!targetDummy"
+          label="Attack"
+          icon="pi pi-forward"
+          iconPos="right"
+          size="small"
+          (click)="runSimulation()"
+        ></p-button>
+      </div>
+      <table *ngIf="simulation">
+        <thead>
+          <tr>
+            <th colspan="2">Simulation</th>
+          </tr>
+        </thead>
+        <tr>
+          <th>DPS</th>
+          <td>{{ simulation.dps | number : "1.0-1" }}</td>
+        </tr>
+        <tr>
+          <th>Min Primary Damage</th>
+          <td>{{ simulation.minPrimaryDamage }}</td>
+        </tr>
+        <tr>
+          <th>Max Primary Damage</th>
+          <td>{{ simulation.maxPrimaryDamage }}</td>
+        </tr>
+        <tr>
+          <th>Avg Primary Damage</th>
+          <td>
+            {{
+              simulation.primaryDamage / simulation.primaryHits
+                | number : "1.0-1"
+            }}
+          </td>
+        </tr>
+        <tr *ngIf="simulation.secondaryDamage > 0">
+          <th>Min Secondary Damage</th>
+          <td>{{ simulation.minSecondaryDamage }}</td>
+        </tr>
+        <tr *ngIf="simulation.secondaryDamage > 0">
+          <th>Max Secondary Damage</th>
+          <td>{{ simulation.maxSecondaryDamage }}</td>
+        </tr>
+        <tr *ngIf="simulation.secondaryDamage > 0">
+          <th>Avg Secondary Damage</th>
+          <td>
+            {{
+              simulation.secondaryDamage / simulation.secondaryHits
+                | number : "1.0-1"
+            }}
+          </td>
+        </tr>
+        <tr *ngIf="simulation.dualWieldSuccess > 0">
+          <th>Dual Wield %</th>
+          <td>{{ simulation.dualWieldPercent | number : "1.0-1" }}%</td>
+        </tr>
+        <tr *ngIf="simulation.doubleAttackSuccess > 0">
+          <th>Double Attack %</th>
+          <td>{{ simulation.doubleAttackPercent | number : "1.0-1" }}%</td>
+        </tr>
+        <tr>
+          <th>Hit Chance (Front)</th>
+          <td>{{ simulation.hitChanceFromFront | number : "1.1-1" }}%</td>
+        </tr>
+        <tr>
+          <th>Hit Chance (Behind)</th>
+          <td>{{ simulation.hitChanceFromBehind | number : "1.1-1" }}%</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div></div>
+
+  <h5>Things this doesn't do (yet), but I would like to:</h5>
+  <ul>
+    <li>Save character/gear sets</li>
+    <li>Compare character/gear sets</li>
+    <li>Procs</li>
+    <li>Triple attack</li>
+    <li>
+      Resist chance based on your level/resists vs caster mob/specific spell
+    </li>
+    <li>Damage from you riposting an incoming attack</li>
+    <li>Item Effects (other than worn haste, which is implemented)</li>
+    <li>Buffs</li>
+    <li>
+      Damage taken stats (for figuring out optimal damage mitigation; casters
+      make this complicated, though)
+    </li>
+    <li>Chance of winning a fight (casters make this complicated, though)</li>
+    <li>Flying kick, bash, etc.</li>
+    <li>Archery/thrown</li>
+    <li>AAs</li>
+    <li>Disciplines</li>
+    <li>Attacking enemy from behind</li>
+    <li>Alcohol</li>
+    <li>Encumberance</li>
+    <li>2H weapon unequip trick</li>
+    <li>
+      Allow setting specific skill values (currently assumes max skills for your
+      level)
+    </li>
+    <li>
+      AC displayed value is verrrry minorly off due to missing a Math.floor
+      somewhere. Off by one is the most I've seen so far.
+    </li>
+  </ul>
+</div>

@@ -1,0 +1,83 @@
+#item-search-page {
+  padding-top: 1em;
+}
+
+.tricheckbox {
+  padding: 0.5em;
+  margin-right: 0.25em;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .comparable-number .p-inputnumber-input {
+  width: 75px;
+}
+
+:host ::ng-deep .comparable-number .p-dropdown-trigger {
+  width: 2em;
+}
+
+:host ::ng-deep .comparable-number .p-dropdown-items-wrapper {
+  max-height: 250px !important;
+}
+
+:host ::ng-deep .p-multiselect,
+:host ::ng-deep .item-info .p-dropdown {
+  min-width: 194px;
+}
+
+:host ::ng-deep .with-search .p-multiselect-items-wrapper {
+  min-width: 375px;
+}
+
+:host ::ng-deep .level .p-inputtext {
+  width: 125px;
+}
+
+:host ::ng-deep .p-float-label {
+  display: inline-block;
+  margin-right: 1em;
+}
+
+:host ::ng-deep .item-info .p-float-label {
+  margin-bottom: 1em;
+}
+
+:host ::ng-deep .p-checkbox {
+  vertical-align: middle;
+  margin-right: 0.5em;
+  margin-left: 0.25em;
+}
+
+:host ::ng-deep .p-divider-content {
+  cursor: pointer;
+}
+
+:host ::ng-deep .p-button-sm {
+  vertical-align: baseline;
+}
+
+:host ::ng-deep .container {
+  max-width: 1120;
+  margin: auto;
+}
+
+:host ::ng-deep .no-bottom-margin .p-divider {
+  margin-bottom:1px;
+}
+
+
+label {
+  vertical-align: middle;
+}
+
+// :host ::ng-deep .comparable-number .p-dropdown-label {
+//   width: 1.5em;
+// }
+
+.no-results {
+  font-size: 1.25em;
+  font-weight: bold;
+  padding: 1em;
+  text-align: center;
+  color: #999;
+}

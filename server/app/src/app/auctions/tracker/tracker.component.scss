@@ -1,0 +1,67 @@
+#chat-window {
+  width: 50em;
+  height: 400px;
+  resize: both;
+  min-width: 30em;
+  min-height: 200px;
+  background: var(--surface-b);
+  padding: 0.25em;
+  border: 1px solid var(--surface-d);
+  border-color: var(--primary-color-text);
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+  margin: auto;
+}
+
+.tab-header {
+  position: absolute;
+  font-weight: bold;
+  font-size: 1rem;
+  margin-top: 1em;
+  margin-left: 1em;
+}
+
+::ng-deep .p-tabview-nav {
+  padding-left: 75px;
+}
+
+:host ::ng-deep .tracker .p-autocomplete-input,
+:host ::ng-deep .tracker .p-autocomplete .p-overlay {
+  width: 100%;
+}
+
+:host ::ng-deep .p-datatable,
+:host ::ng-deep .p-datatable-wrapper {
+    min-height:60vh;
+}
+
+:host ::ng-deep .p-button-sm {
+  vertical-align: middle;
+}
+
+:host ::ng-deep .p-dropdown,
+:host ::ng-deep .p-dropdown-label,
+:host ::ng-deep .p-dropdown-trigger {
+  font-size: 0.8rem;
+}
+
+.saved-tracker, .matching-log {
+  display: flex;
+  justify-content: space-between;
+}
+
+:host ::ng-deep .p-button-sm {
+    padding:0.25rem 0;
+}
+
+:host ::ng-deep .p-button.p-button-icon-only {
+    width:1.5rem;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+    padding:0.5rem 0;
+}
+
+:host ::ng-deep .p-button.p-button-outlined {
+  border: none;
+}

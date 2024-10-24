@@ -1,0 +1,12 @@
+<p-autoComplete
+  field="name"
+  [suggestions]="suggestions"
+  (completeMethod)="search($event)"
+  (onSelect)="onSelect($event)"
+  [placeholder]="placeholder" 
+  scrollHeight="600px"
+>
+  <ng-template let-entity pTemplate="item">
+    <app-result [entity]="entity" />
+  </ng-template>
+</p-autoComplete>

@@ -1,0 +1,120 @@
+<div *ngIf="allZones" id="zone-page">
+  <div class="search">
+    <!-- Search -->
+    <span class="p-input-icon-left">
+      <i class="pi pi-search"></i>
+      <input
+        type="text"
+        pInputText
+        [(ngModel)]="options.search"
+        (ngModelChange)="filter()"
+        pAutoFocus
+        [autofocus]="true"
+      />
+      <i class="pi pi-times clear" (click)="options.search = ''; filter()"></i>
+    </span>
+    <!-- Viewing as table -->
+    <span *ngIf="options.isTableView" class="view-as">
+      Viewing as table (<span class="link" (click)="options.isTableView = false"
+        >Change to quick list</span
+      >)
+    </span>
+    <!-- Viewing as quick list -->
+    <span *ngIf="!options.isTableView" class="view-as">
+      Viewing as quick list (<span
+        class="link"
+        (click)="options.isTableView = true"
+        >Change to table</span
+      >)
+    </span>
+  </div>
+
+  <!-- Quick List -->
+  <div *ngIf="!options.isTableView">
+    <div *ngFor="let expansion of zonesGroupedByExpansion" class="expansion">
+      <p-panel header="{{expansion.name}}" [toggleable]="true">
+        <div *ngFor="let zone of expansion.zones" class="zone">
+          <a [routerLink]="['/zones', zone.short_name]"
+            >{{zone.long_name}}</a
+          >
+          ({{zone.short_name}})
+        </div>
+      </p-panel>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="options.isTableView">
+    <p-table [value]="filteredZones">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="long_name" style="width: 16em">
+            Name <p-sortIcon field="long_name"></p-sortIcon>
+          </th>
+          <th style="width: 8.2em">Short Name</th>
+          <th style="width: 11em" pSortableColumn="expansion">
+            Expansion
+            <p-sortIcon field="expansion"></p-sortIcon>
+            <p-columnFilter
+              field="expansion"
+              matchMode="in"
+              display="menu"
+              [showMatchModes]="false"
+              [showOperator]="false"
+              [showAddButton]="false"
+            >
+              <ng-template
+                pTemplate="filter"
+                let-value
+                let-filter="filterCallback"
+              >
+                <p-multiSelect
+                  [ngModel]="value"
+                  [options]="expansionOptions"
+                  placeholder="Any"
+                  (onChange)="filter($event.value)"
+                  optionLabel="label"
+                  optionValue="value"
+                  [showHeader]="false"
+                >
+                  <ng-template let-option pTemplate="item">
+                    <div class="inline-block vertical-align-middle">
+                      <span>{{ option.label }}</span>
+                    </div>
+                  </ng-template>
+                </p-multiSelect>
+              </ng-template>
+            </p-columnFilter>
+          </th>
+          <th pSortableColumn="canbind">
+            Bind <p-sortIcon field="canbind"></p-sortIcon>
+          </th>
+          <th pSortableColumn="castoutdoor">
+            Outdoors <p-sortIcon field="castoutdoor"></p-sortIcon>
+          </th>
+          <th pSortableColumn="castdungeon">
+            Dungeon <p-sortIcon field="castdungeon"></p-sortIcon>
+          </th>
+          <th pSortableColumn="zone_exp_multiplier">
+            XEM <p-sortIcon field="zone_exp_multiplier"></p-sortIcon>
+          </th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-zone let-rowIndex="rowIndex">
+        <tr>
+          <td>
+            <a [routerLink]="['/zones', zone.file_name || zone.short_name]"
+              >{{zone.long_name}}</a
+            >
+          </td>
+          <td>{{zone.short_name}}</td>
+          <td>{{expansionNames[zone.expansion] || 'Other'}}</td>
+          <td>{{zone.canbind > 0 ? 'Yes' : 'No'}}</td>
+          <td>{{zone.castoutdoor > 0 ? 'Yes' : 'No'}}</td>
+          <td>{{zone.castdungeon > 0 ? 'Yes' : 'No'}}</td>
+          <td>{{zone.zone_exp_multiplier}}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

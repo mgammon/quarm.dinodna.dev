@@ -1,0 +1,48 @@
+.stat-container {
+  display:flex;
+  justify-content: space-between;
+
+  .label {
+    
+  }
+
+  .value {
+    display:flex;
+    .number {
+      padding-right:0.5em;
+      cursor:pointer;
+    }
+  }
+}
+
+.plus,
+.minus {
+  width: 14px;
+  height: 16px;
+  display: inline-block;
+  cursor:pointer;
+  &.disabled {
+    opacity: 0.5;
+  }
+}
+
+.plus {
+  margin-left:3px;
+  background-image: url("/assets/buttons/plus-up.png");
+  &:hover {
+    background-image: url("/assets/buttons/plus-up-hover.png");
+  }
+  &.down {
+    background-image: url("/assets/buttons/plus-down.png");
+  }
+}
+
+.minus {
+  background-image: url("/assets/buttons/minus-up.png");
+  &:hover {
+    background-image: url("/assets/buttons/minus-up-hover.png");
+  }
+  &.down {
+    background-image: url("/assets/buttons/minus-down.png");
+  }
+}

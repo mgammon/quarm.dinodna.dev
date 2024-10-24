@@ -1,0 +1,98 @@
+<div class="map-container">
+  <div
+    *ngIf="!hideHeader"
+    class="zone-name"
+    style="
+      font-size: 1.1em;
+      font-weight: bold;
+      text-align: center;
+      padding: 0.25em;
+      border-bottom: none;
+      z-index: 1000;
+      border-top-left-radius: 0.25em;
+      border-top-right-radius: 0.25em;
+    "
+  >
+    <a [routerLink]="['/zones', zoneShortName]" style="">{{ zoneFullName }}</a>
+  </div>
+  <div id="map">
+    <div class="live-buttons">
+      <p-button
+        *ngIf="shouldShowMapOptions()"
+        type="button"
+        icon="pi pi-map-marker"
+        [outlined]="true"
+        [styleClass]="locationService.autoCenter ? '' : 'grey'"
+        (click)="toggleAutoCenter()"
+        [pTooltip]="
+          locationService.autoCenter
+            ? 'Auto-center enabled'
+            : 'Auto-center disabled'
+        "
+      ></p-button>
+      <p-button
+        *ngIf="shouldShowMapOptions()"
+        type="button"
+        icon="pi pi-map"
+        [outlined]="true"
+        [styleClass]="locationService.autoLoadZone ? '' : 'grey'"
+        [pTooltip]="
+          locationService.autoLoadZone
+            ? 'Loading map when zoning'
+            : 'Auto loading map disabled'
+        "
+        (click)="toggleAutoLoadZone()"
+      ></p-button>
+      <p-button
+        *ngIf="locationService.currentLocation.zoneId !== zoneShortName && locationService.currentLocation.coords"
+        type="button"
+        icon="pi pi-globe"
+        [outlined]="true"
+        [styleClass]="showLocationAnyhow ? '' : 'grey'"
+        [pTooltip]="
+          locationService.currentLocation.zoneId !== zoneShortName &&
+          showLocationAnyhow
+            ? 'Showing your location on this map'
+            : 'This isn\'t your current zone.  Show location anyhow?'
+        "
+        (click)="
+          showLocationAnyhow = !showLocationAnyhow; updateCurrentLocation()
+        "
+      ></p-button>
+      <p-button
+        *ngIf="shouldShowMapOptions()"
+        type="button"
+        icon="pi pi-bolt"
+        [outlined]="true"
+        [styleClass]="liveButtonClass"
+        [pTooltip]="
+          liveButtonClass === 'red'
+            ? 'No location found.  Is your EQ directory set?'
+            : liveButtonClass === 'yellow'
+            ? 'Last location update was a while ago.  Is your EQ directory set?  Did you close your original tab for this site?'
+            : 'Receiving location updates'
+        "
+      ></p-button>
+    </div>
+    <div
+      *ngIf="hideControls !== true"
+      class="z-slider"
+      (mousedown)="togglePanning(false)"
+      (mouseleave)="togglePanning(true)"
+    >
+      <p-slider
+        orientation="vertical"
+        [step]="1"
+        [(ngModel)]="zRangeTimesTen"
+        (ngModelChange)="onZRangeInputChange()"
+        [min]="minZTimesTen"
+        [max]="maxZTimesTen"
+        [range]="true"
+      ></p-slider>
+    </div>
+    <span *ngIf="mouseCoords" id="coords"
+      >{{ mouseCoords.lat }}, {{ mouseCoords.lng }}</span
+    >
+    <div class="error" *ngIf="error">No map available</div>
+  </div>
+</div>

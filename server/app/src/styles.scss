@@ -1,0 +1,81 @@
+/* You can add global styles to this file, and also import other style files */
+@import "primeicons/primeicons.css";
+ 
+.leaflet-label-icon {
+  display: block;
+  text-wrap: nowrap;
+  text-align: center;
+  //   border:1px solid blue;
+}
+
+svg.mob {
+  fill: #ef4444;
+  filter: drop-shadow(-1px -1px 0px #000000) drop-shadow(1px -1px 0px #000000)
+    drop-shadow(1px 1px 0px #000000) drop-shadow(-1px 1px 0px #000000);
+  // border:1px solid yellow;
+}
+
+svg.dead-mob {
+  fill: darkred;
+  filter: drop-shadow(-1px -1px 0px #000000) drop-shadow(1px -1px 0px #000000)
+    drop-shadow(1px 1px 0px #000000) drop-shadow(-1px 1px 0px #000000);
+  // border:1px solid yellow;
+}
+
+svg.current-location {
+  fill: forestgreen;
+  filter: drop-shadow(-1px -1px 0px #000000) drop-shadow(1px -1px 0px #000000)
+    drop-shadow(1px 1px 0px #000000) drop-shadow(-1px 1px 0px #000000);
+  // transition: all .25s;
+}
+
+svg.bank {
+  fill: white;
+  filter: drop-shadow(-1px -1px 0px #000000) drop-shadow(1px -1px 0px #000000)
+    drop-shadow(1px 1px 0px #000000) drop-shadow(-1px 1px 0px #000000);
+}
+
+svg.merchant {
+  fill: tan;
+  filter: drop-shadow(-1px -1px 0px #000000) drop-shadow(1px -1px 0px #000000)
+    drop-shadow(1px 1px 0px #000000) drop-shadow(-1px 1px 0px #000000);
+}
+
+svg.gm {
+  fill: steelblue;
+  filter: drop-shadow(-1px -1px 0px #000000) drop-shadow(1px -1px 0px #000000)
+    drop-shadow(1px 1px 0px #000000) drop-shadow(-1px 1px 0px #000000);
+}
+
+svg.boss {
+  filter: drop-shadow(-1px -1px 0px #000000) drop-shadow(1px -1px 0px #000000)
+    drop-shadow(1px 1px 0px #000000) drop-shadow(-1px 1px 0px #000000);
+}
+
+svg.zone-line {
+  height: 16px;
+  width: 16px;
+  fill: rgb(30, 163, 26);
+  filter: drop-shadow(-1px -1px 0px #000) drop-shadow(1px -1px 0px #000)
+    drop-shadow(1px 1px 0px #000) drop-shadow(-1px 1px 0px #000);
+}
+
+.marked-spawn svg {
+  fill: yellow;
+}
+
+.map-label-container {
+  flex-wrap: wrap;
+  align-content: center;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  justify-content: center;
+  align-items: center;
+  justify-items: center;
+}
+
+// .map-label-countdown {
+//   border:1px solid pink;
+// }

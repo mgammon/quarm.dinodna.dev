@@ -1,0 +1,22 @@
+<a
+  class="{{ linkStyle ? 'link' : '' }}"
+  routerLink="/spells/{{ spellId }}"
+  [pTooltip]="spellTooltip"
+  (mouseenter)="onHover()"
+  tooltipStyleClass="spell-link-tooltip"
+>
+  <img
+    *ngIf="spellIcon"
+    style="vertical-align: middle; padding-right: 1em"
+    src="/assets/icons/default/{{ spellIcon }}.png"
+  />
+  <span>{{ spellName }}</span></a
+>
+<ng-template #spellTooltip>
+  <app-spell
+    *ngIf="spell"
+    [spell]="spell"
+    [level]="level"
+    [levelSource]="levelSource"
+  />
+</ng-template>

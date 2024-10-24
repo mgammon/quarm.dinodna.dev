@@ -1,0 +1,66 @@
+#map {
+  width: 100%;
+  min-width: 500px;
+  min-height: 500px;
+  border: 1px solid rgba(255,255,255,0.33);
+  border-radius: 0.25em;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  
+
+  #coords {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border: 1px solid #333;
+    background: #333;
+    color: white;
+    border-radius: 0.25em;
+    padding: 0.25em;
+    width: 90px;
+    text-align: center;
+    margin: 0.25em;
+  }
+
+  .live-buttons {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border: 1px solid #333;
+    background: #333;
+    color: white;
+    border-radius: 0.25em;
+    padding: 0.25em;
+    text-align: center;
+    margin: 0.25em;
+  }
+
+  .error {
+    font-size:2em;
+    text-align: center;
+    font-weight: bold;
+    color: #AAA;
+    padding-top:6em;
+  }
+
+  .z-slider {
+    position:absolute;
+    left:1em;bottom:1em;
+    background:#FFF;
+    padding:1.5em;
+    border: 2px solid rgba(255,255,255,0.33);
+    border-radius:0.25em;
+    z-index:1000;
+    height:125px;
+  }
+}
+
+.zone-name {
+  background-color: var(--surface-a);
+  border: 1px solid var(--surface-border);
+}
+
+
+:host ::ng-deep .p-button.grey {
+  color: grey;
+}

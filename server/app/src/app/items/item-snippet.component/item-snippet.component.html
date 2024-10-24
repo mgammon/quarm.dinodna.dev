@@ -1,0 +1,4 @@
+<a *ngIf="itemId" [routerLink]="['/items', itemId]">
+  <img *ngIf="itemIcon" src="/assets/icons/default/{{ itemIcon }}.png" />
+  <span>{{ itemName }}</span>
+</a>

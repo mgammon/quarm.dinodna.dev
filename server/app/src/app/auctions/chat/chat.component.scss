@@ -1,0 +1,13 @@
+#chat-window {
+  height: calc(100vh - 11.6rem - 8px);
+  background: var(--surface-b);
+  border: 1px solid var(--surface-d);
+  border-color: var(--primary-color-text);
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+  margin: auto;
+}
+
+.chat-container {
+  height: 100%;
+}

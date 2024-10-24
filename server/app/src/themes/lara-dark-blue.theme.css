@@ -1,0 +1,5 @@
+@import "primeng/resources/themes/lara-dark-blue/theme.css";
+
+#map {
+    background-color:#333;
+}

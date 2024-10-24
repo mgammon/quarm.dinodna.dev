@@ -1,0 +1,271 @@
+<div *ngIf="npc" id="npc-page">
+  <div class="left">
+    <!-- <p-card> -->
+    <!-- NPC name -->
+    <!-- NPC info -->
+    <!-- </p-card> -->
+
+    <p-panel>
+      <ng-template pTemplate="header">
+        <div class="flex align-items-center gap-2 px-2 header">
+          <div class="header-text">
+            <span class="font-bold" style="font-size: 1.5em">{{npc.name}} </span
+            ><br />
+            <span class="level-race-class">
+              Level {{getLevel()}} {{getRace()}} {{getClass()}}
+            </span>
+          </div>
+          <div class="npc-details">
+            <div>
+              {{npc.hp}} HP <span *ngIf="npc.mana"> / {{npc.mana}} MP</span>
+            </div>
+            <div>{{getDamage()}}</div>
+          </div>
+          <div class="header-icons">
+            <span
+              *ngIf="seesInvis()"
+              class="special-icon see-invis"
+              pTooltip="Sees invis"
+              tooltipPosition="bottom"
+            ></span>
+            <span
+              *ngIf="sometimesSeesInvis()"
+              class="special-icon see-invis"
+              pTooltip="Sometimes sees invis"
+              tooltipPosition="bottom"
+            >
+              <i class="pi pi-question-circle"></i>
+            </span>
+            <span
+              *ngIf="seesIvu()"
+              class="special-icon see-ivu"
+              pTooltip="Sees IVU"
+              tooltipPosition="bottom"
+            ></span>
+            <span
+              *ngIf="doesNotFlee()"
+              class="special-icon fast"
+              pTooltip="Doesn't flee"
+              tooltipPosition="bottom"
+            >
+              <i class="pi pi-times"></i>
+            </span>
+            <span
+              *ngIf="isSlow()"
+              class="special-icon snare"
+              pTooltip="Runs slow"
+              tooltipPosition="bottom"
+            ></span>
+            <span
+              *ngIf="isFast()"
+              class="special-icon fast"
+              pTooltip="Runs fast"
+              tooltipPosition="bottom"
+            ></span>
+            <span
+              *ngIf="isVeryFast()"
+              class="special-icon fast"
+              pTooltip="Runs very fast"
+              tooltipPosition="bottom"
+            >
+              <i class="pi pi-angle-double-up"></i>
+            </span>
+            <span
+              *ngIf="immuneToSnare()"
+              class="special-icon snare"
+              pTooltip="Immune to snare"
+              tooltipPosition="bottom"
+            >
+              <i class="pi pi-times"></i>
+            </span>
+            <span
+              *ngIf="immuneToFear()"
+              class="special-icon fear"
+              pTooltip="Immune to fear"
+              tooltipPosition="bottom"
+            >
+              <i class="pi pi-times"></i>
+            </span>
+            <span
+              *ngIf="immuneToLull()"
+              class="special-icon lull"
+              pTooltip="Immune to lull"
+              tooltipPosition="bottom"
+            >
+              <i class="pi pi-times"></i>
+            </span>
+            <span
+              *ngIf="immuneToMez()"
+              class="special-icon mez"
+              pTooltip="Immune to mez"
+              tooltipPosition="bottom"
+            >
+              <i class="pi pi-times"></i>
+            </span>
+            <span
+              *ngIf="immuneToCharm()"
+              class="special-icon charm"
+              pTooltip="Immune to charm"
+              tooltipPosition="bottom"
+            >
+              <i class="pi pi-times"></i>
+            </span>
+          </div>
+        </div>
+      </ng-template>
+      <div class="more-info">
+        <table>
+          <!-- Average Value -->
+          <tr
+            [pTooltip]="avgValueTooltip"
+            tooltipPosition="right"
+            tooltipStyleClass="avg-value-tooltip"
+          >
+            <td>Avg Value</td>
+            <td><app-price [price]="getNpcValue().total" /></td>
+          </tr>
+          <ng-template #avgValueTooltip>
+            <div>
+              <div>
+                <span class="label">Coins </span>
+                <app-price [price]="getNpcValue().coins" />
+              </div>
+              <div>
+                <span class="label">Items </span>
+                <app-price [price]="getNpcValue().items" />
+              </div>
+            </div>
+          </ng-template>
+          <!-- Casts -->
+          <tr>
+            <td>Casts</td>
+            <td>spells go here</td>
+          </tr>
+          <!-- Procs -->
+          <tr>
+            <td>Procs</td>
+            <td>procs go here</td>
+          </tr>
+          <tr>
+            <td>Factions</td>
+            <td>maybe, idk</td>
+          </tr>
+        </table>
+      </div>
+      <!-- Drop / Sell Tabs -->
+      <p-tabView styleClass="tabview-custom" [(activeIndex)]="tabIndex">
+        <!-- Drops -->
+        <p-tabPanel [disabled]="!drops.length">
+          <ng-template pTemplate="header">
+            <span>Drops </span>
+            <span *ngIf="drops.length">&nbsp;({{drops.length}})</span>
+          </ng-template>
+          <p-table [value]="drops" sortField="avgCount" [sortOrder]="-1">
+            <ng-template pTemplate="header">
+              <tr>
+                <th pSortableColumn="name">
+                  Item <p-sortIcon field="name"></p-sortIcon>
+                </th>
+                <th pSortableColumn="chancePerCount">
+                  Chance % <p-sortIcon field="chancePerCount"></p-sortIcon>
+                </th>
+                <!-- <th pSortableColumn="price">
+                  Value <p-sortIcon field="price"></p-sortIcon>
+                </th> -->
+                <th pSortableColumn="maxCount">
+                  Max # <p-sortIcon field="maxCount"></p-sortIcon>
+                </th>
+                <th pSortableColumn="avgCount">
+                  Avg # <p-sortIcon field="avgCount"></p-sortIcon>
+                </th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-drop>
+              <tr>
+                <td>
+                  <app-item-link
+                    [itemId]="drop.id"
+                    [itemName]="drop.name"
+                    [itemIcon]="drop.icon"
+                  />
+                </td>
+                <td>{{drop.chancePerCount | percent: '1.0-2'}}</td>
+                <!-- <td><app-price [price]="drop.price" /></td> -->
+                <td>{{drop.maxCount}}</td>
+                <td>
+                  {{drop.avgCount < 0.25 ? '1 / ' + (1/drop.avgCount | number:
+                  '1.0-0') : (drop.avgCount | number: '1.0-2')}}
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-tabPanel>
+        <!-- Merchant info -->
+        <p-tabPanel [disabled]="!sells.length">
+          <ng-template pTemplate="header">
+            <span>Sells</span>
+            <span *ngIf="sells.length">&nbsp;({{sells.length}})</span>
+          </ng-template>
+          <p-table [value]="sells" sortField="name">
+            <ng-template pTemplate="header">
+              <tr>
+                <th pSortableColumn="name">
+                  Item <p-sortIcon field="name"></p-sortIcon>
+                </th>
+                <th pSortableColumn="price">
+                  Price <p-sortIcon field="price"></p-sortIcon>
+                </th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+              <tr>
+                <td>
+                  <app-item-link
+                    [itemId]="item.id"
+                    [itemName]="item.name"
+                    [itemIcon]="item.icon"
+                  />
+                </td>
+                <td><app-price [price]="item.price" /></td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-tabPanel>
+      </p-tabView>
+    </p-panel>
+  </div>
+  <div class="right">
+    <!-- Map -->
+    <app-map *ngIf="spawnZones[0]" [zoneShortName]="spawnZones[0]" [spawns]="spawns" [markedNpcIds]="[npc.id]"></app-map>
+    <!-- Spawns -->
+    <p-table [value]="uniqueSpawns" sortField="name">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="spawnCount">
+            # Spawns <p-sortIcon field="spawnCount"></p-sortIcon>
+          </th>
+          <th pSortableColumn="chance">
+            Chance <p-sortIcon field="chance"></p-sortIcon>
+          </th>
+          <th pSortableColumn="respawntime">
+            Respawn <p-sortIcon field="respawntime"></p-sortIcon>
+          </th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-uniqueSpawn>
+        <tr class="spawn" (mouseenter)="onSpawnMouseEnter(uniqueSpawn.spawnIds)" (mouseleave)="onSpawnMouseLeave(uniqueSpawn.spawnIds)">
+          <td>
+            {{uniqueSpawn.spawnCount}}
+          </td>
+          <td>
+            {{uniqueSpawn.chance}}%
+          </td>
+          <td>
+            {{formatSeconds(uniqueSpawn.respawntime)}}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <!-- idk yet -->
+  </div>
+</div>
