@@ -43,7 +43,7 @@ export class EventsGateway
         } unique connections`,
       );
       console.log(JSON.stringify(this.usage, null, 2));
-    }, 60_0 * 10);
+    }, 60_000 * 10);
   }
 
   afterInit() {}
