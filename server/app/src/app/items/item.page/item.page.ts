@@ -20,7 +20,7 @@ import { ItemEffects } from '../item-effects.component/item-effects.component';
 import { ItemComponent } from '../item.component/item.component';
 import { zoneMap } from '../../zones/zone.entity';
 import { FormsModule } from '@angular/forms';
-import { SelectItem } from 'primeng/api';
+import { UsageService } from '../../usage.service';
 
 enum Tab {
   DropsFrom,
@@ -65,9 +65,14 @@ export class ItemPage {
   constructor(
     private route: ActivatedRoute,
     private apiService: ApiService,
-    private navigationService: NavigationService
+    private navigationService: NavigationService,
+    private usageService: UsageService
   ) {
     this.route.params.subscribe(this.initializePage);
+  }
+
+  ngOnInit() {
+    this.usageService.send('opened item page');
   }
 
   initializePage = async (params: Params) => {

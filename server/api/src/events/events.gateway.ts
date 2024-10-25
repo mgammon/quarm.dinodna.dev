@@ -26,33 +26,31 @@ export class EventsGateway
   @WebSocketServer()
   server: Server;
 
+  public usage: { [event: string]: number } = {};
+
   public connectedSockets = 0;
   public uniqueConnections = new Set<string>();
   constructor(
     private logService: LogService,
     private locationService: LocationService,
   ) {
-    setInterval(
-      () =>
-        console.log(
-          `${new Date().toISOString()} - ${
-            this.connectedSockets
-          } sockets connected - ${
-            this.uniqueConnections.size
-          } unique connections`,
-        ),
-      60_000 * 10,
-    );
+    setInterval(() => {
+      console.log(
+        `${new Date().toISOString()} - ${
+          this.connectedSockets
+        } sockets connected - ${
+          this.uniqueConnections.size
+        } unique connections`,
+      );
+      console.log(JSON.stringify(this.usage, null, 2));
+    }, 60_0 * 10);
   }
 
   afterInit() {}
 
   handleDisconnect(socket: Socket) {
-    const hash = crypto
-      .createHash('sha512')
-      .update(socket.handshake.address)
-      .digest('base64');
-    this.uniqueConnections.delete(hash);
+    const uniqueId = this.getUniqueId(socket);
+    this.uniqueConnections.delete(uniqueId);
     this.connectedSockets--;
     const apiKey: string | undefined = socket.handshake.auth?.app;
     if (apiKey) {
@@ -63,11 +61,8 @@ export class EventsGateway
   // Handles when a user connects via the app, joins public and their private channel
   async handleConnection(socket: Socket) {
     socket.join('public');
-    const hash = crypto
-      .createHash('sha512')
-      .update(socket.handshake.address)
-      .digest('base64');
-    this.uniqueConnections.add(hash);
+    const uniqueId = this.getUniqueId(socket);
+    this.uniqueConnections.add(uniqueId);
     this.connectedSockets++;
 
     // If they sent an API key and it's for the app (not the log reader), join the room and send their last location
@@ -131,4 +126,13 @@ export class EventsGateway
       this.server.to(apiKey).emit('logReaderStart', socket.id);
     }
   }
+
+  // real dumb usage stats, but might be helpful so I know what's being used
+  @SubscribeMessage('usage')
+  async handleUsage(@MessageBody() event: string) {
+    this.usage[event] = (this.usage[event] || 0) + 1;
+  }
+
+  private getUniqueId = (socket: Socket) =>
+    crypto.createHash('md5').update(socket.handshake.address).digest('base64');
 }

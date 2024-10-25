@@ -34,6 +34,7 @@ import {
 import { ThemeService } from '../../../themes/theme.service';
 import { AppStore } from '../../app-store.service';
 import { allZones, zoneMap } from '../../zones/zone.entity';
+import { UsageService } from '../../usage.service';
 
 export interface NpcSearchOptions {
   sort: { field: string; order: 1 | -1 };
@@ -122,7 +123,8 @@ export class NpcSearchPage {
     private apiService: ApiService,
     private themeService: ThemeService,
     private appStore: AppStore,
-    private location: Location
+    private location: Location,
+    private usageService: UsageService
   ) {
     this.reset(true);
     this.classOptions = this.getClassOptions();
@@ -133,6 +135,8 @@ export class NpcSearchPage {
   }
 
   ngOnInit() {
+    this.usageService.send('opened npc search page');
+
     const loadedOptionsFromUrl = this.loadOptionsFromUrl();
     if (loadedOptionsFromUrl) {
       this.npcs = [];

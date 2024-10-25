@@ -3,6 +3,7 @@ import { Log } from './log.entity';
 import { LocationService } from './location.service';
 import { WebsocketService } from '../websocket.service';
 import * as localforage from 'localforage';
+import { UsageService } from '../usage.service';
 
 @Injectable({ providedIn: 'root' })
 export class LogReaderService {
@@ -16,7 +17,8 @@ export class LogReaderService {
 
   constructor(
     private locationService: LocationService,
-    private websocketService: WebsocketService
+    private websocketService: WebsocketService,
+    private usageService: UsageService
   ) {
     this.loadDirectoryHandleFromIndexedDb();
 
@@ -95,6 +97,7 @@ export class LogReaderService {
     this.worker.postMessage({ event: 'setDirectory', data: directory });
     this.isReading = true;
     this.websocketService.startedLogReader();
+    this.usageService.send('set eq directory');
   }
 
   onLogReaderStop = (disconnectedSocketId: string) => {

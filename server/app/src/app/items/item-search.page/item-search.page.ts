@@ -37,6 +37,7 @@ import { classIds } from '../../api/classes';
 import { getSlotsAsStrings, getSlotsString, slotIds } from '../../api/slots';
 import { itemTypes } from '../../api/items';
 import { AppStore } from '../../app-store.service';
+import { UsageService } from '../../usage.service';
 
 interface EffectFilter {
   id: number;
@@ -178,7 +179,8 @@ export class ItemSearchPage implements OnInit {
   constructor(
     private apiService: ApiService,
     private appStore: AppStore,
-    private location: Location
+    private location: Location,
+    private usageService: UsageService
   ) {
     // this.reset();
     this.classOptions = this.getClassOptions();
@@ -189,6 +191,7 @@ export class ItemSearchPage implements OnInit {
   }
 
   ngOnInit() {
+    this.usageService.send('opened item search page');
     const loadedOptionsFromUrl = this.loadOptionsFromUrl();
     if (loadedOptionsFromUrl) {
       this.items = [];

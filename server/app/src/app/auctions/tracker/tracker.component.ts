@@ -20,7 +20,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ItemTracker, TrackerService } from './tracker.service';
 import * as moment from 'moment';
-import { DateFromNowComponent } from "./date-from-now.component";
+import { DateFromNowComponent } from './date-from-now.component';
+import { UsageService } from '../../usage.service';
 
 moment.updateLocale('en', {
   relativeTime: {
@@ -29,31 +30,31 @@ moment.updateLocale('en', {
     m: '%dm',
     mm: '%dm',
     h: '%dh',
-    hh: '%dh'
+    hh: '%dh',
   },
 });
 
 @Component({
-    selector: 'app-tracker',
-    standalone: true,
-    templateUrl: './tracker.component.html',
-    styleUrl: './tracker.component.scss',
-    imports: [
-        CommonModule,
-        PanelModule,
-        TabViewModule,
-        SearchComponent,
-        ButtonModule,
-        ComparableNumberInputComponent,
-        BadgeModule,
-        ItemSnippet,
-        ResultComponent,
-        ItemLinkComponent,
-        DataViewModule,
-        TableModule,
-        TooltipModule,
-        DateFromNowComponent
-    ]
+  selector: 'app-tracker',
+  standalone: true,
+  templateUrl: './tracker.component.html',
+  styleUrl: './tracker.component.scss',
+  imports: [
+    CommonModule,
+    PanelModule,
+    TabViewModule,
+    SearchComponent,
+    ButtonModule,
+    ComparableNumberInputComponent,
+    BadgeModule,
+    ItemSnippet,
+    ResultComponent,
+    ItemLinkComponent,
+    DataViewModule,
+    TableModule,
+    TooltipModule,
+    DateFromNowComponent,
+  ],
 })
 export class TrackerComponent {
   onTrackersReordered() {
@@ -63,7 +64,8 @@ export class TrackerComponent {
 
   constructor(
     public trackerService: TrackerService,
-    private clipboard: Clipboard
+    private clipboard: Clipboard,
+    private usageService: UsageService
   ) {}
 
   // convenience getter
@@ -103,6 +105,7 @@ export class TrackerComponent {
       saved: false,
     };
     this.trackerService.addItemTracker(newTracker);
+    this.usageService.send('added item tracker');
   }
 
   saveTracker(tracker: ItemTracker) {
@@ -157,7 +160,9 @@ export class TrackerComponent {
     this.trackerService.saveTrackers();
   }
   sendTell(log: Log, tracker: ItemTracker) {
-    this.clipboard.copy(`/tell ${log.player} I'll buy the ${tracker.item?.name}`);
+    this.clipboard.copy(
+      `/tell ${log.player} I'll buy the ${tracker.item?.name}`
+    );
   }
 
   scrollToLog(log: Log) {

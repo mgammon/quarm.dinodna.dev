@@ -28,7 +28,8 @@ import { Npc } from '../npcs/npc.entity';
 import { TableModule } from 'primeng/table';
 import { CharacterSlotComponent } from './character-slot.component';
 import { CharacterStatComponent } from './character-stat.component';
-import { TagModule } from 'primeng/tag'
+import { TagModule } from 'primeng/tag';
+import { UsageService } from '../usage.service';
 
 interface LabelValue<T> {
   label: string;
@@ -57,7 +58,7 @@ interface LabelValue<T> {
     TableModule,
     CharacterSlotComponent,
     CharacterStatComponent,
-    TagModule
+    TagModule,
   ],
 })
 export class CharacterComponent {
@@ -86,7 +87,8 @@ export class CharacterComponent {
     private apiService: ApiService,
     private router: Router,
     private route: ActivatedRoute,
-    private location: Location
+    private location: Location,
+    private usageService: UsageService
   ) {
     this.classOptions = this.getClassOptions();
     this.raceOptions = this.getRaceOptions();
@@ -96,6 +98,8 @@ export class CharacterComponent {
   }
 
   ngOnInit() {
+    this.usageService.send('opened character page');
+
     this.route.queryParams.subscribe((queryParams) => {
       // const autoLoadZone = queryParams['autoLoadZone'];
       // this.locationService.autoLoadZone = autoLoadZone === 'true';

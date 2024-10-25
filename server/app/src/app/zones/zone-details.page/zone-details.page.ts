@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router, RouterModule } from '@angular/router';
 import { TabViewModule } from 'primeng/tabview';
 import { CardModule } from 'primeng/card';
@@ -27,6 +27,7 @@ import { formatSeconds } from '../../utils';
 import { AppStore } from '../../app-store.service';
 import { MapStore } from '../../map/map.service';
 import { ComparableNumber } from '../../items/comparable-number-input.component/comparable-number-input.component';
+import { UsageService } from '../../usage.service';
 
 interface ZoneSpawnFilterOptions {
   zRange?: [number, number];
@@ -68,7 +69,7 @@ interface LabelValue<T> {
     // RespawnsComponent,
   ],
 })
-export class ZoneDetailsPage {
+export class ZoneDetailsPage implements OnInit {
   public zoneShortName?: string;
   public zone?: Zone;
 
@@ -96,10 +97,15 @@ export class ZoneDetailsPage {
     private navigationService: NavigationService,
     private themeService: ThemeService,
     private appStore: AppStore,
-    private mapStore: MapStore
+    private mapStore: MapStore,
+    private usageService: UsageService
   ) {
     this.route.params.subscribe(this.initializePage);
     this.runspeedOptions = this.getRunspeedOptions();
+  }
+
+  ngOnInit() {
+    this.usageService.send('opened zone-details page');
   }
 
   initializePage = async (params: Params) => {

@@ -15,6 +15,7 @@ import { ChatComponent } from './chat/chat.component';
 
 import { FormsModule } from '@angular/forms';
 import { TrackerComponent } from './tracker/tracker.component';
+import { UsageService } from '../usage.service';
 
 @Component({
   selector: 'app-auctions-page',
@@ -38,4 +39,10 @@ import { TrackerComponent } from './tracker/tracker.component';
     SplitterModule,
   ],
 })
-export class AuctionsPage {}
+export class AuctionsPage {
+  constructor(private usageService: UsageService) {}
+
+  ngOnInit() {
+    this.usageService.send('opened auction page');
+  }
+}

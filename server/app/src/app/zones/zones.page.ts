@@ -15,6 +15,7 @@ import { AutoFocusModule } from 'primeng/autofocus';
 import { AppStore } from '../app-store.service';
 import { Zone } from './zone.entity';
 import { FormsModule } from '@angular/forms';
+import { UsageService } from '../usage.service';
 
 interface PageOptions {
   isTableView?: boolean;
@@ -60,10 +61,11 @@ export class ZonesPage {
   constructor(
     private apiService: ApiService,
     public router: Router,
-    private appStore: AppStore
+    private appStore: AppStore, private usageService: UsageService
   ) {}
 
   async ngOnInit() {
+    this.usageService.send('opened zones page');
     this.allZones = this.appStore.get('zonesPageZones') || [];
     this.options = this.appStore.get('zonesPageOptions') || {};
     if (!this.allZones.length) {

@@ -19,6 +19,7 @@ import { allClasses } from '../api/classes';
 import { allRaceIds } from '../api/race';
 import { formatSeconds } from '../utils';
 import { MapStore } from '../map/map.service';
+import { UsageService } from '../usage.service';
 
 enum Tab {
   Drops,
@@ -79,9 +80,14 @@ export class NpcPage {
     private apiService: ApiService,
     private navigationService: NavigationService,
     public router: Router,
-    private mapStore: MapStore
+    private mapStore: MapStore,
+    private usageService: UsageService
   ) {
     this.route.params.subscribe(this.initializePage);
+  }
+
+  ngOnInit() {
+    this.usageService.send('opened npc page');
   }
 
   initializePage = async (params: Params) => {
