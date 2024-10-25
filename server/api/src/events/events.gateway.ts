@@ -12,6 +12,7 @@ import { Server, Socket } from 'socket.io';
 import { config } from '../config';
 import { LogService } from '../logs/log.service';
 import { LocationService } from '../location/location.service';
+const crypto = require('crypto');
 
 @WebSocketGateway({
   cors: {
@@ -26,6 +27,7 @@ export class EventsGateway
   server: Server;
 
   public connectedSockets = 0;
+  public uniqueConnections = new Set<string>();
   constructor(
     private logService: LogService,
     private locationService: LocationService,
@@ -35,15 +37,22 @@ export class EventsGateway
         console.log(
           `${new Date().toISOString()} - ${
             this.connectedSockets
-          } sockets connected`,
+          } sockets connected - ${
+            this.uniqueConnections.size
+          } unique connections`,
         ),
-      60_000 * 30,
+      60_000 * 10,
     );
   }
 
   afterInit() {}
 
   handleDisconnect(socket: Socket) {
+    const hash = crypto
+      .createHash('sha512')
+      .update(socket.handshake.address)
+      .digest('base64');
+    this.uniqueConnections.delete(hash);
     this.connectedSockets--;
     const apiKey: string | undefined = socket.handshake.auth?.app;
     if (apiKey) {
@@ -54,6 +63,11 @@ export class EventsGateway
   // Handles when a user connects via the app, joins public and their private channel
   async handleConnection(socket: Socket) {
     socket.join('public');
+    const hash = crypto
+      .createHash('sha512')
+      .update(socket.handshake.address)
+      .digest('base64');
+    this.uniqueConnections.add(hash);
     this.connectedSockets++;
 
     // If they sent an API key and it's for the app (not the log reader), join the room and send their last location
