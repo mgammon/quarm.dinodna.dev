@@ -20,6 +20,7 @@ import { LogReaderService } from './logs/log-reader.service';
 import { LocationService } from './logs/location.service';
 import { ApiService } from './api/api.service';
 import { BadgeModule } from 'primeng/badge';
+import { FeedbackComponent } from './feedback/feedback.component';
 
 @Component({
   selector: 'app-root',
@@ -41,7 +42,8 @@ import { BadgeModule } from 'primeng/badge';
     OverlayPanelModule,
     InputTextModule,
     InputGroupModule,
-    BadgeModule
+    BadgeModule,
+    FeedbackComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

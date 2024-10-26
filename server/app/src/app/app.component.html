@@ -47,13 +47,21 @@
     <div class="p-toolbar-group-center"></div>
     <div class="p-toolbar-group-end">
       <div style="text-align: center">
-        <span *ngIf="logReaderService.isReading && logReaderService.directory" style="font-size:0.85em">
+        <span
+          *ngIf="logReaderService.isReading && logReaderService.directory"
+          style="font-size: 0.85em"
+        >
           Reading logs from: {{ logReaderService.directory.name }}
         </span>
-        <span *ngIf="!logReaderService.isReading && logReaderService.directory" style="font-size:0.85em">
+        <span
+          *ngIf="!logReaderService.isReading && logReaderService.directory"
+          style="font-size: 0.85em"
+        >
           EQ directory: {{ logReaderService.directory.name }}
         </span>
-        <span *ngIf="!logReaderService.directory" style="font-size:0.85em"> No EQ directory set </span>
+        <span *ngIf="!logReaderService.directory" style="font-size: 0.85em">
+          No EQ directory set
+        </span>
         <button
           (click)="openDirectoryPicker()"
           style="color: white; font-weight: bold; vertical-align: middle"
@@ -65,9 +73,11 @@
           pButton
           size="small"
         >
-          {{ logReaderService.directory ? "Change" : "Set" }} EQ Directory <p-badge value="BETA" />
+          {{ logReaderService.directory ? "Change" : "Set" }} EQ Directory
+          <p-badge value="BETA" />
         </button>
       </div>
+      <app-feedback></app-feedback>
       <!-- <p-button
         type="button"
         (onClick)="settingsMenu.toggle($event)"

@@ -9,6 +9,7 @@ export const config = {
     username: process.env.MYSQL_USERNAME || 'mysql',
     password: process.env.MYSQL_PASSWORD || 'mysql',
   },
+  discordFeedbackWebhook: process.env.DISCORD_FEEDBACK_WEBHOOK,
   quarmDatabaseDumpUrl:
     process.env.QUARM_DATABASE_DUMP_URL ||
     'https://github.com/SecretsOTheP/EQMacEmu/blob/80c759031aa2a1668225f51c1226dae9bddc2eda/utils/sql/database_full/quarm_2024-10-21-13_53.tar.gz',

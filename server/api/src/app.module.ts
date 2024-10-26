@@ -40,6 +40,7 @@ import { LocationModule } from './location/location.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PlayerModule } from './player/player.module';
 import { SkillCap } from './player/skill-cap.entity';
+import { FeedbackModule } from './feedback/feedback.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { SkillCap } from './player/skill-cap.entity';
     AdminModule,
     UserModule,
     PlayerModule,
+    FeedbackModule,
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     ServeStaticModule.forRoot({

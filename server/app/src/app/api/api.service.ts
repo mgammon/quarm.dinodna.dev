@@ -262,4 +262,10 @@ export class ApiService {
       )
     );
   }
+
+  async sendFeedback(feedback: { name: string; message: string }) {
+    return this.toPromise(
+      this.http.post<void>(`${this.apiUrl}/feedback/${this.apiKey}`, feedback)
+    );
+  }
 }

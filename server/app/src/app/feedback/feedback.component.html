@@ -1,0 +1,77 @@
+<p-button
+  type="button"
+  severity="help"
+  (onClick)="feedbackForm.toggle($event)"
+  icon="pi pi-comment"
+  styleClass="white circle"
+  [pTooltip]="'Give your feedback, comments, and suggestions'"
+></p-button>
+<p-overlayPanel #feedbackForm>
+  <ng-template pTemplate="content">
+    <div style="min-width: 400px; min-height: 225px">
+      <!-- Message sent -->
+      <div *ngIf="sending === false" class="done">
+        <div class="text">Thanks for the feedback!</div>
+        <div>
+          <i class="pi pi-check" style="color: green; font-size: 2em"></i>
+        </div>
+        <p-button
+          label="Reset"
+          size="small"
+          [text]="true"
+          (onClick)="reset()"
+        ></p-button>
+      </div>
+      <!-- Message not sent, or sending -->
+      <div *ngIf="sending !== false">
+        <div style="margin-bottom: 0.5em">
+          <label class="label" for="name">Name</label>
+          <input
+            style="width: 375px"
+            pInputText
+            id="name"
+            [(ngModel)]="feedback.name"
+            pAutoFocus
+            [autofocus]="true"
+            [placeholder]="'In-game or discord (optional)'"
+          />
+        </div>
+        <div style="margin-bottom: 0.5em">
+          <label class="label" for="message">Message</label>
+          <textarea
+            id="message"
+            rows="5"
+            style="width: 100%"
+            pInputTextarea
+            [autoResize]="true"
+            [(ngModel)]="feedback.message"
+            [required]="true"
+            placeholder="Add your feedback, comments, and suggestions! (required)"
+          >
+          </textarea>
+        </div>
+        <div class="buttons">
+          <p-button
+            label="Reset"
+            size="small"
+            [text]="true"
+            (onClick)="reset()"
+          ></p-button>
+          <p-button
+            type="button"
+            label="Send"
+            iconPos="right"
+            [icon]="sending === true ? 'pi pi-spin pi-spinner' : 'pi pi-send'"
+            size="small"
+            (onClick)="send()"
+            [disabled]="sending === true || feedback.message.length === 0"
+          >
+            <span *ngIf="sending">
+              <i class="pi pi-spin pi-spinner"></i>
+            </span>
+          </p-button>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</p-overlayPanel>
