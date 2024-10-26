@@ -27,9 +27,9 @@ export class EventsGateway
   server: Server;
 
   public usage: { [event: string]: number } = {};
+  private apiKeys = new Set<string>();
 
   public connectedSockets = 0;
-  public uniqueConnections = new Set<string>();
   constructor(
     private logService: LogService,
     private locationService: LocationService,
@@ -38,9 +38,7 @@ export class EventsGateway
       console.log(
         `${new Date().toISOString()} - ${
           this.connectedSockets
-        } sockets connected - ${
-          this.uniqueConnections.size
-        } unique connections`,
+        } sockets connected - ${this.apiKeys.size} unique API keys`,
       );
       console.log(JSON.stringify(this.usage, null, 2));
     }, 60_000 * 10);
@@ -49,20 +47,17 @@ export class EventsGateway
   afterInit() {}
 
   handleDisconnect(socket: Socket) {
-    const uniqueId = this.getUniqueId(socket);
-    this.uniqueConnections.delete(uniqueId);
     this.connectedSockets--;
     const apiKey: string | undefined = socket.handshake.auth?.app;
     if (apiKey) {
       this.server.to(apiKey).emit('logReaderStop', socket.id);
+      this.apiKeys.delete(apiKey);
     }
   }
 
   // Handles when a user connects via the app, joins public and their private channel
   async handleConnection(socket: Socket) {
     socket.join('public');
-    const uniqueId = this.getUniqueId(socket);
-    this.uniqueConnections.add(uniqueId);
     this.connectedSockets++;
 
     // If they sent an API key and it's for the app (not the log reader), join the room and send their last location
@@ -71,6 +66,7 @@ export class EventsGateway
       socket.join(apiKey);
       const location = this.locationService.getOrCreateLocation(apiKey);
       this.server.to(apiKey).emit('location', location);
+      this.apiKeys.add(apiKey);
     }
   }
 
@@ -120,7 +116,7 @@ export class EventsGateway
   }
 
   @SubscribeMessage('logReaderStart')
-  async handleSetApiKey(@ConnectedSocket() socket: Socket) {
+  async handleLogReaderStart(@ConnectedSocket() socket: Socket) {
     const apiKey: string | undefined = socket.handshake.auth?.app;
     if (apiKey) {
       this.server.to(apiKey).emit('logReaderStart', socket.id);
@@ -132,7 +128,4 @@ export class EventsGateway
   async handleUsage(@MessageBody() event: string) {
     this.usage[event] = (this.usage[event] || 0) + 1;
   }
-
-  private getUniqueId = (socket: Socket) =>
-    crypto.createHash('md5').update(socket.handshake.address).digest('base64');
 }
