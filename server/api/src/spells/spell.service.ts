@@ -1,15 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { In, Repository } from 'typeorm';
+import { In, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { sanitizeSearch, selectRelevance } from '../utils';
 import { SpellComponent, SpellNew } from './spell-new.entity';
 import { Item } from '../items/item.entity';
+import { NpcSpellsEntry, NpcSpells } from './npc-spells.entity';
 
 @Injectable()
 export class SpellService {
   constructor(
     @InjectRepository(SpellNew) private spellRepository: Repository<SpellNew>,
+    @InjectRepository(NpcSpells)
+    private npcSpellsRepository: Repository<NpcSpells>,
+    @InjectRepository(NpcSpellsEntry)
+    private npcSpellsEntryRepository: Repository<NpcSpellsEntry>,
     @InjectRepository(Item) private itemRepository: Repository<Item>,
   ) {}
 
@@ -33,6 +38,10 @@ export class SpellService {
     return results.filter((r) => r.relevance > 0);
   }
 
+  async getAllById(spellIds: number[]) {
+    return this.spellRepository.find({ where: { id: In(spellIds) } });
+  }
+
   async getById(spellId: number) {
     const spell = await this.spellRepository.findOne({
       where: { id: spellId },
@@ -52,6 +61,63 @@ export class SpellService {
     }
 
     return spell;
+  }
+
+  private async getNpcSpellsById(
+    npcSpellId: number,
+    minLevel: number,
+    maxLevel: number,
+  ) {
+    const npcSpells = await this.npcSpellsRepository.findOne({
+      where: { id: npcSpellId },
+    });
+    if (npcSpells) {
+      npcSpells.npcSpellEntries = await this.npcSpellsEntryRepository.find({
+        where: {
+          npc_spells_id: npcSpellId,
+          minlevel: LessThanOrEqual(maxLevel),
+          maxlevel: MoreThanOrEqual(minLevel),
+        },
+      });
+    }
+
+    return npcSpells;
+  }
+
+  async getNpcSpells(npcSpellId: number, minLevel: number, maxLevel: number) {
+    const procs: { procChance: number; spellId: number; spell?: SpellNew }[] =
+      [];
+    const spellIds = new Set<number>();
+
+    // Load all the list and its parents
+    let npcSpells: NpcSpells | undefined;
+    do {
+      npcSpells = await this.getNpcSpellsById(
+        npcSpells ? npcSpells.parent_list : npcSpellId,
+        minLevel,
+        maxLevel,
+      );
+      if (npcSpells.proc_chance > 0 && npcSpells.attack_proc > 0) {
+        procs.push({
+          procChance: npcSpells.proc_chance,
+          spellId: npcSpells.attack_proc,
+        });
+        spellIds.add(npcSpells.attack_proc);
+      }
+      npcSpells.npcSpellEntries.forEach((entry) => spellIds.add(entry.spellid));
+    } while (npcSpells.parent_list);
+
+    // Get all spells, and split them into procs and casts
+    const spells = await this.getAllById(Array.from(spellIds.values()));
+    procs.forEach(
+      (proc) =>
+        (proc.spell = spells.find((spell) => spell.id === proc.spellId)),
+    );
+    const casts = spells.filter(
+      (spell) => !procs.map((proc) => proc.spellId).includes(spell.id),
+    );
+
+    return { procs, casts };
   }
 
   async getSummonedItems(spell: SpellNew) {

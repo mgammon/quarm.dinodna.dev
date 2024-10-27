@@ -33,6 +33,7 @@ import {
 import { NpcSearchOptions } from './npc.controller';
 import { isAllowedZone } from '../zones/zones';
 import { RespawnService } from './respawn.service';
+import { SpellService } from '../spells/spell.service';
 
 @Injectable()
 export class NpcService {
@@ -54,6 +55,7 @@ export class NpcService {
     @InjectRepository(SpawnEntry)
     private spawnEntryRepository: Repository<SpawnEntry>,
     private respawnService: RespawnService,
+    private spellService: SpellService,
   ) {}
 
   async search(search: string, page: number = 0, size: number = 100) {
@@ -310,14 +312,23 @@ export class NpcService {
     }
 
     // Get all the extra data from joins
-    const npcSpawns = await this.getSpawns(npcId);
-    const npcLoot = await this.getLoot(npcId);
-    const npcMerchant = await this.getMerchantItems(npcId);
-
+    const [npcSpawns, npcLoot, npcMerchant, npcSpells] = await Promise.all([
+      await this.getSpawns(npcId),
+      await this.getLoot(npcId),
+      await this.getMerchantItems(npcId),
+      npc.npc_spells_id
+        ? await this.spellService.getNpcSpells(
+            npc.npc_spells_id,
+            npc.level,
+            npc.maxlevel,
+          )
+        : null,
+    ]);
     // Mash it all together
     npc.spawnEntries = npcSpawns?.spawnEntries || [];
     npc.lootTable = npcLoot?.lootTable;
     npc.merchantEntries = npcMerchant?.merchantEntries;
+    npc.spells = npcSpells;
     return npc;
   }
 

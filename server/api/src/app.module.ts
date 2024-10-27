@@ -41,6 +41,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { PlayerModule } from './player/player.module';
 import { SkillCap } from './player/skill-cap.entity';
 import { FeedbackModule } from './feedback/feedback.module';
+import { NpcSpellsEntry, NpcSpells } from './spells/npc-spells.entity';
 
 @Module({
   imports: [
@@ -83,6 +84,8 @@ import { FeedbackModule } from './feedback/feedback.module';
         Spawn,
         SpawnGroup,
         SpawnEntry,
+        NpcSpells,
+        NpcSpellsEntry,
         LootTable,
         LootTableEntry,
         LootDrop,

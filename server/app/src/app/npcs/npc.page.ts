@@ -20,6 +20,8 @@ import { allRaceIds } from '../api/race';
 import { formatSeconds } from '../utils';
 import { MapStore } from '../map/map.service';
 import { UsageService } from '../usage.service';
+import { SpellLinkComponent } from '../spells/spell-link.component/spell-link.component';
+import { BadgeModule } from 'primeng/badge';
 
 enum Tab {
   Drops,
@@ -44,6 +46,8 @@ enum Tab {
     DividerModule,
     RouterModule,
     ItemLinkComponent,
+    SpellLinkComponent,
+    BadgeModule,
   ],
 })
 export class NpcPage {

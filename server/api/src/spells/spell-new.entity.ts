@@ -1,5 +1,6 @@
 import { Item } from '../items/item.entity';
 import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from 'typeorm';
+import { NpcSpellsEntry, NpcSpells } from './npc-spells.entity';
 
 @Entity({ name: 'spells_new', synchronize: false })
 export class SpellNew {
@@ -209,6 +210,14 @@ export class SpellNew {
   @OneToMany(() => Item, (item) => item.wornEffect)
   @JoinColumn({ name: 'id', referencedColumnName: 'worneffect' })
   wornItems: Item[];
+
+  @OneToMany(() => NpcSpellsEntry, (npcSpellEntry) => npcSpellEntry.spellNew)
+  @JoinColumn({ name: 'id', referencedColumnName: 'spellid' })
+  npcSpellEntries: NpcSpellsEntry[];
+
+  @OneToMany(() => NpcSpells, (npcSpellEntry) => npcSpellEntry.attackProc)
+  @JoinColumn({ name: 'id', referencedColumnName: 'attack_proc' })
+  attackProcs: NpcSpells[];
 
   summonedItems?: Item[];
   components?: SpellComponent[];

@@ -121,8 +121,8 @@
             tooltipPosition="right"
             tooltipStyleClass="avg-value-tooltip"
           >
-            <td>Avg Value</td>
-            <td><app-price [price]="getNpcValue().total" /></td>
+            <td style="width: 105px;vertical-align: top;">Average Value</td>
+            <td style="padding-bottom:0.5em"><app-price [price]="getNpcValue().total" /></td>
           </tr>
           <ng-template #avgValueTooltip>
             <div>
@@ -136,19 +136,83 @@
               </div>
             </div>
           </ng-template>
-          <!-- Casts -->
+          <!-- Resists -->
           <tr>
-            <td>Casts</td>
-            <td>spells go here</td>
+            <td style="vertical-align: top">Resists</td>
+            <td style="font-size: 0.85em;padding-bottom:0.5em">
+              <div style="width: 36px; display: inline-block">
+                <span style="font-weight: bold">MR</span><br />{{npc.MR}}
+              </div>
+              <div style="width: 36px; display: inline-block">
+                <span style="font-weight: bold">FR</span><br />{{npc.FR}}
+              </div>
+              <div style="width: 36px; display: inline-block">
+                <span style="font-weight: bold">CR</span><br />{{npc.CR}}
+              </div>
+              <div style="width: 36px; display: inline-block">
+                <span style="font-weight: bold">PR</span><br />{{npc.PR}}
+              </div>
+              <div style="width: 36px; display: inline-block">
+                <span style="font-weight: bold">DR</span><br />{{npc.DR}}
+              </div>
+            </td>
+          </tr>
+          <!-- Casts -->
+          <tr
+            *ngIf="npc.spells && npc.spells.casts && npc.spells.casts.length > 0"
+          >
+            <td style="vertical-align: top">Spells</td>
+            <td
+              style="
+                display: flex;
+                flex-wrap: wrap;
+                flex-direction: row;
+                font-size: 0.85em;
+              "
+            >
+              <div
+                style="width: 190px; display: block; padding-bottom: 0.5em"
+                *ngFor="let spell of npc.spells?.casts"
+              >
+                <app-spell-link
+                  [spellId]="spell.id"
+                  [spellName]="spell.name"
+                  [level]="npc.maxlevel"
+                  [spellIcon]="spell.custom_icon"
+                  [levelSource]="npc.name"
+                  [linkStyle]="true"
+                />
+              </div>
+            </td>
           </tr>
           <!-- Procs -->
-          <tr>
-            <td>Procs</td>
-            <td>procs go here</td>
-          </tr>
-          <tr>
-            <td>Factions</td>
-            <td>maybe, idk</td>
+          <tr
+            *ngIf="npc.spells && npc.spells.procs && npc.spells.procs.length > 0"
+          >
+            <td style="vertical-align: top">Procs</td>
+            <td
+              style="
+                display: flex;
+                flex-wrap: wrap;
+                flex-direction: row;
+                font-size: 0.85em;
+              "
+            >
+              <div
+                style="width: 200px; display: block; padding-bottom: 0.5em"
+                *ngFor="let proc of npc.spells?.procs"
+              >
+                <app-spell-link
+                  [spellId]="proc.spell.id"
+                  [spellName]="proc.spell.name"
+                  [level]="npc.maxlevel"
+                  [spellIcon]="proc.spell.custom_icon"
+                  [levelSource]="npc.name"
+                  [linkStyle]="true"
+                />
+                {{proc.procChance}}%
+              </div>
+            </td>
           </tr>
         </table>
       </div>
@@ -236,7 +300,12 @@
   </div>
   <div class="right">
     <!-- Map -->
-    <app-map *ngIf="spawnZones[0]" [zoneShortName]="spawnZones[0]" [spawns]="spawns" [markedNpcIds]="[npc.id]"></app-map>
+    <app-map
+      *ngIf="spawnZones[0]"
+      [zoneShortName]="spawnZones[0]"
+      [spawns]="spawns"
+      [markedNpcIds]="[npc.id]"
+    ></app-map>
     <!-- Spawns -->
     <p-table [value]="uniqueSpawns" sortField="name">
       <ng-template pTemplate="header">
@@ -253,16 +322,14 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-uniqueSpawn>
-        <tr class="spawn" (mouseenter)="onSpawnMouseEnter(uniqueSpawn.spawnIds)" (mouseleave)="onSpawnMouseLeave(uniqueSpawn.spawnIds)">
-          <td>
-            {{uniqueSpawn.spawnCount}}
-          </td>
-          <td>
-            {{uniqueSpawn.chance}}%
-          </td>
-          <td>
-            {{formatSeconds(uniqueSpawn.respawntime)}}
-          </td>
+        <tr
+          class="spawn"
+          (mouseenter)="onSpawnMouseEnter(uniqueSpawn.spawnIds)"
+          (mouseleave)="onSpawnMouseLeave(uniqueSpawn.spawnIds)"
+        >
+          <td>{{uniqueSpawn.spawnCount}}</td>
+          <td>{{uniqueSpawn.chance}}%</td>
+          <td>{{formatSeconds(uniqueSpawn.respawntime)}}</td>
         </tr>
       </ng-template>
     </p-table>

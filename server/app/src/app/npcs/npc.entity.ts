@@ -1,5 +1,6 @@
 import { Item, LootTable, getDropRate } from '../items/item.entity';
 import * as _ from 'lodash';
+import { SpellNew } from '../spells/spell.entity';
 
 export interface Npc {
   id: number;
@@ -87,6 +88,11 @@ export interface Npc {
 
   zones?: string[];
   spawns: { zoneId: string; zoneName: string; spawns: Spawn[] }[];
+
+  spells?: {
+    procs: { procChance: number; spellId: number; spell: SpellNew }[];
+    casts: SpellNew[];
+  };
 }
 
 export interface MerchantEntry {

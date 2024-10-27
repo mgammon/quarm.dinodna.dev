@@ -4,6 +4,44 @@ import { Player } from './quarm.character';
 import { PlayableRaces } from '../api/race';
 import { Classes } from '../api/classes';
 
+type PlayerData = [
+  apiKey: string,
+  name: string,
+  level: number,
+  raceId: number,
+  classId: number,
+  str: number,
+  sta: number,
+  agi: number,
+  dex: number,
+  int: number,
+  wis: number,
+  cha: number,
+  charm: number | undefined,
+  ear: number | undefined,
+  head: number | undefined,
+  face: number | undefined,
+  ear: number | undefined,
+  neck: number | undefined,
+  shoulder: number | undefined,
+  arms: number | undefined,
+  back: number | undefined,
+  wrist: number | undefined,
+  wrist: number | undefined,
+  range: number | undefined,
+  hands: number | undefined,
+  primary: number | undefined,
+  secondary: number | undefined,
+  fingers: number | undefined,
+  fingers: number | undefined,
+  chest: number | undefined,
+  legs: number | undefined,
+  feet: number | undefined,
+  waist: number | undefined,
+  powersource: number | undefined,
+  ammo: number | undefined
+];
+
 interface PersistedPlayer {
   name: string;
   level: number;
@@ -69,7 +107,52 @@ export class CharacterService {
     };
 
     return persistedPlayer;
-  }
+  };
+
+  // savePlayer2 = (player: Player) => {};
+
+  // getPersistedPlayer2 = (player: Player) => {
+  //   let { name, level, raceId, classId, allocatedStats } = player;
+  //   const { str, sta, agi, dex, int, wis, cha } = allocatedStats;
+
+  //   const slotItems = player.slots
+  //     .sort((a, b) => b.slotId - a.slotId)
+  //     .map((slot) => slot.item?.id);
+  //   const sanitizedName = name ? name.replace(/[^A-Z\s]/gi, '').trim() : null;
+  //   const data = [
+  //     sanitizedName,
+  //     level,
+  //     raceId,
+  //     classId,
+  //     str,
+  //     sta,
+  //     agi,
+  //     dex,
+  //     int,
+  //     wis,
+  //     cha,
+  //     slotItems,
+  //   ];
+
+  //   const persistedPlayer: PersistedPlayer = {
+  //     name: name || 'No name',
+  //     level,
+  //     raceId,
+  //     classId,
+  //     slots,
+  //     allocatedStats: {
+  //       str: allocatedStats.str,
+  //       sta: allocatedStats.sta,
+  //       agi: allocatedStats.agi,
+  //       dex: allocatedStats.dex,
+  //       int: allocatedStats.int,
+  //       wis: allocatedStats.wis,
+  //       cha: allocatedStats.cha,
+  //     },
+  //   };
+
+  //   return persistedPlayer;
+  // };
 
   savePlayer = (player: Player) => {
     const persistedPlayer = this.getPersistedPlayer(player);

@@ -8,6 +8,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { SpellNew } from '../spells/spell-new.entity';
 
 @Entity({ name: 'npc_types', synchronize: false })
 export class Npc {
@@ -105,6 +106,11 @@ export class Npc {
   @ManyToMany(() => MerchantEntry, (merchantEntry) => merchantEntry.npcs)
   @JoinColumn({ name: 'merchant_id', referencedColumnName: 'merchantid' })
   merchantEntries: MerchantEntry[];
+
+  spells?: {
+    procs: { procChance: number; spellId: number; spell?: SpellNew }[];
+    casts: SpellNew[];
+  };
 }
 
 @Entity({ name: 'merchantlist', synchronize: false })
