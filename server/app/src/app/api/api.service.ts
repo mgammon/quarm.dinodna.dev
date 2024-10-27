@@ -52,7 +52,7 @@ export class ApiService {
 
   public apiKey!: string;
   public baseUrl = environment.production
-    ? 'https://quarm.dinodna.dev'
+    ? `https://${window.location.host}`
     : 'http://localhost:3000';
   private apiUrl = this.baseUrl + '/api';
 
