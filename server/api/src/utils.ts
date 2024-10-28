@@ -18,7 +18,7 @@ export function sanitizeSearch(search: string) {
     .replace(/\:/g, '\\:')
     .replace(/\(/g, '\\(')
     .replace(/\)/g, '\\)')
-    .replace(/\-/g, '\\-')
+    .replace(/\-/g, ' ')
     .toLowerCase()
     .trim();
 }

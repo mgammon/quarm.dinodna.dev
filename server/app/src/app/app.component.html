@@ -46,7 +46,7 @@
     </div>
     <div class="p-toolbar-group-center"></div>
     <div class="p-toolbar-group-end">
-      <div style="text-align: center">
+      <div style="text-align: center" *ngIf="showSetEqDirectory">
         <span
           *ngIf="logReaderService.isReading && logReaderService.directory"
           style="font-size: 0.85em"

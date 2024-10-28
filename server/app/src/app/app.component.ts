@@ -55,6 +55,7 @@ export class AppComponent {
   apiKey: string | null;
 
   public liveButtonClass: string = 'yellow';
+  public showSetEqDirectory = (window as any).showDirectoryPicker;
 
   constructor(
     public navigationService: NavigationService,
