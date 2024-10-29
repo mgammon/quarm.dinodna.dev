@@ -27,6 +27,12 @@ export class ChatLogComponent implements OnInit {
   @Input({ required: true })
   public log!: Log;
 
+  @Input({ required: false })
+  public highlightItemId?: number;
+
+  @Input({ required: false })
+  public timeFormat?: string; // time, relative, dates, idk
+
   public timestamp!: string;
   public logChunks: LogChunk[] = [];
 
@@ -43,32 +49,44 @@ export class ChatLogComponent implements OnInit {
   }
 
   updateHighlights() {
+    // Highlight the log
     this.highlightLog = this.trackerService.itemTrackers.some((tracker) =>
       tracker.matchingLogs.some((matchingLog) => matchingLog.id === this.log.id)
     );
 
+    // Highlight an item chunk
     this.logChunks.forEach((chunk) => {
       const item = chunk.item;
       if (!item) {
         return;
       }
-      chunk.highlight = this.trackerService.itemTrackers.some((tracker) =>
-        tracker.matchingLogs.some(
-          (log) =>
-            log.id === this.log.id &&
-            this.log.auctions.some(
-              (auction) =>
-                auction.itemId === item.itemId &&
-                tracker.item &&
-                item.itemId === tracker.item.id
-            )
-        )
-      );
+      chunk.highlight =
+        this.log.auctions.some(
+          (auction) =>
+            auction.itemId === item.itemId &&
+            item.itemId === this.highlightItemId
+        ) ||
+        this.trackerService.itemTrackers.some((tracker) =>
+          tracker.matchingLogs.some(
+            (log) =>
+              log.id === this.log.id &&
+              this.log.auctions.some(
+                (auction) =>
+                  auction.itemId === item.itemId &&
+                  tracker.item &&
+                  item.itemId === tracker.item.id
+              )
+          )
+        );
     });
   }
 
   ngOnInit() {
-    this.timestamp = this.log.sentAt.format('LTS');
+    this.timestamp =
+      this.timeFormat === 'relative'
+        ? this.log.sentAt.fromNow()
+        : this.log.sentAt.format('LTS');
+
     // Start with /*time*/ and player chunks
     this.logChunks.push({ type: 'player' });
 
@@ -84,6 +102,7 @@ export class ChatLogComponent implements OnInit {
     this.logChunks.push({ type: 'text', displayText: channelText });
 
     let unparsedText = this.log.text + '';
+    this.log.auctions.sort((a,b) => a.id - b.id);
     for (const auction of this.log.auctions) {
       // Find the start and end of the item text
       const itemStartIndex = unparsedText
@@ -111,8 +130,13 @@ export class ChatLogComponent implements OnInit {
     this.logChunks.push({ type: 'text', displayText: unparsedText + "'" });
 
     this.updateHighlights();
-    this.trackerService.trackersChanged.subscribe(() =>
-      this.updateHighlights()
-    );
+    this.trackerService.trackersChanged.subscribe(() => {
+      // Specifying the item ID to highlight, so not dependent on trackers, no need to update when they change
+      if (this.highlightItemId) {
+        return;
+      }
+      // Orrr update highlights based on trackers when using them
+      this.updateHighlights();
+    });
   }
 }

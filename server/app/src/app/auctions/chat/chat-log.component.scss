@@ -15,6 +15,7 @@
 
   .item {
     color: magenta;
+    vertical-align: text-bottom;
 
     &.highlight {
       color: #ff8000;
@@ -24,6 +25,7 @@
   .time {
     color: ivory;
     font-size: 0.8rem;
+    vertical-align: text-top;
   }
 
   &.highlight,

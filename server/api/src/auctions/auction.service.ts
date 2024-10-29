@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { LessThan, Repository } from 'typeorm';
-import { Auction, DailyAuction } from './auction.entity';
+import {
+  And,
+  LessThan,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
+import { Auction, AuctionSummary, DailyAuction } from './auction.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuctionParser } from './auction-parser.service';
 import { Log } from '../logs/log.entity';
@@ -72,6 +78,52 @@ export class AuctionService {
       { id: dailyAuction.itemId },
       await this.getAverages(dailyAuction.itemId),
     );
+  }
+
+  // Would be nice to exclude outliers.
+  // Maybe get the average for the time range first, then filter where prices are within x10 or something
+  getDailyAuctions(itemId: number, startDate: Date, endDate?: Date) {
+    return this.dailyAuctionRepository.find({
+      where: {
+        itemId,
+        createdAt: And(
+          MoreThanOrEqual(startDate),
+          LessThanOrEqual(endDate || new Date()),
+        ),
+        log: { auctions: { itemId: MoreThanOrEqual(0) } },
+      },
+      relations: { log: { auctions: true } },
+      select: {
+        sentAt: true,
+        wts: true,
+        logId: true,
+        player: true,
+        price: true,
+        log: {
+          text: true,
+          channel: true,
+          sentAt: true,
+          player: true,
+          auctions: { itemText: true, itemId: true, id: true },
+        },
+      },
+      order: { sentAt: 'DESC' },
+    });
+  }
+
+  async getAuctionSummaries(itemId: number, days: number) {
+    const results: AuctionSummary[] = await this.dailyAuctionRepository.query(
+      `
+    SELECT DATE(sentAt) as date, MIN(price) as min, MAX(price) as max, AVG(price) as average, COUNT(*) as count, wts
+    FROM daily_auctions
+    WHERE itemId = ?
+      AND price > 0
+      AND sentAt > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL ? DAY )
+    GROUP BY itemId, DATE(sentAt), wts
+    `,
+      [itemId, days],
+    );
+    return results;
   }
 
   async getAverages(itemId: number) {

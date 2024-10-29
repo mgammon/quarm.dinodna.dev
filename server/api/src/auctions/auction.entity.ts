@@ -74,3 +74,12 @@ export interface AuctionDto {
   price: number;
   wts: boolean;
 }
+
+export interface AuctionSummary {
+  date: string;
+  min: number;
+  max: number;
+  average: number;
+  count: number;
+  wts: boolean;
+}

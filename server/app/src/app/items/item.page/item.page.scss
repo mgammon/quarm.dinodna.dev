@@ -23,3 +23,37 @@
   vertical-align: middle;
   padding-left: 1em;
 }
+
+#item-page {
+  display: flex;
+  flex-direction: row;
+  padding: 0.5em;
+  padding-bottom:0;
+}
+
+.left {
+  min-width: 720px;
+  // width: 50%;
+  flex:1;
+  margin-right: 0.5em;
+
+  .header {
+    font-weight: bold;
+    min-width: 505px;
+    display: flex;
+    flex-direction: row;
+    .header-text {
+      min-width: fit-content;
+      margin-right: 1em;
+    }
+    > div {
+      vertical-align: middle;
+    }
+  }
+}
+
+.right {
+  // width: 50%;
+  min-width:500px;
+  max-width:800px;
+}

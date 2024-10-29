@@ -18,9 +18,9 @@
       <app-price
         *ngIf="item.average7d || item.average30d"
         style="display: block; padding-top: 0.5em"
-        [price]="(item.average7d || item.average30d || 0)"
+        [price]="item.average7d || item.average30d || 0"
         [noZeroes]="true"
-        label="Auction"
+        [label]="item.average7d ? '7 Day Avg' : '30 Day Avg'"
       />
     </span>
     <div>

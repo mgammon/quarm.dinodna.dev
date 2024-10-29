@@ -8,6 +8,7 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { SpellNew } from '../spells/spell-new.entity';
+import { AuctionSummary, DailyAuction } from '../auctions/auction.entity';
 
 @Entity({ name: 'items', synchronize: false })
 export class Item {
@@ -192,6 +193,9 @@ export class Item {
 
   @Column({ nullable: true })
   average30d: number;
+
+  dailyAuctions?: DailyAuction[];
+  auctionSummaries?: AuctionSummary[];
 }
 
 @Entity({ name: 'loottable', synchronize: false })

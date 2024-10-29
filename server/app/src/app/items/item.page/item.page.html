@@ -10,12 +10,13 @@
               >{{item.name}}
             </span>
           </div>
-          <div>
-            <!-- <app-price [price]="item.price" /> -->
-            <span class="header-detail" *ngIf="item.stacksize > 1"
-              >Stack size: {{item.stacksize}}</span
-            >
-          </div>
+          <!-- <app-price [price]="item.price" /> -->
+          <span
+            style="margin-top: 0.5em; display: inline-block"
+            class="header-detail"
+            *ngIf="item.stacksize > 1"
+            >Stack size: {{item.stacksize}}</span
+          >
         </div>
       </ng-template>
       <div class="item-container">
@@ -201,9 +202,50 @@
     </p-panel>
   </div>
   <div class="right">
-    <!-- Map -->
-    <!-- <app-map></app-map> -->
-    <!-- Spawns -->
-    <!-- idk yet -->
+    <p-panel>
+      <ng-template pTemplate="header">
+        <div class="flex align-items-center gap-2 px-2 header">
+          <div class="header-text">
+            <span
+              class="font-bold"
+              style="font-size: 1.5em; vertical-align: middle"
+              >Auctions
+            </span>
+          </div>
+        </div>
+      </ng-template>
+      <div class="item-container">
+        <div
+          *ngIf="!item.dailyAuctions || !item.dailyAuctions.length"
+          style="
+            font-size: 1.1em;
+            font-weight: bold;
+            padding: 2em 0;
+            width: 100%;
+          "
+        >
+          No auctions for this item
+        </div>
+        <div
+          *ngIf="item.dailyAuctions && item.dailyAuctions.length"
+          style="width: 100%"
+        >
+          <canvas #chart style="width: 100%"></canvas>
+          <p-divider />
+          <div
+            style="margin-top: -1.1em; max-height: 365px; overflow-y: scroll"
+          >
+            <div style="padding: 0.5em">
+              <app-chat-log
+                *ngFor=" let dailyAuction of item.dailyAuctions"
+                [log]="dailyAuction.log"
+                [highlightItemId]="item.id"
+                timeFormat="relative"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-panel>
   </div>
 </div>

@@ -2,6 +2,7 @@ import { NumberFormatStyle } from '@angular/common';
 import { MerchantEntry, Npc, Spawn } from '../npcs/npc.entity';
 import * as _ from 'lodash';
 import { SpellNew } from '../spells/spell.entity';
+import { Log } from '../logs/log.entity';
 
 export interface Item {
   id: number;
@@ -163,6 +164,9 @@ export interface Item {
 
   average7d?: number;
   average30d?: number;
+
+  dailyAuctions?: DailyAuction[];
+  auctionSummaries?: AuctionSummary[];
 }
 
 export interface LootTable {
@@ -345,4 +349,21 @@ export function buildEffects(item: Item) {
   }
 
   return effects;
+}
+
+interface DailyAuction {
+  log: Log;
+  player: string;
+  sentAt: string;
+  price: number;
+  wts: boolean;
+}
+
+interface AuctionSummary {
+  date: string;
+  min: number;
+  max: number;
+  average: number;
+  count: number;
+  wts: boolean;
 }

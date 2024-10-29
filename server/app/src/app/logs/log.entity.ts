@@ -10,6 +10,7 @@ export interface Log {
 }
 
 export interface Auction {
+  id: number;
   logId: number;
   itemId: number;
   itemText: string;
