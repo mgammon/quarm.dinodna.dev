@@ -10,6 +10,13 @@
     color: whitesmoke;
   }
 
+  &.global-General,
+  &.global-Auction,
+  &.global-Lfg,
+  &.global-Port {
+    color: rgb(110 143 176);
+  }
+
   font-family: Arial, Helvetica, sans-serif;
   font-size: 0.9rem;
 
@@ -36,7 +43,6 @@
       background-color: #333;
     }
   }
-
 
   transition: background-color 333ms ease-in;
 }

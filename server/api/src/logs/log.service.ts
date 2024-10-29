@@ -82,15 +82,23 @@ export class LogService {
 
     // Get the channel
     const channelChunk = rawText.split(',')[0];
-    const channel = channelChunk.includes('auctions')
-      ? 'auction'
-      : channelChunk.includes('out of character')
-        ? 'ooc'
-        : channelChunk.includes('shouts')
-          ? 'shout'
-          : channelChunk.includes('says')
-            ? 'say'
-            : null;
+    const channel = channelChunk.includes('General:')
+      ? 'global-General'
+      : channelChunk.includes('Lfg:')
+        ? 'global-Lfg'
+        : channelChunk.includes('Auction:')
+          ? 'global-Auction'
+          : channelChunk.includes('Port:')
+            ? 'global-Port'
+            : channelChunk.includes('auctions')
+              ? 'auction'
+              : channelChunk.includes('out of character')
+                ? 'ooc'
+                : channelChunk.includes('shouts')
+                  ? 'shout'
+                  : channelChunk.includes('says')
+                    ? 'say'
+                    : null;
 
     // Get the text
     const startOfText = rawText.indexOf(', ');

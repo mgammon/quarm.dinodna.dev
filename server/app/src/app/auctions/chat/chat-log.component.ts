@@ -92,7 +92,15 @@ export class ChatLogComponent implements OnInit {
 
     // Add the channel flavor text
     const channelText =
-      this.log.channel === 'auction'
+      this.log.channel === 'global-General'
+        ? "tells General, '"
+        : this.log.channel === 'global-Lfg'
+        ? "tells Lfg, '"
+        : this.log.channel === 'global-Auction'
+        ? "tells Auction, '"
+        : this.log.channel === 'global-Port'
+        ? "tells Port, '"
+        : this.log.channel === 'auction'
         ? " auctions, '"
         : this.log.channel === 'ooc'
         ? " says out of character, '"
@@ -102,7 +110,7 @@ export class ChatLogComponent implements OnInit {
     this.logChunks.push({ type: 'text', displayText: channelText });
 
     let unparsedText = this.log.text + '';
-    this.log.auctions.sort((a,b) => a.id - b.id);
+    this.log.auctions.sort((a, b) => a.id - b.id);
     for (const auction of this.log.auctions) {
       // Find the start and end of the item text
       const itemStartIndex = unparsedText

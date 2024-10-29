@@ -16,7 +16,16 @@ export interface LogDto {
   player: string;
   text: string;
   sentAt: Date;
-  channel: 'ooc' | 'auction' | 'shout' | 'say' | null;
+  channel:
+    | 'ooc'
+    | 'auction'
+    | 'shout'
+    | 'say'
+    | 'global-General'
+    | 'global-Auction'
+    | 'global-Lfg'
+    | 'global-Port'
+    | null;
   auctions?: AuctionDto[];
 }
 
@@ -36,7 +45,16 @@ export class Log {
   raw: string;
 
   @Column({ nullable: true })
-  channel: 'ooc' | 'auction' | 'shout' | 'say' | null;
+  channel:
+    | 'ooc'
+    | 'auction'
+    | 'shout'
+    | 'say'
+    | 'global-General'
+    | 'global-Auction'
+    | 'global-Lfg'
+    | 'global-Port'
+    | null;
 
   @Column({ nullable: true })
   sentAt: Date;

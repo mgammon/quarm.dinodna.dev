@@ -10,7 +10,8 @@ interface LogStats {
 }
 
 const publicChannelRegex =
-  /^\[.*\] [A-Z)]{1}[a-z]{2,17} (auction|out of character|shout|say)s?/;
+  /^\[.*\] [A-Z)]{1}[a-z]{2,17} (auction|out of character|shout|say|tells General:|tells Lfg:|tells Auction:|tells Port:|tells Ports:)s?/;
+
 
 const blacklistedPublicRegex =
   /(As you wish, oh great one)|(Sorry, Master)|(I beg forgiveness)|(Guarding with my life)|(Following you, Master)|(Time to die)/;

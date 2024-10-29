@@ -1,11 +1,20 @@
-import { Moment } from "moment";
+import { Moment } from 'moment';
 
 export interface Log {
   id: number;
   player: string;
   text: string;
   sentAt: Moment;
-  channel: 'ooc' | 'auction' | 'shout' | 'say' | null;
+  channel:
+    | 'ooc'
+    | 'auction'
+    | 'shout'
+    | 'say'
+    | 'global-General'
+    | 'global-Auction'
+    | 'global-Lfg'
+    | 'global-Port'
+    | null;
   auctions: Auction[];
 }
 
@@ -19,7 +28,7 @@ export interface Auction {
 }
 
 export interface Location {
-  coords?: { x: number, y: number, z: number};
+  coords?: { x: number; y: number; z: number };
   heading?: number;
   zoneId?: string;
   updatedAt?: number;
