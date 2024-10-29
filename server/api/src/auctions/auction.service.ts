@@ -80,8 +80,6 @@ export class AuctionService {
     );
   }
 
-  // Would be nice to exclude outliers.
-  // Maybe get the average for the time range first, then filter where prices are within x10 or something
   getDailyAuctions(itemId: number, startDate: Date, endDate?: Date) {
     return this.dailyAuctionRepository.find({
       where: {
@@ -112,6 +110,14 @@ export class AuctionService {
   }
 
   async getAuctionSummaries(itemId: number, days: number) {
+    // Use the average price over that time to remove outliers
+    const stats = await this.getStats(itemId, days);
+    const maxPrice = stats.average * 7 || 0;
+    const minPrice = stats.average / 7 || 0;
+    const priceFilter =
+      maxPrice && minPrice
+        ? ` AND price >= ${minPrice} AND price <= ${maxPrice} `
+        : '';
     const results: AuctionSummary[] = await this.dailyAuctionRepository.query(
       `
     SELECT DATE(sentAt) as date, MIN(price) as min, MAX(price) as max, AVG(price) as average, COUNT(*) as count, wts
@@ -119,6 +125,7 @@ export class AuctionService {
     WHERE itemId = ?
       AND price > 0
       AND sentAt > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL ? DAY )
+      ${priceFilter}
     GROUP BY itemId, DATE(sentAt), wts
     `,
       [itemId, days],
