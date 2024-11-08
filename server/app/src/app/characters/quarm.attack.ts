@@ -2023,28 +2023,28 @@ export const checkDoubleAttack = (character: Character) => {
 };
 
 
-const getProcChance(character: Character, hand: number)
-{
-	let chance = 0.0;
-	let weapon_speed = getWeaponSpeedbyHand(hand);
-	weapon_speed /= 100.0;
+// const getProcChance = (character: Character, hand: number) =>
+// {
+// 	let chance = 0.0;
+// 	let weapon_speed = getWeaponSpeedbyHand(hand);
+// 	weapon_speed /= 100.0;
 
-	let dex = character.stats.dex;
-	if (dex > 255.0)
-		dex = 255.0;		// proc chance caps at 255
+// 	let dex = character.stats.dex;
+// 	if (dex > 255.0)
+// 		dex = 255.0;		// proc chance caps at 255
 	
-	/* Kind of ugly, but results are very accurate
-	   Proc chance is a linear function based on dexterity
-	   0.0004166667 == base proc chance at 1 delay with 0 dex (~0.25 PPM for main hand)
-	   1.1437908496732e-5 == chance increase per point of dex at 1 delay
-	   Result is 0.25 PPM at 0 dex, 2 PPM at 255 dex
-	*/
-	chance = ((0.0004166667 + 1.1437908496732e-5 * dex) * weapon_speed);
+// 	/* Kind of ugly, but results are very accurate
+// 	   Proc chance is a linear function based on dexterity
+// 	   0.0004166667 == base proc chance at 1 delay with 0 dex (~0.25 PPM for main hand)
+// 	   1.1437908496732e-5 == chance increase per point of dex at 1 delay
+// 	   Result is 0.25 PPM at 0 dex, 2 PPM at 255 dex
+// 	*/
+// 	chance = ((0.0004166667 + 1.1437908496732e-5 * dex) * weapon_speed);
 
-	if (hand == Slots.Secondary)
-	{
-		chance *= 50.0 / getDualWieldChance(character, false);
-	}								
+// 	if (hand == Slots.Secondary)
+// 	{
+// 		chance *= 50.0 / getDualWieldChance(character, false);
+// 	}								
 	
-	return chance;
-}
+// 	return chance;
+// }

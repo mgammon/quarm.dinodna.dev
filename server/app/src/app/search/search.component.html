@@ -5,6 +5,7 @@
   (onSelect)="onSelect($event)"
   [placeholder]="placeholder" 
   scrollHeight="600px"
+  [autofocus]="true"
 >
   <ng-template let-entity pTemplate="item">
     <app-result [entity]="entity" />

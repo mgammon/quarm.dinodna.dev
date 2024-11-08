@@ -39,6 +39,10 @@ const blackListedItemNames = [
   'roots',
   'knight',
   'box',
+  'a shield',
+  'liver',
+  'wok',
+  'key',
 ];
 
 @Injectable()
