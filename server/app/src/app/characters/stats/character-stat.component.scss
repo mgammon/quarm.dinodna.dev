@@ -9,7 +9,6 @@
   .value {
     display:flex;
     .number {
-      padding-right:0.5em;
       cursor:pointer;
     }
   }
@@ -38,6 +37,7 @@
 }
 
 .minus {
+  margin-left:0.5em;
   background-image: url("/assets/buttons/minus-up.png");
   &:hover {
     background-image: url("/assets/buttons/minus-up-hover.png");

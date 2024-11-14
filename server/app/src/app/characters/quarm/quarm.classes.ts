@@ -1,5 +1,5 @@
-import { Classes } from '../api/classes';
-import { PlayableRaces } from '../api/race';
+import { Classes } from '../../api/classes';
+import { PlayableRaces } from '../../api/race';
 
 // [str,sta,agy,dex,wis,int,cha,bonus]
 export const baseStats: Record<number, Record<number, number[]>> = {

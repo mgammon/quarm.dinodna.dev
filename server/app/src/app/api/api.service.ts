@@ -9,6 +9,7 @@ import { NpcSearchOptions } from '../npcs/npc-search.page/npc-search.page';
 import { Zone } from '../zones/zone.entity';
 import { Log } from '../logs/log.entity';
 import { environment } from '../../environments/environment';
+import { CharacterDto } from '../characters/character.service';
 
 const LOCAL_STORAGE_CACHE_ENABLED = false;
 
@@ -93,6 +94,13 @@ export class ApiService {
     );
     this.cache.items.set(item.id, item);
     return item;
+  }
+
+  async getItemSnippets(itemIds: number[]) {
+    // Or get it from the API and cache it
+    return this.toPromise(
+      this.http.get<Item[]>(`${this.apiUrl}/items`, { params: { ids: itemIds}})
+    );
   }
 
   async getItemSnippet(itemId: number) {
@@ -266,6 +274,53 @@ export class ApiService {
   async sendFeedback(feedback: { name: string; message: string }) {
     return this.toPromise(
       this.http.post<void>(`${this.apiUrl}/feedback/${this.apiKey}`, feedback)
+    );
+  }
+
+  /* ----------
+  // Characters
+  -----------*/
+  async createCharacter(character: Partial<CharacterDto>) {
+    return this.toPromise(
+      this.http.post<CharacterDto>(`${this.apiUrl}/characters/`, character, {
+        headers: { Authorization: `Bearer ${this.apiKey}` },
+      })
+    );
+  }
+
+  async updateCharacter(character: Partial<CharacterDto>) {
+    return this.toPromise(
+      this.http.patch<CharacterDto>(
+        `${this.apiUrl}/characters/${character.id}`,
+        character,
+        {
+          headers: { Authorization: `Bearer ${this.apiKey}` },
+        }
+      )
+    );
+  }
+
+  async deleteCharacter(id: number) {
+    return this.toPromise(
+      this.http.delete<CharacterDto>(`${this.apiUrl}/characters/${id}`, {
+        headers: { Authorization: `Bearer ${this.apiKey}` },
+      })
+    );
+  }
+
+  async getCharacters() {
+    return this.toPromise(
+      this.http.get<CharacterDto[]>(`${this.apiUrl}/characters/`, {
+        headers: { Authorization: `Bearer ${this.apiKey}` },
+      })
+    );
+  }
+
+  async getCharacter(id: number) {
+    return this.toPromise(
+      this.http.get<CharacterDto>(`${this.apiUrl}/characters/${id}`, {
+        headers: { Authorization: `Bearer ${this.apiKey}` },
+      })
     );
   }
 }

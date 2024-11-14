@@ -1,9 +1,9 @@
-import { Classes, classIds } from '../api/classes';
-import { ItemTypes, Skills } from '../api/items';
-import { playableRaceIds, PlayableRaces } from '../api/race';
-import { Slots } from '../api/slots';
-import { Item } from '../items/item.entity';
-import { bitmaskIncludesId } from '../utils';
+import { Classes, classIds } from '../../api/classes';
+import { ItemTypes, Skills } from '../../api/items';
+import { playableRaceIds, PlayableRaces } from '../../api/race';
+import { Slots } from '../../api/slots';
+import { Item } from '../../items/item.entity';
+import { bitmaskIncludesId } from '../../utils';
 import { Character, Slot } from './quarm.character';
 import { rollDecimal, rollD20, int, rollInt } from './quarm.random';
 

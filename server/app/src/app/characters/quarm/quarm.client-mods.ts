@@ -1,6 +1,6 @@
-import { Classes, classIds } from '../api/classes';
-import { PlayableRaces } from '../api/race';
-import { Item } from '../items/item.entity';
+import { Classes, classIds } from '../../api/classes';
+import { PlayableRaces } from '../../api/race';
+import { Item } from '../../items/item.entity';
 import {
   clientGetAvoidance,
   getMitigation,

@@ -1,6 +1,13 @@
+.page-container {
+  display: flex;
+  padding-top: 1em;
+  justify-content: center;
+  gap: 2em;
+}
+
 .character-container {
-  display:flex;
-  margin-top:1em;
+  display: flex;
+  padding: 1em;
 
   .character-inputs > * {
     display: inline-block;
@@ -9,14 +16,13 @@
   }
 
   .stats {
-    margin-left:1em;
-    max-width: 174px;
+    max-width: 186px;
   }
 
   ul {
     max-width: 150px;
     list-style: none;
-    padding-inline-start: 1em;
+    padding-inline-start: 0;
     li {
       display: flex;
       justify-content: space-between;
@@ -24,36 +30,39 @@
   }
 
   .slots-container {
+    width: 250px;
 
-    width:250px;
-  
-    .left, .right, .middle, .top, .bottom {
-      display:flex; 
+    .left,
+    .right,
+    .middle,
+    .top,
+    .bottom {
+      display: flex;
       justify-content: center;
-      margin-bottom:0.5em;
+      margin-bottom: 0.5em;
     }
-  
+
     .middle {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom:0;
-  
-      .left, .right {
+      margin-bottom: 0;
+
+      .left,
+      .right {
         flex-direction: column;
       }
     }
-  
+
     .class-icon {
-      height:128px;
-      width:64px;
+      height: 128px;
+      width: 64px;
     }
-  
   }
 }
 
 :host ::ng-deep .p-inputnumber-input {
-  width: 64px;
+  width: 50px;
 }
 
 table {
@@ -69,4 +78,10 @@ table {
     text-align: right;
     margin: 0;
   }
+}
+
+:host ::ng-deep .p-autocomplete-input,
+:host ::ng-deep .p-autocomplete .p-overlay {
+  width: 200px;
+  margin: 0 1em;
 }

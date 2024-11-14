@@ -1,8 +1,8 @@
-import { Classes } from '../api/classes';
-import { ItemTypes } from '../api/items';
-import { PlayableRaces } from '../api/race';
-import { Slots } from '../api/slots';
-import { Item } from '../items/item.entity';
+import { Classes } from '../../api/classes';
+import { ItemTypes } from '../../api/items';
+import { PlayableRaces } from '../../api/race';
+import { Slots } from '../../api/slots';
+import { Item } from '../../items/item.entity';
 import { isEquippable } from './quarm.attack';
 import { Character, getDefaultStats, Stats } from './quarm.character';
 
@@ -465,13 +465,11 @@ export const calcItemBonuses = (character: Character) => {
   // ShieldEquiped(false);
   // SetBashEnablingWeapon(false);
 
-  console.log(character.slots.map((s) => s.item));
   const itemsWithBonuses = character.slots
     .filter((s) => !s.slotIds.includes(Slots.Ammo) && s.item)
     .map((s) => s.item);
   character.itemBonuses = getDefaultStats();
   for (const item of itemsWithBonuses) {
-    console.log('item!', item);
     addItemBonuses(character, item as Item);
   }
 

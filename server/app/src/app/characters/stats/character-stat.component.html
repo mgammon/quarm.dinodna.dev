@@ -1,8 +1,11 @@
 <div class="stat-container">
   <div class="label">{{ stat | uppercase }}</div>
   <div class="value">
-    <span class="number" [pTooltip]="tooltip()">{{ character.stats[stat] }}</span>
+    <span class="number" [pTooltip]="tooltip()">{{
+      character.stats[stat]
+    }}</span>
     <span
+      *ngIf="character.owned"
       class="minus"
       [ngClass]="{ disabled: !canDecrement, down: minusDown }"
       (mousedown)="minusDown = true"
@@ -11,6 +14,7 @@
       (click)="decrement()"
     ></span>
     <span
+      *ngIf="character.owned"
       class="plus"
       [ngClass]="{ disabled: !canIncrement, down: plusDown }"
       (mousedown)="plusDown = true"

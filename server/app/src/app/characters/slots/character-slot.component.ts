@@ -8,14 +8,14 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { Item } from '../items/item.entity';
+import { Item } from '../../items/item.entity';
 
-import { SearchComponent } from '../search/search.component';
+import { SearchComponent } from '../../search/search.component';
 import { OverlayPanel, OverlayPanelModule } from 'primeng/overlaypanel';
-import { ItemLinkComponent } from '../items/item-link.component/item-link.component';
-import { Character, Slot } from './quarm.character';
-import { ApiService } from '../api/api.service';
-import { isEquippable } from './quarm.attack';
+import { ItemLinkComponent } from '../../items/item-link.component/item-link.component';
+import { Character, Slot } from '../quarm/quarm.character';
+import { ApiService } from '../../api/api.service';
+import { isEquippable } from '../quarm/quarm.attack';
 
 @Component({
   selector: 'app-character-slot',

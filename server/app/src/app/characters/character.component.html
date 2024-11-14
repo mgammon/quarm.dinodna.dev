@@ -1,223 +1,295 @@
-<div class="dps-container">
-  <div class="character-container">
-    <div class="left" style="margin-right: 1em">
-      <div class="character-inputs">
-        <!-- Name -->
-        <p-floatLabel>
-          <input
-            pInputText
-            id="name"
-            class="p-inputtext-sm"
-            [(ngModel)]="character.name"
-          />
-          <label for="name">Name</label>
-        </p-floatLabel>
-      </div>
-      <div class="character-inputs">
-        <!-- Level -->
-        <span class="p-float-label">
-          <p-inputNumber
-            inputId="level"
-            class="p-inputtext-sm"
-            [(ngModel)]="character.level"
-            max="65"
-            min="1"
-            maxFractionDigits="0"
-            placeholder="Level"
-            (ngModelChange)="onCharacterChange()"
-          /><label for="level">Level</label>
-        </span>
-        <!-- Race -->
-        <span class="p-float-label">
-          <p-dropdown
-            inputId="race"
-            [options]="raceOptions"
-            [(ngModel)]="character.raceId"
-            optionLabel="label"
-            optionValue="value"
-            [showClear]="true"
-            placeholder="Race"
-            class="p-inputtext-sm"
-            (ngModelChange)="onCharacterChange()"
-          ></p-dropdown>
-          <label for="race">Race</label>
-        </span>
-        <!-- Class -->
-        <span class="p-float-label">
-          <p-dropdown
-            inputId="class"
-            [options]="classOptions"
-            [(ngModel)]="character.classId"
-            optionLabel="label"
-            optionValue="value"
-            [showClear]="true"
-            placeholder="Class"
-            class="p-inputtext-sm"
-            (ngModelChange)="onCharacterChange()"
-          ></p-dropdown>
-          <label for="class">Class</label>
-        </span>
-      </div>
-      <!-- Calculated Stats -->
-      <ul class="hp-mana-ac-atk" *ngIf="character.isReadyToSimulate">
-        <li>
-          <span class="label">HP</span
-          ><span class="value">{{ character.stats.hp }}</span>
-        </li>
-        <li>
-          <span class="label">MANA</span
-          ><span class="value">{{ character.stats.mana }}</span>
-        </li>
-        <li>
-          <span class="label">AC</span
-          ><span class="value">{{ character.stats.ac }}</span>
-        </li>
-        <li>
-          <span class="label">ATK</span
-          ><span class="value">{{ character.stats.atk }}</span>
-        </li>
-        <li>
-          <span class="label">Haste</span
-          ><span class="value">{{ character.stats.haste | percent }}</span>
-        </li>
-      </ul>
-      <!-- Stats -->
-      <div class="stats" *ngFor="let stat of allocatableStats">
-        <app-character-stat [stat]="stat" [character]="character" />
-      </div>
-      <div
-        class="stats"
-        style="color: #ccc; font-size: 0.85em; text-align: right"
-        *ngIf="character.unallocatedStatPoints"
-      >
-        {{ character.unallocatedStatPoints }} starting points left
-      </div>
-      <!-- Resists -->
-      <ul class="resists">
-        <li>
-          <span class="label">POISON</span
-          ><span class="value">{{ character.stats.pr }}</span>
-        </li>
-        <li>
-          <span class="label">MAGIC</span
-          ><span class="value">{{ character.stats.mr }}</span>
-        </li>
-        <li>
-          <span class="label">DISEASE</span
-          ><span class="value">{{ character.stats.dr }}</span>
-        </li>
-        <li>
-          <span class="label">FIRE</span
-          ><span class="value">{{ character.stats.fr }}</span>
-        </li>
-        <li>
-          <span class="label">COLD</span
-          ><span class="value">{{ character.stats.cr }}</span>
-        </li>
-      </ul>
-    </div>
-
-    <!-- Slots -->
-    <div class="slots-container">
-      <div class="top">
-        <div *ngFor="let slotId of [1, 5, 2, 3, 4]">
-          <app-character-slot
-            [character]="character"
-            [slot]="character.slots[slotId]"
-            (onItemSelected)="onItemSelected($event)"
-            [hideText]="hideText"
-          ></app-character-slot>
-        </div>
-      </div>
-      <div class="middle">
-        <div class="left">
-          <div *ngFor="let slotId of [17, 7, 9, 20, 15]">
-            <app-character-slot
-              [character]="character"
-              [slot]="character.slots[slotId]"
-              (onItemSelected)="onItemSelected($event)"
-              [hideText]="hideText"
-            ></app-character-slot>
-          </div>
-        </div>
-        <div class="class-icon">
-          <img
-            *ngIf="character.classId"
-            src="assets/classes/{{ character.classId }}.gif"
-          />
-        </div>
-        <div class="right">
-          <div *ngFor="let slotId of [8, 6, 10, 12, 16]">
-            <app-character-slot
-              [character]="character"
-              [slot]="character.slots[slotId]"
-              (onItemSelected)="onItemSelected($event)"
-              [hideText]="hideText"
-            ></app-character-slot>
-          </div>
-        </div>
-      </div>
-      <div class="bottom">
-        <div *ngFor="let slotId of [18, 19]">
-          <app-character-slot
-            [character]="character"
-            [slot]="character.slots[slotId]"
-            (onItemSelected)="onItemSelected($event)"
-            [hideText]="hideText"
-          ></app-character-slot>
-        </div>
-      </div>
-      <div class="bottom" style="position: relative">
-        <div *ngFor="let slotId of [13, 14, 11]">
-          <app-character-slot
-            [character]="character"
-            [slot]="character.slots[slotId]"
-            (onItemSelected)="onItemSelected($event)"
-            [hideText]="hideText"
-          ></app-character-slot>
-        </div>
-        <button
-          class="p-panel-header-icon p-link mr-2"
-          style="position: absolute; bottom: 0; right: 32px"
-          (click)="hideText = !hideText"
-        >
-          <span
-            class="pi pi-info-circle"
-            [pTooltip]="hideText ? 'Hiding item names' : 'Showing item names'"
-            [style]="
-              !hideText
-                ? 'color: var(--primary-color)'
-                : 'color: var(--secondary-color)'
-            "
-          >
+<div class="page-container">
+  <div class="card">
+    <p-panel>
+      <ng-template pTemplate="icons">
+        <div style="display: flex; flex-direction: row">
+          <span class="p-float-label">
+            <p-dropdown
+              inputId="character"
+              [options]="characterService.characterDtos"
+              [(ngModel)]="selectedCharacter"
+              (ngModelChange)="onCharacterSelect()"
+              optionLabel="name"
+              [showClear]="true"
+              placeholder="Character"
+              class="p-inputtext-sm"
+              [showClear]="false"
+            ></p-dropdown>
           </span>
-        </button>
+          <p-button
+            type="button"
+            size="small"
+            (click)="deleteCharacter()"
+            icon="pi pi-trash"
+            [outlined]="true"
+          ></p-button>
+          <p-button
+            icon="pi pi-plus"
+            iconPos="right"
+            size="small"
+            (click)="createNewCharacter()"
+            [outlined]="true"
+          ></p-button>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="header">
+        <div style="font-weight: bold">Characters</div>
+      </ng-template>
+      <div class="character-container" *ngIf="character">
+        <div class="left" style="margin-right: 1em">
+          <div class="readonly-character" *ngIf="!character.owned">
+            <div style="font-weight:bold;font-size:1.15em;">{{character.name || 'No name'}}</div>
+            <div style="font-weight:bold">{{character.level}} {{prettyRaces[character.raceId]}} {{prettyClasses[character.classId]}}</div>
+          </div>
+          <div class="editable-character" *ngIf="character.owned">
+            <div class="character-inputs">
+              <!-- Name -->
+              <p-floatLabel>
+                <input
+                  pInputText
+                  id="name"
+                  class="p-inputtext-sm"
+                  [(ngModel)]="character.name"
+                  (ngModelChange)="onCharacterChange()"
+                />
+                <label for="name">Name</label>
+              </p-floatLabel>
+            </div>
+            <div class="character-inputs">
+              <!-- Level -->
+              <span class="p-float-label">
+                <p-inputNumber
+                  inputId="level"
+                  class="p-inputtext-sm"
+                  [(ngModel)]="character.level"
+                  max="65"
+                  min="1"
+                  maxFractionDigits="0"
+                  placeholder="Level"
+                  (ngModelChange)="onCharacterChange()"
+                /><label for="level">Level</label>
+              </span>
+              <!-- Race -->
+              <span class="p-float-label">
+                <p-dropdown
+                  inputId="race"
+                  [options]="raceOptions"
+                  [(ngModel)]="character.raceId"
+                  optionLabel="label"
+                  optionValue="value"
+                  [showClear]="false"
+                  placeholder="Race"
+                  class="p-inputtext-sm"
+                  (ngModelChange)="onCharacterChange()"
+                ></p-dropdown>
+                <label for="race">Race</label>
+              </span>
+              <!-- Class -->
+              <span class="p-float-label">
+                <p-dropdown
+                  inputId="class"
+                  [options]="classOptions"
+                  [(ngModel)]="character.classId"
+                  optionLabel="label"
+                  optionValue="value"
+                  [showClear]="false"
+                  placeholder="Class"
+                  class="p-inputtext-sm"
+                  (ngModelChange)="onCharacterChange()"
+                ></p-dropdown>
+                <label for="class">Class</label>
+              </span>
+            </div>
+          </div>
+          <hr />
+          <!-- Calculated Stats -->
+          <ul class="hp-mana-ac-atk" *ngIf="character.isReadyToSimulate">
+            <li>
+              <span class="label">HP</span
+              ><span class="value">{{ character.stats.hp }}</span>
+            </li>
+            <li>
+              <span class="label">MANA</span
+              ><span class="value">{{ character.stats.mana }}</span>
+            </li>
+            <li>
+              <span class="label">AC</span
+              ><span class="value">{{ character.stats.ac }}</span>
+            </li>
+            <li>
+              <span class="label">ATK</span
+              ><span class="value">{{ character.stats.atk }}</span>
+            </li>
+            <li>
+              <span class="label">Haste</span
+              ><span class="value">{{ character.stats.haste | percent }}</span>
+            </li>
+          </ul>
+          <hr />
+          <!-- Stats -->
+          <div class="stats" *ngFor="let stat of allocatableStats">
+            <app-character-stat
+              (onChange)="savePlayer()"
+              [stat]="stat"
+              [character]="character"
+            />
+          </div>
+          <div
+            class="stats"
+            style="color: crimson; font-size: 0.85em; text-align: right"
+            *ngIf="character.unallocatedStatPoints"
+          >
+            {{ character.unallocatedStatPoints }} starting points left
+          </div>
+          <hr />
+          <!-- Resists -->
+          <ul class="resists">
+            <li>
+              <span class="label">POISON</span
+              ><span class="value">{{ character.stats.pr }}</span>
+            </li>
+            <li>
+              <span class="label">MAGIC</span
+              ><span class="value">{{ character.stats.mr }}</span>
+            </li>
+            <li>
+              <span class="label">DISEASE</span
+              ><span class="value">{{ character.stats.dr }}</span>
+            </li>
+            <li>
+              <span class="label">FIRE</span
+              ><span class="value">{{ character.stats.fr }}</span>
+            </li>
+            <li>
+              <span class="label">COLD</span
+              ><span class="value">{{ character.stats.cr }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Slots -->
+        <div class="slots-container">
+          <div class="top">
+            <div *ngFor="let slotId of [1, 5, 2, 3, 4]">
+              <app-character-slot
+                [character]="character"
+                [slot]="character.slots[slotId]"
+                (onItemSelected)="character.owned && onItemSelected($event)"
+                [hideText]="hideText"
+              ></app-character-slot>
+            </div>
+          </div>
+          <div class="middle">
+            <div class="left">
+              <div *ngFor="let slotId of [17, 7, 9, 20, 15]">
+                <app-character-slot
+                  [character]="character"
+                  [slot]="character.slots[slotId]"
+                  (onItemSelected)="character.owned && onItemSelected($event)"
+                  [hideText]="hideText"
+                ></app-character-slot>
+              </div>
+            </div>
+            <div class="class-icon">
+              <img
+                *ngIf="character.classId"
+                src="assets/classes/{{ character.classId }}.gif"
+              />
+            </div>
+            <div class="right">
+              <div *ngFor="let slotId of [8, 6, 10, 12, 16]">
+                <app-character-slot
+                  [character]="character"
+                  [slot]="character.slots[slotId]"
+                  (onItemSelected)="character.owned && onItemSelected($event)"
+                  [hideText]="hideText"
+                ></app-character-slot>
+              </div>
+            </div>
+          </div>
+          <div class="bottom">
+            <div *ngFor="let slotId of [18, 19]">
+              <app-character-slot
+                [character]="character"
+                [slot]="character.slots[slotId]"
+                (onItemSelected)="character.owned && onItemSelected($event)"
+                [hideText]="hideText"
+              ></app-character-slot>
+            </div>
+          </div>
+          <div class="bottom" style="position: relative">
+            <div *ngFor="let slotId of [13, 14, 11]">
+              <app-character-slot
+                [character]="character"
+                [slot]="character.slots[slotId]"
+                (onItemSelected)="character.owned && onItemSelected($event)"
+                [hideText]="hideText"
+              ></app-character-slot>
+            </div>
+            <button
+              class="p-panel-header-icon p-link mr-2"
+              style="position: absolute; bottom: 0; right: 32px"
+              (click)="hideText = !hideText"
+            >
+              <span
+                class="pi pi-info-circle"
+                [pTooltip]="
+                  hideText ? 'Hiding item names' : 'Showing item names'
+                "
+                [style]="
+                  !hideText
+                    ? 'color: var(--primary-color)'
+                    : 'color: var(--secondary-color)'
+                "
+              >
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </p-panel>
+  </div>
+
+  <p-panel>
+    <ng-template pTemplate="icons">
+      <div style="display: flex; flex-direction: row">
+        <span class="p-float-label">
+          <div class="item-search">
+            <app-search
+              [types]="['npcs']"
+              [skipNavigation]="true"
+              placeholder="Select an NPC to attack"
+              (onNpcSelected)="onNpcSelected($event)"
+              class="p-inputtext-sm"
+            ></app-search>
+            <p-button
+              [disabled]="!targetDummy"
+              label="Attack"
+              icon="pi pi-forward"
+              iconPos="right"
+              size="small"
+              (click)="runSimulation()"
+            ></p-button>
+          </div>
+        </span>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="header">
+      <div style="font-weight: bold">Auto-Attack Simulation</div>
+    </ng-template>
     <!-- Simulation -->
-    <div style="margin-top: 1em; margin-left: 1em; margin-bottom: 1em">
-      <div class="item-search">
-        <app-search
-          [types]="['npcs']"
-          [skipNavigation]="true"
-          placeholder="Select an NPC to attack"
-          (onNpcSelected)="onNpcSelected($event)"
-        ></app-search>
-        <p-button
-          type="button"
-          size="small"
-          (click)="onNpcSelected(undefined)"
-          icon="pi pi-times"
-          [outlined]="true"
-        ></p-button>
-        <p-button
-          [disabled]="!targetDummy"
-          label="Attack"
-          icon="pi pi-forward"
-          iconPos="right"
-          size="small"
-          (click)="runSimulation()"
-        ></p-button>
+    <div style="padding: 1em; margin-left: 1em; margin-bottom: 1em">
+      <div
+        *ngIf="!simulation"
+        style="
+          text-align: center;
+          font-weight: bold;
+          opacity: 0.5;
+          padding: 3em;
+        "
+      >
+        No simulations run yet. <br />Search for an NPC to simulate
+        auto-attacking.
       </div>
       <table *ngIf="simulation">
         <thead>
@@ -281,41 +353,38 @@
         </tr>
       </table>
     </div>
-  </div>
-  <div></div>
-
-  <h5>Things this doesn't do (yet), but I would like to:</h5>
-  <ul>
-    <li>Save character/gear sets</li>
-    <li>Compare character/gear sets</li>
-    <li>Procs</li>
-    <li>Triple attack</li>
-    <li>
-      Resist chance based on your level/resists vs caster mob/specific spell
-    </li>
-    <li>Damage from you riposting an incoming attack</li>
-    <li>Item Effects (other than worn haste, which is implemented)</li>
-    <li>Buffs</li>
-    <li>
-      Damage taken stats (for figuring out optimal damage mitigation; casters
-      make this complicated, though)
-    </li>
-    <li>Chance of winning a fight (casters make this complicated, though)</li>
-    <li>Flying kick, bash, etc.</li>
-    <li>Archery/thrown</li>
-    <li>AAs</li>
-    <li>Disciplines</li>
-    <li>Attacking enemy from behind</li>
-    <li>Alcohol</li>
-    <li>Encumberance</li>
-    <li>2H weapon unequip trick</li>
-    <li>
-      Allow setting specific skill values (currently assumes max skills for your
-      level)
-    </li>
-    <li>
-      AC displayed value is verrrry minorly off due to missing a Math.floor
-      somewhere. Off by one is the most I've seen so far.
-    </li>
-  </ul>
+  </p-panel>
 </div>
+<h5>Things this doesn't do (yet), but I would like to:</h5>
+<ul>
+  <li>Compare character/gear sets</li>
+  <li>Procs</li>
+  <li>Triple attack</li>
+  <li>
+    Resist chance based on your level/resists vs caster mob/specific spell
+  </li>
+  <li>Damage from you riposting an incoming attack</li>
+  <li>Item Effects (other than worn haste, which is implemented)</li>
+  <li>Buffs</li>
+  <li>
+    Damage taken stats (for figuring out optimal damage mitigation; casters make
+    this complicated, though)
+  </li>
+  <li>Chance of winning a fight (casters make this complicated, though)</li>
+  <li>Flying kick, bash, etc.</li>
+  <li>Archery/thrown</li>
+  <li>AAs</li>
+  <li>Disciplines</li>
+  <li>Attacking enemy from behind</li>
+  <li>Alcohol</li>
+  <li>Encumberance</li>
+  <li>2H weapon unequip trick</li>
+  <li>
+    Allow setting specific skill values (currently assumes max skills for your
+    level)
+  </li>
+  <li>
+    AC displayed value is verrrry minorly off due to missing a Math.floor
+    somewhere. Off by one is the most I've seen so far.
+  </li>
+</ul>

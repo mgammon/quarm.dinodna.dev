@@ -1,13 +1,13 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { SliderModule } from 'primeng/slider';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { Item } from '../items/item.entity';
-import { classIds } from '../api/classes';
-import { playableRaceIds } from '../api/race';
+import { allClasses, classIds } from '../api/classes';
+import { playableRaceIds, prettyPlayableRaceIds } from '../api/race';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SearchComponent } from '../search/search.component';
@@ -19,17 +19,17 @@ import {
   Player,
   Simulation,
   Slot,
-} from './quarm.character';
-import { ApiService } from '../api/api.service';
-import { CharacterService } from './character.service';
+} from './quarm/quarm.character';
+import { CharacterDto, CharacterService } from './character.service';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
 import { Npc } from '../npcs/npc.entity';
 import { TableModule } from 'primeng/table';
-import { CharacterSlotComponent } from './character-slot.component';
-import { CharacterStatComponent } from './character-stat.component';
+import { CharacterSlotComponent } from './slots/character-slot.component';
+import { CharacterStatComponent } from './stats/character-stat.component';
 import { TagModule } from 'primeng/tag';
 import { UsageService } from '../usage.service';
+import { PanelModule } from 'primeng/panel';
 
 interface LabelValue<T> {
   label: string;
@@ -59,16 +59,19 @@ interface LabelValue<T> {
     CharacterSlotComponent,
     CharacterStatComponent,
     TagModule,
+    PanelModule,
   ],
 })
 export class CharacterComponent {
   public classOptions: LabelValue<number>[];
   public raceOptions: LabelValue<number>[];
+  public prettyRaces = prettyPlayableRaceIds;
+  public prettyClasses = allClasses;
   public simulation?: Simulation;
 
   public Math = Math;
-
-  character: Player;
+  character?: Player;
+  selectedCharacter?: CharacterDto;
 
   targetDummy?: NpcCharacter;
   public hideText = true;
@@ -83,27 +86,43 @@ export class CharacterComponent {
   ];
 
   constructor(
-    private characterService: CharacterService,
-    private apiService: ApiService,
-    private router: Router,
+    public characterService: CharacterService,
     private route: ActivatedRoute,
-    private location: Location,
-    private usageService: UsageService
+    private usageService: UsageService,
+    private location: Location
   ) {
     this.classOptions = this.getClassOptions();
     this.raceOptions = this.getRaceOptions();
-    this.character =
-      this.characterService.loadPlayer('test') ||
-      this.characterService.createNewCharacter();
   }
 
   ngOnInit() {
     this.usageService.send('opened character page');
-
-    this.route.queryParams.subscribe((queryParams) => {
-      // const autoLoadZone = queryParams['autoLoadZone'];
-      // this.locationService.autoLoadZone = autoLoadZone === 'true';
+    this.route.params.subscribe(async (params) => {
+      const characterId = parseInt(params['id']);
+      this.initializeCharacter(characterId);
     });
+  }
+
+  onCharacterSelect() {
+    this.initializeCharacter(this.selectedCharacter?.id);
+  }
+
+  async initializeCharacter(characterId?: number) {
+    await this.characterService.loadMyCharacters();
+    this.selectedCharacter = this.characterService.characterDtos.find(character => character.id === characterId);
+    if (!characterId || !Number.isInteger(characterId)) {
+      if (this.characterService.characterDtos.length) {
+        const characterDto = this.characterService.characterDtos[0];
+        this.character = await this.characterService.mapToPlayer(characterDto);
+      } else {
+        const characterDto = await this.characterService.createNewCharacter();
+        this.character = await this.characterService.mapToPlayer(characterDto);
+      }
+      this.location.go(`characters/${this.character.id}`);
+    } else {
+      this.character = await this.characterService.loadPlayer(characterId);
+      this.location.go(`characters/${this.character.id}`);
+    }
   }
 
   getClassOptions() {
@@ -121,8 +140,11 @@ export class CharacterComponent {
   }
 
   onItemSelected({ item, slot }: { item: Item | undefined; slot: Slot }) {
+    if (!this.character) {
+      return;
+    }
     this.character.equip(item, slot);
-    this.updateCharacterUrl();
+    this.savePlayer();
   }
 
   async onNpcSelected(npc: Npc | undefined) {
@@ -136,26 +158,31 @@ export class CharacterComponent {
   }
 
   async runSimulation() {
-    if (this.targetDummy) {
+    if (this.targetDummy && this.character) {
       await this.targetDummy.awaitReady();
       this.simulation = this.character.getSimulation(this.targetDummy);
     }
   }
 
   onCharacterChange() {
-    // TODO:  debounce
+    if (!this.character) {
+      return;
+    }
     this.character.onCharacterChange();
-    this.updateCharacterUrl();
+    this.savePlayer();
   }
 
-  updateCharacterUrl() {
-    const persistedPlayer = this.characterService.getPersistedPlayer(
-      this.character
-    );
-    const persistedPlayerUrl = `characters?options=${encodeURIComponent(
-      JSON.stringify(persistedPlayer)
-    )}`;
-    this.location.go(persistedPlayerUrl);
+  private lastSaveAttemptTimeout: any;
+  savePlayer() {
+    if (!this.character || !this.isValidCharacter()) {
+      return;
+    }
+    const player = this.character;
+
+    clearTimeout(this.lastSaveAttemptTimeout);
+    this.lastSaveAttemptTimeout = setTimeout(() => {
+      this.characterService.savePlayer(player);
+    }, 500);
   }
 
   // PC: double attack, triple attack, riposte, dual wield, bonus damage, str, dex (procs)
@@ -172,4 +199,37 @@ export class CharacterComponent {
   getDamageForRound() {}
 
   getHaste() {}
+
+  async deleteCharacter() {
+    if (this.character?.id) {
+      await this.characterService.deletePlayer(this.character?.id);
+      if (this.characterService.characterDtos.length === 0) {
+        this.initializeCharacter();
+      } else {
+        this.initializeCharacter(this.characterService.characterDtos[0].id);
+      }
+    }
+  }
+
+  async createNewCharacter() {
+    const characterDto = await this.characterService.createNewCharacter();
+    this.character = await this.characterService.mapToPlayer(characterDto);
+  }
+
+  selectCharacter(character: Player) {
+    this.character = character;
+  }
+
+  isValidCharacter() {
+    if (!this.character) {
+      return false;
+    }
+    const validLevelRange =
+      this.character.level >= 1 && this.character.level <= 65;
+    const validRace = this.character.raceId >= 0 && this.character.raceId <= 13;
+    const validClass =
+      this.character.classId >= 0 && this.character.classId <= 16;
+
+    return validLevelRange && validRace && validClass;
+  }
 }

@@ -18,6 +18,26 @@ export enum PlayableRaces {
   Froglok = 16384, //plz add it secrets plz
 }
 
+export const prettyPlayableRaceIds: { [id: number]: string } = {
+  0: 'Human',
+  1: 'Barbarian',
+  2: 'Erudite',
+  3: 'Wood Elf',
+  4: 'High Elf',
+  5: 'Dark Elf',
+  6: 'Half Helf',
+  7: 'Dwarf',
+  8: 'Troll',
+  9: 'Ogre',
+  10: 'Halfling',
+  11: 'Gnome',
+  12: 'Iksar',
+  13: 'Vah Shir',
+  // 16383: 'ALL', // this changes if froglok or drakkin are added
+  // 16384: 'FRG',
+  // 32768: 'DRK',
+};
+
 export const playableRaceIds: { [id: number]: string } = {
   0: 'HUM',
   1: 'BAR',

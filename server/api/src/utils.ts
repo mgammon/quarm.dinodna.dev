@@ -112,3 +112,12 @@ export function compareNumber(
     return comparison;
   }
 }
+
+export const getApiKey = (authHeader: string) => {
+  if (!authHeader) {
+    return null;
+  }
+
+  const tokens = authHeader.split(/\s+/);
+  return tokens[1] || null;
+};

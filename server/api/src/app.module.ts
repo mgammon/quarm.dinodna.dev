@@ -42,6 +42,8 @@ import { PlayerModule } from './player/player.module';
 import { SkillCap } from './player/skill-cap.entity';
 import { FeedbackModule } from './feedback/feedback.module';
 import { NpcSpellsEntry, NpcSpells } from './spells/npc-spells.entity';
+import { Character } from './characters/character.entity';
+import { CharacterModule } from './characters/character.module';
 
 @Module({
   imports: [
@@ -56,6 +58,7 @@ import { NpcSpellsEntry, NpcSpells } from './spells/npc-spells.entity';
     UserModule,
     PlayerModule,
     FeedbackModule,
+    CharacterModule,
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     ServeStaticModule.forRoot({
@@ -94,6 +97,7 @@ import { NpcSpellsEntry, NpcSpells } from './spells/npc-spells.entity';
         Zone,
         Rule,
         SkillCap,
+        Character,
       ],
       migrationsRun: true,
       migrations: ['dist/migrations/*{.ts,.js}'],

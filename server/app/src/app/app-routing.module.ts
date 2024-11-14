@@ -24,6 +24,7 @@ const routes: Routes = [
   { path: 'zones/:id', component: ZoneDetailsPage },
   { path: 'dps', component: CharacterComponent },
   { path: 'characters', component: CharacterComponent },
+  { path: 'characters/:id', component: CharacterComponent },
 ];
 
 @NgModule({

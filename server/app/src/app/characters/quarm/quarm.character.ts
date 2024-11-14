@@ -1,10 +1,10 @@
-import { Classes } from '../api/classes';
-import { ItemTypes, Skills } from '../api/items';
-import { PlayableRaces } from '../api/race';
-import { slotIds, Slots } from '../api/slots';
-import { Item, soldBy } from '../items/item.entity';
-import { Npc } from '../npcs/npc.entity';
-import { SpellNew } from '../spells/spell.entity';
+import { Classes } from '../../api/classes';
+import { ItemTypes, Skills } from '../../api/items';
+import { PlayableRaces } from '../../api/race';
+import { slotIds, Slots } from '../../api/slots';
+import { Item, soldBy } from '../../items/item.entity';
+import { Npc } from '../../npcs/npc.entity';
+import { SpellNew } from '../../spells/spell.entity';
 import { baseStats } from './quarm.classes';
 import {
   calcCR,
@@ -23,7 +23,7 @@ import {
   getHandToHandDelay,
   isWeapon,
 } from './quarm.attack';
-import { CharacterService } from './character.service';
+import { CharacterService } from '../character.service';
 import {
   calcMaxHP,
   clientCalcAC,
@@ -31,7 +31,6 @@ import {
   getATK,
   getMaxWornHastePercent,
 } from './quarm.client-mods';
-import { withRouterConfig } from '@angular/router';
 
 export interface Slot {
   slotIds: number[];
@@ -99,6 +98,7 @@ export interface Simulation {
 }
 
 export abstract class Character {
+  public id: number;
   public name?: string;
   public abstract isClient: boolean;
   public raceId: number;
@@ -119,10 +119,14 @@ export abstract class Character {
 
   constructor(
     protected characterService: CharacterService,
+    id: number,
+    name: string | undefined,
     raceId: number,
     classId: number,
     level: number
   ) {
+    this.id = id;
+    this.name = name;
     // Set race/class/level
     this.raceId = raceId === undefined ? PlayableRaces.Iksar : raceId;
     this.classId = classId === undefined ? Classes.Monk : classId;
@@ -138,15 +142,19 @@ export abstract class Character {
     this.initializeSlots();
   }
 
+  protected maxSkillsTimeout: any;
   protected async initializeMaxSkills() {
-    if (this.level && this.classId) {
-      this.isReadyToSimulate = false;
-      this.maxSkills = await this.characterService.getMaxSkills(
-        this.classId,
-        this.level
-      );
-      this.isReadyToSimulate = true;
-    }
+    clearTimeout(this.maxSkillsTimeout);
+    this.maxSkillsTimeout = setTimeout(async () => {
+      if (this.level && this.classId) {
+        this.isReadyToSimulate = false;
+        this.maxSkills = await this.characterService.getMaxSkills(
+          this.classId,
+          this.level
+        );
+        this.isReadyToSimulate = true;
+      }
+    }, 500);
   }
 
   public async awaitReady() {
@@ -201,7 +209,6 @@ export abstract class Character {
     }
     calcItemBonuses(this);
     this.calcStats();
-    console.log(this);
     this.afterEquip();
   }
 
@@ -216,8 +223,8 @@ export abstract class Character {
   }
 
   async calcStats() {
-    this.stats.str = calcStat(this, (stat) => stat.str);
-    this.stats.sta = calcStat(this, (stat) => stat.sta);
+    this.stats.str = calcStat(this, (stats) => stats.str);
+    this.stats.sta = calcStat(this, (stats) => stats.sta);
     this.stats.agi = calcStat(this, (stats) => stats.agi);
     this.stats.dex = calcStat(this, (stats) => stats.dex);
     this.stats.int = calcStat(this, (stats) => stats.int);
@@ -238,14 +245,7 @@ export abstract class Character {
     this.stats.haste = getMaxWornHastePercent(this); // TODO:  account for more sources of haste, like buffs, clickies, procs, etc
   }
 
-  initializeSlots() {
-    // Load
-    // loadSlots();
-    // or
-    this.setSlotsToEmpty();
-  }
-
-  setSlotsToEmpty() {
+  initializeSlots(slotIdItemMap?: Map<number, Item | undefined>) {
     // Dedupe dumb duplicate slots, like left ear / right ear
     const allSlotLabelValues = Object.keys(slotIds).map((idAsString) => {
       const id = parseInt(idAsString);
@@ -268,14 +268,17 @@ export abstract class Character {
     while (this.slots.length) {
       this.slots.shift();
     }
+
     for (let slotId = 0; slotId < Object.keys(slotIds).length; slotId++) {
       const slotName = slotIds[slotId];
       const ids = slotsGroupedByName.find((slots) => slots.label === slotName)
         ?.value as number[];
+        const item = slotIdItemMap?.get(slotId);
       this.slots.push({
         slotName,
         slotId,
         slotIds: ids,
+        item
       });
     }
   }
@@ -371,73 +374,11 @@ export abstract class Character {
       'Average Primary Hit',
       Math.round(simulation.primaryDamage / simulation.primaryHits)
     );
-    // console.log(
-    //   'Average Secondary Hit',
-    //   Math.round(simulation.secondaryDamage / simulation.secondaryHits)
-    // );
-    // const hitRate = Math.round(
-    //   ((simulation.primaryHits + simulation.secondaryHits) /
-    //     simulation.swings) *
-    //     100
-    // );
-    // console.log('Hit chance', hitRate, '%');
-    // console.log('Avoidance chance', 100 - hitRate, '%');
-    // console.log(
-    //   'Miss chance',
-    //   Math.round((simulation.misses / simulation.swings) * 100),
-    //   '%'
-    // );
-    // console.log(
-    //   'Dodge chance',
-    //   Math.round((simulation.dodges / simulation.swings) * 100),
-    //   '%'
-    // );
-    // console.log(
-    //   'Parry chance',
-    //   Math.round((simulation.parries / simulation.swings) * 100),
-    //   '%'
-    // );
-    // console.log(
-    //   'Block chance',
-    //   Math.round((simulation.blocks / simulation.swings) * 100),
-    //   '%'
-    // );
-    // console.log(
-    //   'Riposte chance',
-    //   Math.round((simulation.ripostes / simulation.swings) * 100),
-    //   '%'
-    // );
-    // console.log(
-    //   'Dual wield chance',
-    //   Math.round(
-    //     (simulation.dualWieldSuccess /
-    //       (simulation.dualWieldSuccess + simulation.dualWieldFail)) *
-    //       100
-    //   ),
-    //   '%'
-    // );
-    // console.log(
-    //   'Double attack chance',
-    //   Math.round(
-    //     (simulation.doubleAttackSuccess /
-    //       (simulation.doubleAttackSuccess + simulation.doubleAttackSuccess)) *
-    //       100
-    //   ),
-    //   '%'
-    // );
-    // console.log(
-    //   'Riposte chance',
-    //   Math.round((simulation.ripostes / simulation.swings) * 100),
-    //   '%'
-    // );
     console.log(
       'rDPS',
       (simulation.primaryDamage + simulation.secondaryDamage) /
         ((primaryDelay / 10) * rounds)
     );
-    // console.log(simulation);
-
-    // console.log(defender);
 
     simulation.dps =
       (simulation.primaryDamage + simulation.secondaryDamage) /
@@ -531,21 +472,6 @@ export abstract class Character {
         }
       }
     }
-    // console.log(
-    //   attackResult.avoidStatus === AvoidanceStatus.None
-    //     ? 'hit ' + attackResult.damage
-    //     : attackResult.avoidStatus === AvoidanceStatus.Miss
-    //     ? 'missed'
-    //     : attackResult.avoidStatus === AvoidanceStatus.Dodge
-    //     ? 'dodged'
-    //     : attackResult.avoidStatus === AvoidanceStatus.Parry
-    //     ? 'parried'
-    //     : attackResult.avoidStatus === AvoidanceStatus.Block
-    //     ? 'blocked'
-    //     : attackResult.avoidStatus === AvoidanceStatus.Riposte
-    //     ? 'riposte'
-    //     : 'idk'
-    // );
   }
 }
 
@@ -553,16 +479,22 @@ export class Player extends Character {
   public isClient: boolean = true;
 
   public unallocatedStatPoints: number = 0;
+  public owned: boolean;
 
   constructor(
     protected override characterService: CharacterService,
-    name: string,
+    id: number,
+    name: string | undefined,
     raceId: number,
     classId: number,
     level: number,
-    allocatedStats: Partial<Stats>
+    allocatedStats: Partial<Stats>,
+    slots: Map<number, Item | undefined>,
+    owned: boolean
   ) {
-    super(characterService, raceId, classId, level);
+    super(characterService, id, name, raceId, classId, level);
+    this.owned = owned;
+    this.initializeSlots(slots);
     this.initializeStats(allocatedStats);
   }
 
@@ -613,13 +545,8 @@ export class Player extends Character {
     });
     // this.initializeSlots(); // maybe don't do this?  unequips everything
     this.calcStats();
-    this.characterService.savePlayer(this);
 
     // mark items as unequippable?  or unequip them? idk.
-  }
-
-  override afterEquip(): void {
-    this.characterService.savePlayer(this);
   }
 }
 
@@ -630,7 +557,14 @@ export class NpcCharacter extends Character {
   constructor(characterService: CharacterService, npc: Npc) {
     const levelRange = npc.maxlevel - npc.level;
     const levelMod = levelRange ? Math.round(Math.random() * levelRange) : 0;
-    super(characterService, npc.race, npc.class, npc.level + levelMod);
+    super(
+      characterService,
+      npc.id,
+      npc.name,
+      npc.race,
+      npc.class,
+      npc.level + levelMod
+    );
     this.npc = npc;
     this.isClient = false;
     this.initializeStats();

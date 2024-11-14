@@ -1,68 +1,34 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from '../api/api.service';
-import { Player } from './quarm.character';
+import { Player } from './quarm/quarm.character';
 import { PlayableRaces } from '../api/race';
 import { Classes } from '../api/classes';
+import { Item } from '../items/item.entity';
 
-type PlayerData = [
-  apiKey: string,
-  name: string,
-  level: number,
-  raceId: number,
-  classId: number,
-  str: number,
-  sta: number,
-  agi: number,
-  dex: number,
-  int: number,
-  wis: number,
-  cha: number,
-  charm: number | undefined,
-  ear: number | undefined,
-  head: number | undefined,
-  face: number | undefined,
-  ear: number | undefined,
-  neck: number | undefined,
-  shoulder: number | undefined,
-  arms: number | undefined,
-  back: number | undefined,
-  wrist: number | undefined,
-  wrist: number | undefined,
-  range: number | undefined,
-  hands: number | undefined,
-  primary: number | undefined,
-  secondary: number | undefined,
-  fingers: number | undefined,
-  fingers: number | undefined,
-  chest: number | undefined,
-  legs: number | undefined,
-  feet: number | undefined,
-  waist: number | undefined,
-  powersource: number | undefined,
-  ammo: number | undefined
-];
-
-interface PersistedPlayer {
-  name: string;
+export interface CharacterDto {
+  id: number;
+  name?: string;
+  guild?: string;
   level: number;
-  raceId: number;
-  classId: number;
-  slots: { slotId: number; itemId: number | undefined }[];
-  allocatedStats: {
-    str: number;
-    sta: number;
-    agi: number;
-    dex: number;
-    int: number;
-    wis: number;
-    cha: number;
-  };
+  class: number;
+  race: number;
+
+  // array of stats in order: str,sta,agi,dex,wis,int,cha
+  stats: string;
+
+  // array of items by slotId, ex: 123,0,2345,66789896,0...
+  slots: string;
+
+  updatedAt: string;
+  owner: boolean;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class CharacterService {
+  public characterDtos: CharacterDto[] = [];
+
   constructor(private apiService: ApiService) {}
 
   async getMaxSkills(classId: number, level: number) {
@@ -74,119 +40,119 @@ export class CharacterService {
     return maxSkills;
   }
 
-  getSavedPlayerNames = (): string[] => {
-    const playerNamesString = localStorage.getItem('playerNames');
-    if (!playerNamesString) {
-      return [];
-    }
-    return JSON.parse(playerNamesString);
-  };
-
-  getPersistedPlayer = (player: Player) => {
+  mapToCharacterDto = (player: Player) => {
     let { name, level, raceId, classId, allocatedStats } = player;
-    const slots = player.slots.map((s) => ({
-      slotId: s.slotId,
-      itemId: s.item?.id,
-    }));
+    const { str, sta, agi, dex, int, wis, cha } = allocatedStats;
+    const stats = [str, sta, agi, dex, wis, int, cha].join(',');
+    const slots = [...player.slots]
+      .sort((a, b) => a.slotId - b.slotId)
+      .map((slot) => slot.item?.id || null)
+      .join(',');
+    const sanitizedName = name
+      ? name.replace(/[^A-Z\s]/gi, '').trim()
+      : undefined;
 
-    const persistedPlayer: PersistedPlayer = {
-      name: name || 'No name',
+    const characterDto: Partial<CharacterDto> = {
+      id: player.id,
+      name: sanitizedName,
       level,
-      raceId,
-      classId,
+      race: raceId,
+      class: classId,
       slots,
-      allocatedStats: {
-        str: allocatedStats.str,
-        sta: allocatedStats.sta,
-        agi: allocatedStats.agi,
-        dex: allocatedStats.dex,
-        int: allocatedStats.int,
-        wis: allocatedStats.wis,
-        cha: allocatedStats.cha,
-      },
+      stats,
     };
 
-    return persistedPlayer;
+    return characterDto;
   };
 
-  // savePlayer2 = (player: Player) => {};
+  async mapToPlayer(characterDto: CharacterDto) {
+    // Parse stats
+    const [str, sta, agi, dex, wis, int, cha] = characterDto.stats
+      .split(',')
+      .map(parseInt);
 
-  // getPersistedPlayer2 = (player: Player) => {
-  //   let { name, level, raceId, classId, allocatedStats } = player;
-  //   const { str, sta, agi, dex, int, wis, cha } = allocatedStats;
-
-  //   const slotItems = player.slots
-  //     .sort((a, b) => b.slotId - a.slotId)
-  //     .map((slot) => slot.item?.id);
-  //   const sanitizedName = name ? name.replace(/[^A-Z\s]/gi, '').trim() : null;
-  //   const data = [
-  //     sanitizedName,
-  //     level,
-  //     raceId,
-  //     classId,
-  //     str,
-  //     sta,
-  //     agi,
-  //     dex,
-  //     int,
-  //     wis,
-  //     cha,
-  //     slotItems,
-  //   ];
-
-  //   const persistedPlayer: PersistedPlayer = {
-  //     name: name || 'No name',
-  //     level,
-  //     raceId,
-  //     classId,
-  //     slots,
-  //     allocatedStats: {
-  //       str: allocatedStats.str,
-  //       sta: allocatedStats.sta,
-  //       agi: allocatedStats.agi,
-  //       dex: allocatedStats.dex,
-  //       int: allocatedStats.int,
-  //       wis: allocatedStats.wis,
-  //       cha: allocatedStats.cha,
-  //     },
-  //   };
-
-  //   return persistedPlayer;
-  // };
-
-  savePlayer = (player: Player) => {
-    const persistedPlayer = this.getPersistedPlayer(player);
-
-    if (!persistedPlayer.name) {
-      throw new Error(`Can't save player without a name`);
-    }
-
-    const playerNames = JSON.parse(localStorage.getItem('playerNames') || '[]');
-    const playerNamesSet = new Set([...playerNames, name]);
-    localStorage.setItem(
-      'playerNames',
-      JSON.stringify([...playerNamesSet.values()])
+    // Parse slots and load Items
+    const slots = characterDto.slots.split(',').map((s) => parseInt(s) || null);
+    const itemIds = Array.from(
+      slots.filter((slot) => slot !== null)
+    ) as number[];
+    const items = itemIds.length
+      ? await this.apiService.getItemSnippets(itemIds)
+      : [];
+    const slotIdItemMap = new Map<number, Item | undefined>(
+      slots.map((itemId, slotId) => {
+        const item = items.find((i) => i.id === itemId);
+        return [slotId, item];
+      })
     );
-    localStorage.setItem(`player-${name}`, JSON.stringify(persistedPlayer));
-  };
 
-  loadPlayer = (playerName: string) => {
-    const persistedPlayerString = localStorage.getItem(`player-${playerName}`);
-    if (!persistedPlayerString) {
-      return undefined;
-    }
-    const persistedPlayer: PersistedPlayer = JSON.parse(persistedPlayerString);
     return new Player(
       this,
-      persistedPlayer.name,
-      persistedPlayer.raceId,
-      persistedPlayer.classId,
-      persistedPlayer.level,
-      persistedPlayer.allocatedStats
+      characterDto.id,
+      characterDto.name,
+      characterDto.race,
+      characterDto.class,
+      characterDto.level,
+      {
+        str: str || 0,
+        sta: sta || 0,
+        agi: agi || 0,
+        dex: dex || 0,
+        wis: wis || 0,
+        int: int || 0,
+        cha: cha || 0,
+      },
+      slotIdItemMap,
+      characterDto.owner
+    );
+  }
+
+  savePlayer = async (player: Player) => {
+    const characterDto = this.mapToCharacterDto(player);
+    if (player.id) {
+      const updated = await this.apiService.updateCharacter(characterDto);
+      const existing = this.characterDtos.find(
+        (existing) => existing.id === updated.id
+      );
+      if (existing) {
+        existing.name = updated.name;
+      }
+      return updated;
+    } else {
+      const character = await this.apiService.createCharacter(characterDto);
+      this.characterDtos.push(character);
+      player.id = character.id;
+      return character;
+    }
+  };
+
+  loadPlayer = async (id: number) => {
+    const characterDto = await this.apiService.getCharacter(id);
+    return this.mapToPlayer(characterDto);
+  };
+
+  loadMyCharacters = async () => {
+    if (!this.characterDtos.length) {
+      this.characterDtos = await this.apiService.getCharacters();
+    }
+  };
+
+  deletePlayer = async (id: number) => {
+    await this.apiService.deleteCharacter(id);
+    this.characterDtos = this.characterDtos.filter(
+      (player) => player.id !== id
     );
   };
 
-  createNewCharacter = () => {
-    return new Player(this, '', PlayableRaces.Iksar, Classes.Monk, 34, {});
+  createNewCharacter = async () => {
+    const characterDto = await this.apiService.createCharacter({
+      level: 50,
+      class: Classes.Monk,
+      race: PlayableRaces.Iksar,
+      stats: '',
+      slots: '',
+    });
+    this.characterDtos.push(characterDto);
+    return characterDto;
   };
 }
