@@ -364,7 +364,6 @@ export class ItemService {
   }
 
   async getById(itemId: number, includeAuctions = false) {
-    const start = Date.now();
     // Load the item
     const item = await this.getItemWithEffectsCached(itemId);
 
@@ -393,7 +392,6 @@ export class ItemService {
         )
       : undefined;
 
-    const two = Date.now();
     // But do it in parallel, because it's a lot potentially
     const [itemLootDrops, itemMerchants, dailyAuctions, auctionSummaries] =
       await Promise.all([
@@ -402,15 +400,11 @@ export class ItemService {
         getDailyAuctions,
         getAuctionSummaries,
       ]);
-    const three = Date.now();
-    console.log(three - two, 'waiting for extras');
 
     item.lootDropEntries = itemLootDrops?.lootDropEntries;
     item.merchantEntries = itemMerchants?.merchantEntries;
     item.dailyAuctions = dailyAuctions;
     item.auctionSummaries = auctionSummaries;
-    const end = Date.now();
-    console.log(end - start);
     return item;
   }
 
