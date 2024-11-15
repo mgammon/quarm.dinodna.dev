@@ -85,3 +85,9 @@ table {
   width: 200px;
   margin: 0 1em;
 }
+
+:host ::ng-deep .p-divider {
+  margin:0;
+  padding:0;
+  margin-bottom:1em;
+}

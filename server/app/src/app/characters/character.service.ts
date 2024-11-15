@@ -69,7 +69,7 @@ export class CharacterService {
     // Parse stats
     const [str, sta, agi, dex, wis, int, cha] = characterDto.stats
       .split(',')
-      .map(parseInt);
+      .map(stat => parseInt(stat));
 
     // Parse slots and load Items
     const slots = characterDto.slots.split(',').map((s) => parseInt(s) || null);
@@ -128,6 +128,9 @@ export class CharacterService {
 
   loadPlayer = async (id: number) => {
     const characterDto = await this.apiService.getCharacter(id);
+    if (!characterDto) {
+      return undefined;
+    }
     return this.mapToPlayer(characterDto);
   };
 
@@ -152,7 +155,7 @@ export class CharacterService {
       stats: '',
       slots: '',
     });
-    this.characterDtos.push(characterDto);
+    this.characterDtos = [...this.characterDtos, characterDto];
     return characterDto;
   };
 }

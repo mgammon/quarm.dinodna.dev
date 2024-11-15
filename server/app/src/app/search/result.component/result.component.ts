@@ -13,6 +13,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { Zone, zoneMap } from '../../zones/zone.entity';
 import { classIds } from '../../api/classes';
 import { BadgeModule } from 'primeng/badge';
+import { AvatarModule } from 'primeng/avatar';
 
 type Entity = Item | Npc | SpellNew | Zone;
 
@@ -29,6 +30,7 @@ type Entity = Item | Npc | SpellNew | Zone;
     ItemComponent,
     SpellComponent,
     BadgeModule,
+    AvatarModule,
   ],
 })
 export class ResultComponent implements OnDestroy {
@@ -115,7 +117,11 @@ export class ResultComponent implements OnDestroy {
       : this.isZone()
       ? 'zones'
       : 'spells';
-    this.router.navigateByUrl(`/${entityName}/${this.isZone() ? this.getEntityAsZone().short_name : this.entity.id}`);
+    this.router.navigateByUrl(
+      `/${entityName}/${
+        this.isZone() ? this.getEntityAsZone().short_name : this.entity.id
+      }`
+    );
   }
 
   getNpcZone() {
@@ -136,5 +142,9 @@ export class ResultComponent implements OnDestroy {
 
   getNpcClass() {
     return classIds[this.getEntityAsNpc().class] || null;
+  }
+
+  getNpcLevel() {
+    return this.getEntityAsNpc().level;
   }
 }

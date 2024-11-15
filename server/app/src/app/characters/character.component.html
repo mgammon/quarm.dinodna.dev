@@ -14,6 +14,7 @@
               placeholder="Character"
               class="p-inputtext-sm"
               [showClear]="false"
+              emptyMessage="No characters created yet!"
             ></p-dropdown>
           </span>
           <p-button
@@ -22,6 +23,7 @@
             (click)="deleteCharacter()"
             icon="pi pi-trash"
             [outlined]="true"
+            pTooltip="Delete character"
           ></p-button>
           <p-button
             icon="pi pi-plus"
@@ -29,17 +31,50 @@
             size="small"
             (click)="createNewCharacter()"
             [outlined]="true"
+            pTooltip="Create new character"
           ></p-button>
         </div>
       </ng-template>
       <ng-template pTemplate="header">
         <div style="font-weight: bold">Characters</div>
       </ng-template>
-      <div class="character-container" *ngIf="character">
+      <div
+        *ngIf="loading"
+        style="
+          text-align: center;
+          font-weight: bold;
+          opacity: 0.5;
+          padding: 3em;
+          width: 484px;
+          height: 527px;
+        "
+      >
+        Loading...
+      </div>
+      <div
+        *ngIf="!loading && !character"
+        style="
+          text-align: center;
+          font-weight: bold;
+          opacity: 0.5;
+          padding: 3em;
+          width: 484px;
+          height: 527px;
+        "
+      >
+        Character not found
+      </div>
+      <div class="character-container" *ngIf="!loading && character">
         <div class="left" style="margin-right: 1em">
           <div class="readonly-character" *ngIf="!character.owned">
-            <div style="font-weight:bold;font-size:1.15em;">{{character.name || 'No name'}}</div>
-            <div style="font-weight:bold">{{character.level}} {{prettyRaces[character.raceId]}} {{prettyClasses[character.classId]}}</div>
+            <div style="font-weight: bold">
+              {{ character.name || "No name" }}
+            </div>
+            <div style="font-size: 0.9em">
+              {{ character.level }} {{ prettyRaces[character.raceId] }}
+              {{ prettyClasses[character.classId] }}
+            </div>
+            <br />
           </div>
           <div class="editable-character" *ngIf="character.owned">
             <div class="character-inputs">
@@ -49,13 +84,12 @@
                   pInputText
                   id="name"
                   class="p-inputtext-sm"
+                  style="width: 140px"
                   [(ngModel)]="character.name"
-                  (ngModelChange)="onCharacterChange()"
+                  (ngModelChange)="this.savePlayer()"
                 />
                 <label for="name">Name</label>
               </p-floatLabel>
-            </div>
-            <div class="character-inputs">
               <!-- Level -->
               <span class="p-float-label">
                 <p-inputNumber
@@ -69,6 +103,8 @@
                   (ngModelChange)="onCharacterChange()"
                 /><label for="level">Level</label>
               </span>
+            </div>
+            <div class="character-inputs">
               <!-- Race -->
               <span class="p-float-label">
                 <p-dropdown
@@ -100,10 +136,16 @@
                 <label for="class">Class</label>
               </span>
             </div>
+            <div
+              *ngIf="!isValidRaceClassCombo()"
+              style="color: crimson; font-size: 0.85em; text-align: right"
+            >
+              Invalid race / class combination
+            </div>
           </div>
-          <hr />
+          <p-divider />
           <!-- Calculated Stats -->
-          <ul class="hp-mana-ac-atk" *ngIf="character.isReadyToSimulate">
+          <ul class="hp-mana-ac-atk">
             <li>
               <span class="label">HP</span
               ><span class="value">{{ character.stats.hp }}</span>
@@ -125,23 +167,26 @@
               ><span class="value">{{ character.stats.haste | percent }}</span>
             </li>
           </ul>
-          <hr />
+          <p-divider />
           <!-- Stats -->
-          <div class="stats" *ngFor="let stat of allocatableStats">
-            <app-character-stat
-              (onChange)="savePlayer()"
-              [stat]="stat"
-              [character]="character"
-            />
-          </div>
-          <div
-            class="stats"
-            style="color: crimson; font-size: 0.85em; text-align: right"
-            *ngIf="character.unallocatedStatPoints"
-          >
-            {{ character.unallocatedStatPoints }} starting points left
-          </div>
-          <hr />
+          <ul style="max-width: 186px">
+            <li class="stats" *ngFor="let stat of allocatableStats">
+              <app-character-stat
+                (onChange)="savePlayer()"
+                [stat]="stat"
+                [character]="character"
+                style="width: 100%"
+              />
+            </li>
+            <li
+              class="stats"
+              style="color: crimson; font-size: 0.85em; text-align: right"
+              *ngIf="character.unallocatedStatPoints"
+            >
+              {{ character.unallocatedStatPoints }} starting points left
+            </li>
+          </ul>
+          <p-divider />
           <!-- Resists -->
           <ul class="resists">
             <li>

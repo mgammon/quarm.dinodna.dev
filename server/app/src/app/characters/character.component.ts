@@ -30,6 +30,8 @@ import { CharacterStatComponent } from './stats/character-stat.component';
 import { TagModule } from 'primeng/tag';
 import { UsageService } from '../usage.service';
 import { PanelModule } from 'primeng/panel';
+import { baseStats } from './quarm/quarm.classes';
+import { DividerModule } from 'primeng/divider';
 
 interface LabelValue<T> {
   label: string;
@@ -60,6 +62,7 @@ interface LabelValue<T> {
     CharacterStatComponent,
     TagModule,
     PanelModule,
+    DividerModule,
   ],
 })
 export class CharacterComponent {
@@ -68,6 +71,7 @@ export class CharacterComponent {
   public prettyRaces = prettyPlayableRaceIds;
   public prettyClasses = allClasses;
   public simulation?: Simulation;
+  public loading = false;
 
   public Math = Math;
   character?: Player;
@@ -108,8 +112,11 @@ export class CharacterComponent {
   }
 
   async initializeCharacter(characterId?: number) {
+    this.loading = true;
     await this.characterService.loadMyCharacters();
-    this.selectedCharacter = this.characterService.characterDtos.find(character => character.id === characterId);
+    this.selectedCharacter = this.characterService.characterDtos.find(
+      (character) => character.id === characterId
+    );
     if (!characterId || !Number.isInteger(characterId)) {
       if (this.characterService.characterDtos.length) {
         const characterDto = this.characterService.characterDtos[0];
@@ -121,8 +128,11 @@ export class CharacterComponent {
       this.location.go(`characters/${this.character.id}`);
     } else {
       this.character = await this.characterService.loadPlayer(characterId);
-      this.location.go(`characters/${this.character.id}`);
+      if (this.character){
+        this.location.go(`characters/${this.character.id}`);
+      }
     }
+    this.loading = false;
   }
 
   getClassOptions() {
@@ -174,14 +184,12 @@ export class CharacterComponent {
 
   private lastSaveAttemptTimeout: any;
   savePlayer() {
-    if (!this.character || !this.isValidCharacter()) {
-      return;
-    }
-    const player = this.character;
-
     clearTimeout(this.lastSaveAttemptTimeout);
     this.lastSaveAttemptTimeout = setTimeout(() => {
-      this.characterService.savePlayer(player);
+      if (!this.character || !this.isValidCharacter()) {
+        return;
+      }
+      this.characterService.savePlayer(this.character);
     }, 500);
   }
 
@@ -214,10 +222,18 @@ export class CharacterComponent {
   async createNewCharacter() {
     const characterDto = await this.characterService.createNewCharacter();
     this.character = await this.characterService.mapToPlayer(characterDto);
+    this.selectedCharacter = characterDto;
   }
 
   selectCharacter(character: Player) {
     this.character = character;
+  }
+
+  isValidRaceClassCombo() {
+    return (
+      this.character &&
+      !!baseStats[this.character.classId][this.character.raceId]
+    );
   }
 
   isValidCharacter() {
@@ -229,7 +245,8 @@ export class CharacterComponent {
     const validRace = this.character.raceId >= 0 && this.character.raceId <= 13;
     const validClass =
       this.character.classId >= 0 && this.character.classId <= 16;
+    const validRaceClassCombo = this.isValidRaceClassCombo();
 
-    return validLevelRange && validRace && validClass;
+    return validLevelRange && validRace && validClass && validRaceClassCombo;
   }
 }

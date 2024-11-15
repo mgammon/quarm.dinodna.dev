@@ -57,6 +57,9 @@ export class CharacterService {
   }
 
   mapToDto(character: Character, apiKey: string) {
+    if (!character) {
+      return null;
+    }
     return {
       id: character.id,
       name: character.name,

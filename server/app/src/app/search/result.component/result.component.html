@@ -15,13 +15,19 @@
   </div>
   <div *ngIf="isNpc()" class="search-item-container">
     <div class="icon">
-      <i *ngIf="!getNpcClass()" class="pi pi-user"></i
-      ><p-badge
-        class="class"
+      <p-avatar
+        *ngIf="!getNpcClass()"
+        icon="pi pi-user"
+        pBadge
+        [value]="getNpcLevel()"
+      />
+      <p-avatar
         *ngIf="getNpcClass()"
-        [value]="getNpcClass()"
-        severity="info"
-      ></p-badge>
+        [label]="getNpcClass() || ''"
+        pBadge
+        [value]="getNpcLevel()"
+        severity="success"
+      />
     </div>
     <div class="name">
       <span>{{ displayName(getEntityAsNpc().name) }}</span>

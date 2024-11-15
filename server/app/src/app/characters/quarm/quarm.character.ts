@@ -139,7 +139,6 @@ export abstract class Character {
     this.stats = getDefaultStats();
 
     this.initializeMaxSkills();
-    this.initializeSlots();
   }
 
   protected maxSkillsTimeout: any;
@@ -172,6 +171,12 @@ export abstract class Character {
 
   // be surreeee to callll this, too
   protected abstract initializeStats(): void;
+
+  refreshEquipmentCalcs() {
+    calcItemBonuses(this);
+    this.calcStats();
+    this.afterEquip();
+  }
 
   equip(item: Item | undefined, slot: Slot) {
     // If there's already a slot with this lore item, remove it from the existing slot
@@ -207,9 +212,7 @@ export abstract class Character {
         primaryWith2Hander.item = undefined;
       }
     }
-    calcItemBonuses(this);
-    this.calcStats();
-    this.afterEquip();
+    this.refreshEquipmentCalcs();
   }
 
   afterEquip() {}
@@ -281,10 +284,13 @@ export abstract class Character {
         item
       });
     }
+
+    calcItemBonuses(this);
+    this.calcStats();
+    this.afterEquip();
   }
 
   public getSimulation(defender: Character) {
-    console.log('attacking!');
     // There's a IsDualWielding function I should use, but whatever.
     const primary = this.slots.find((s) => s.slotName === 'Primary')?.item;
     const secondary = this.slots.find((s) => s.slotName === 'Secondary')?.item;
@@ -314,7 +320,7 @@ export abstract class Character {
     let primarySwingTimer = 0;
     let secondarySwingTimer = canDualWield ? 0 : Infinity;
 
-    const rounds = 300_000;
+    const rounds = 100_000;
     let timeToEllapse = primaryDelay * rounds;
     const simulation: Simulation = {
       misses: 0,
@@ -494,8 +500,8 @@ export class Player extends Character {
   ) {
     super(characterService, id, name, raceId, classId, level);
     this.owned = owned;
-    this.initializeSlots(slots);
     this.initializeStats(allocatedStats);
+    this.initializeSlots(slots);
   }
 
   initializeStats(allocatedStats?: Partial<Stats>) {
@@ -540,13 +546,8 @@ export class Player extends Character {
   onCharacterChange() {
     this.initializeStats();
     this.initializeMaxSkills();
-    this.slots.forEach((slot) => {
-      this.equip(slot.item, slot);
-    });
-    // this.initializeSlots(); // maybe don't do this?  unequips everything
+    this.refreshEquipmentCalcs();
     this.calcStats();
-
-    // mark items as unequippable?  or unequip them? idk.
   }
 }
 
