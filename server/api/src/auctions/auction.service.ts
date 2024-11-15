@@ -92,6 +92,7 @@ export class AuctionService {
       },
       relations: { log: { auctions: true } },
       select: {
+        id: true,
         sentAt: true,
         wts: true,
         logId: true,
@@ -106,6 +107,8 @@ export class AuctionService {
         },
       },
       order: { sentAt: 'DESC' },
+      take: 300,
+      cache: true,
     });
   }
 

@@ -43,6 +43,7 @@ import { EffectFilter, ItemSearchOptions } from './item.controller';
 import { SpellNew } from '../spells/spell-new.entity';
 import { AuctionService } from '../auctions/auction.service';
 import * as moment from 'moment';
+import { cache } from './in-memory-cache';
 
 @Injectable()
 export class ItemService {
@@ -340,15 +341,7 @@ export class ItemService {
   }
 
   async getItemSnippet(itemId: number) {
-    const item = await this.itemRepository.findOne({
-      where: { id: itemId },
-      relations: {
-        wornEffect: true,
-        clickEffect: true,
-        procEffect: true,
-        scrollEffect: true,
-      },
-    });
+    const item = await this.getItemWithEffectsCached(itemId);
     if (!item) {
       throw new NotFoundException(`Item ${itemId} not found`);
     }
@@ -356,53 +349,68 @@ export class ItemService {
     return item;
   }
 
-  async getById(itemId: number) {
-    const item = await this.itemRepository.findOne({
-      where: { id: itemId },
-      relations: {
-        wornEffect: true,
-        clickEffect: true,
-        procEffect: true,
-        scrollEffect: true,
-      },
-    });
+  async getItemWithEffectsCached(itemId: number) {
+    return cache('itemWithEffects', itemId, () =>
+      this.itemRepository.findOne({
+        where: { id: itemId },
+        relations: {
+          wornEffect: true,
+          clickEffect: true,
+          procEffect: true,
+          scrollEffect: true,
+        },
+      }),
+    );
+  }
+
+  async getById(itemId: number, includeAuctions = false) {
+    const start = Date.now();
+    // Load the item
+    const item = await this.getItemWithEffectsCached(itemId);
 
     if (!item) {
       throw new NotFoundException(`Item ${itemId} not found`);
     }
 
-    const itemLootDrops = await this.getLootDrops(itemId);
-    const itemMerchants = await this.getMerchants(itemId);
-    let dailyAuctions = await this.auctionService.getDailyAuctions(
-      itemId,
-      moment().subtract(1, 'days').toDate(),
+    // Load all the extras: loot drops, merchants, auctions
+    const getItemLootDrops = cache('itemLootDrops', itemId, () =>
+      this.getLootDrops(itemId),
     );
-    if (dailyAuctions.length < 3) {
-      dailyAuctions = await this.auctionService.getDailyAuctions(
-        itemId,
-        moment().subtract(3, 'days').toDate(),
-      );
-    }
-    if (dailyAuctions.length < 3) {
-      dailyAuctions = await this.auctionService.getDailyAuctions(
-        itemId,
-        moment().subtract(7, 'days').toDate(),
-      );
-    }
-    if (dailyAuctions.length < 3) {
-      dailyAuctions = await this.auctionService.getDailyAuctions(
-        itemId,
-        moment().subtract(30, 'days').toDate(),
-      );
-    }
-    const auctionSummaries = await this.auctionService.getAuctionSummaries(
-      itemId,
-      90,
+    const getItemMerchants = cache('itemMerchants', itemId, () =>
+      this.getMerchants(itemId),
     );
+    const getDailyAuctions = includeAuctions
+      ? cache('itemDailyAuctions', itemId, () =>
+          this.auctionService.getDailyAuctions(
+            itemId,
+            moment().subtract(30, 'days').toDate(),
+          ),
+        )
+      : undefined;
+    const getAuctionSummaries = includeAuctions
+      ? cache('itemAuctionSummaries', itemId, () =>
+          this.auctionService.getAuctionSummaries(itemId, 90),
+        )
+      : undefined;
+
+    const two = Date.now();
+    // But do it in parallel, because it's a lot potentially
+    const [itemLootDrops, itemMerchants, dailyAuctions, auctionSummaries] =
+      await Promise.all([
+        getItemLootDrops,
+        getItemMerchants,
+        getDailyAuctions,
+        getAuctionSummaries,
+      ]);
+    const three = Date.now();
+    console.log(three - two, 'waiting for extras');
+
     item.lootDropEntries = itemLootDrops?.lootDropEntries;
     item.merchantEntries = itemMerchants?.merchantEntries;
     item.dailyAuctions = dailyAuctions;
     item.auctionSummaries = auctionSummaries;
+    const end = Date.now();
+    console.log(end - start);
     return item;
   }
 

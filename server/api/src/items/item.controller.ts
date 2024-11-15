@@ -65,12 +65,16 @@ export class ItemController {
   constructor(private itemService: ItemService) {}
 
   @Get('/:id')
-  getById(@Param('id') id: string) {
+  getById(
+    @Param('id') id: string,
+    @Query('includeAuctions') includeAuctionsParam: string,
+  ) {
     const itemId = Number.parseInt(id);
     if (Number.isNaN(itemId)) {
       throw new NotFoundException();
     }
-    return this.itemService.getById(itemId);
+    const includeAuctions = includeAuctionsParam === 'true';
+    return this.itemService.getById(itemId, includeAuctions);
   }
 
   @Get('/')

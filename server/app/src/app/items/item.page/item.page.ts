@@ -195,7 +195,7 @@ export class ItemPage {
       throw new Error('Bad Item ID');
     }
 
-    this.item = await this.apiService.getItem(this.itemId);
+    this.item = await this.apiService.getItem(this.itemId, true);
     this.navigationService.addToRecentPages({
       entity: this.item,
       url: `items/${this.item.id}`,

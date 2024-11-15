@@ -81,16 +81,18 @@ export class ApiService {
     return lastValueFrom<T>(observableRequest.pipe(take(1)));
   }
 
-  async getItem(itemId: number) {
+  async getItem(itemId: number, includeAuctions = false) {
     // Try to get from the cache
     const cached = this.cache.items.get(itemId);
-    if (cached) {
+    if (cached && (cached.dailyAuctions || !includeAuctions)) {
       return cached;
     }
 
     // Or get it from the API and cache it
     const item = await this.toPromise(
-      this.http.get<Item>(`${this.apiUrl}/items/${itemId}`)
+      this.http.get<Item>(`${this.apiUrl}/items/${itemId}`, {
+        params: { includeAuctions },
+      })
     );
     this.cache.items.set(item.id, item);
     return item;
@@ -99,7 +101,9 @@ export class ApiService {
   async getItemSnippets(itemIds: number[]) {
     // Or get it from the API and cache it
     return this.toPromise(
-      this.http.get<Item[]>(`${this.apiUrl}/items`, { params: { ids: itemIds}})
+      this.http.get<Item[]>(`${this.apiUrl}/items`, {
+        params: { ids: itemIds },
+      })
     );
   }
 
