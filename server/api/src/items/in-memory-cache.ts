@@ -1,29 +1,64 @@
+interface CachedItem<T = any> {
+  item: T;
+  cachedAt: number;
+}
+
 class InMemoryLruCache {
-  private cache = new Map<any, any>();
+  private CACHE_DURATION = 60_000 * 60; // 1 hour
+  private cache = new Map<any, CachedItem>();
 
-  constructor(private maxSize: number = 10_000) {}
+  private stats = { hits: 0, misses: 0, expired: 0, evicted: 0 };
 
-  private get<T>(key: any): T | undefined {
-    const item = this.cache.get(key);
+  constructor(private maxSize: number = 10_000) {
+    console.log(
+      'Cache stats;',
+      JSON.stringify({ ...this.stats, size: this.cache.size }, null, 2),
+    );
+    setInterval(
+      () =>
+        console.log(
+          'Cache stats;',
+          JSON.stringify({ ...this.stats, size: this.cache.size }, null, 2),
+        ),
+      60_000 * 30,
+    );
+  }
 
-    if (item) {
+  private get<T>(key: any, duration?: number): T | undefined {
+    const DURATION = duration || this.CACHE_DURATION;
+    const cachedItem = this.cache.get(key);
+    const hasExpired =
+      cachedItem && cachedItem.cachedAt < Date.now() - DURATION;
+
+    // Cache hit, and it's not expired
+    if (cachedItem && !hasExpired) {
+      this.stats.hits++;
       this.cache.delete(key);
-      this.cache.set(key, item);
+      this.cache.set(key, cachedItem);
+      return cachedItem?.item as T | undefined;
     }
 
-    return item;
+    // Cache hit, but it's expired.
+    if (cachedItem && hasExpired) {
+      this.cache.delete(key);
+      this.stats.expired++;
+    }
+
+    this.stats.misses++;
+    return undefined;
   }
 
   private set<T>(key: any, item: T) {
     if (this.cache.size >= this.maxSize) {
+      this.stats.evicted++;
       this.cache.delete(this.cache.keys().next().value);
     }
     this.cache.delete(key);
-    this.cache.set(key, item);
+    this.cache.set(key, { item, cachedAt: Date.now() });
   }
 
-  async cached<T>(key: any, retrieve: () => Promise<T>) {
-    let item = this.get<T>(key);
+  async cached<T>(key: any, retrieve: () => Promise<T>, duration?: number) {
+    let item = this.get<T>(key, duration);
     if (item) {
       return item;
     }
@@ -36,6 +71,11 @@ class InMemoryLruCache {
 
 // not nestified, but whatever, for now.
 const inMemoryCache = new InMemoryLruCache();
-export function cache<T>(topic: string, key: any, retrieve: () => Promise<T>) {
-  return inMemoryCache.cached<T>(topic + key, retrieve);
+export function cache<T>(
+  topic: string,
+  key: any,
+  retrieve: () => Promise<T>,
+  duration?: number,
+) {
+  return inMemoryCache.cached<T>(topic + key, retrieve, duration);
 }

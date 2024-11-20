@@ -350,16 +350,20 @@ export class ItemService {
   }
 
   async getItemWithEffectsCached(itemId: number) {
-    return cache('itemWithEffects', itemId, () =>
-      this.itemRepository.findOne({
-        where: { id: itemId },
-        relations: {
-          wornEffect: true,
-          clickEffect: true,
-          procEffect: true,
-          scrollEffect: true,
-        },
-      }),
+    return cache(
+      'itemWithEffects',
+      itemId,
+      () =>
+        this.itemRepository.findOne({
+          where: { id: itemId },
+          relations: {
+            wornEffect: true,
+            clickEffect: true,
+            procEffect: true,
+            scrollEffect: true,
+          },
+        }),
+      Infinity,
     );
   }
 
@@ -372,11 +376,17 @@ export class ItemService {
     }
 
     // Load all the extras: loot drops, merchants, auctions
-    const getItemLootDrops = cache('itemLootDrops', itemId, () =>
-      this.getLootDrops(itemId),
+    const getItemLootDrops = cache(
+      'itemLootDrops',
+      itemId,
+      () => this.getLootDrops(itemId),
+      Infinity,
     );
-    const getItemMerchants = cache('itemMerchants', itemId, () =>
-      this.getMerchants(itemId),
+    const getItemMerchants = cache(
+      'itemMerchants',
+      itemId,
+      () => this.getMerchants(itemId),
+      Infinity,
     );
     const getDailyAuctions = includeAuctions
       ? cache('itemDailyAuctions', itemId, () =>
