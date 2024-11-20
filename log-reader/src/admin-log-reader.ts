@@ -12,9 +12,12 @@ interface LogStats {
 const publicChannelRegex =
   /^\[.*\] [A-Z)]{1}[a-z]{2,17} (auction|out of character|shout|say|tells General:|tells Lfg:|tells Auction:|tells Port:|tells Ports:)s?/;
 
-
 const blacklistedPublicRegex =
   /(As you wish, oh great one)|(Sorry, Master)|(I beg forgiveness)|(Guarding with my life)|(Following you, Master)|(Time to die)/;
+
+const systemMessageRegex = /^\[.*\] \[SYSTEM\] /;
+
+const broadcastRegex = /^\[.*\] [A-Z)]{1}[a-z]{2,17} BROADCASTS?/;
 
 const lastSentMessages: string[] = [];
 
@@ -57,7 +60,11 @@ class AdminLogReader {
       // Make sure we have a logConfig
       let logFile = this.logFiles.find((log) => log.file === logStat.filename);
       if (!logFile) {
-        logFile = { file: logStat.filename, bytesRead: logStat.size, lastReadAt: 0 };
+        logFile = {
+          file: logStat.filename,
+          bytesRead: logStat.size,
+          lastReadAt: 0,
+        };
         this.logFiles.push(logFile);
       }
       // If the size is larger than how far we've read, keep reading the log
@@ -73,7 +80,7 @@ class AdminLogReader {
     config.save();
   }
 
-  private openQuarmMule(){
+  private openQuarmMule() {
     if (Date.now() - this.lastUploadedAt > 5 * 60_000) {
       this.lastUploadedAt = Date.now(); // pretend we uploaded so we give it a chance to open the mule before running the open script again
       exec("open-quarm-mule.ahk", (err: any) => {
@@ -118,7 +125,12 @@ class AdminLogReader {
   }
 
   isPublicMessage(line: string) {
-    return publicChannelRegex.test(line) && !blacklistedPublicRegex.test(line);
+    return (
+      (publicChannelRegex.test(line) ||
+        broadcastRegex.test(line) ||
+        systemMessageRegex.test(line)) &&
+      !blacklistedPublicRegex.test(line)
+    );
   }
 
   private getLogStats() {

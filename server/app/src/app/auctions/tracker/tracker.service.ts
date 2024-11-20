@@ -172,16 +172,21 @@ export class TrackerService {
     return parseFloat(localStorage.getItem('notificationVolume') || '1');
   }
 
-  playAlert(log: Log, auction: Auction) {
+  playAlert(log: Log, auction?: Auction) {
     if (this.alertType === 'none') {
       return;
     } else if (this.alertType === 'sound') {
       this.alertAudio.volume = this.volume;
       this.alertAudio.play();
     } else if (this.alertType === 'voice') {
-      const message = `${auction.itemText} ${
-        auction.wts === true ? 'selling' : auction.wts === false ? 'buying' : ''
-      } ${auction.price > 0 ? 'for ' + auction.price : 'no price set'}`;
+      let message: string;
+      if (auction) {
+        message = `${auction.itemText} ${
+          auction.wts === true ? 'selling' : auction.wts === false ? 'buying' : ''
+        } ${auction.price > 0 ? 'for ' + auction.price : 'no price set'}`;
+      } else {
+        message = log.text;
+      }
       this.speechService.speak(message, this.volume);
     }
   }

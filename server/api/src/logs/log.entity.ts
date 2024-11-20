@@ -17,6 +17,8 @@ export interface LogDto {
   text: string;
   sentAt: Date;
   channel:
+    | 'system'
+    | 'broadcast'
     | 'ooc'
     | 'auction'
     | 'shout'
@@ -46,6 +48,8 @@ export class Log {
 
   @Column({ nullable: true })
   channel:
+    | 'system'
+    | 'broadcast'
     | 'ooc'
     | 'auction'
     | 'shout'

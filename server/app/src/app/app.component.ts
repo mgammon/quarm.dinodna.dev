@@ -21,6 +21,10 @@ import { LocationService } from './logs/location.service';
 import { ApiService } from './api/api.service';
 import { BadgeModule } from 'primeng/badge';
 import { FeedbackComponent } from './feedback/feedback.component';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+import { Log } from './logs/log.entity';
+import { TrackerService } from './auctions/tracker/tracker.service';
 
 @Component({
   selector: 'app-root',
@@ -44,7 +48,9 @@ import { FeedbackComponent } from './feedback/feedback.component';
     InputGroupModule,
     BadgeModule,
     FeedbackComponent,
+    ToastModule,
   ],
+  providers: [MessageService],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppComponent {
@@ -53,6 +59,8 @@ export class AppComponent {
   @ViewChild('recentMenu') recentMenuAny?: any;
 
   apiKey: string | null;
+
+  public mostRecentSystemLog?: Log;
 
   public liveButtonClass: string = 'yellow';
   public showSetEqDirectory = (window as any).showDirectoryPicker;
@@ -64,9 +72,18 @@ export class AppComponent {
     public apiService: ApiService,
     public locationService: LocationService,
     private router: Router,
-    public logReaderService: LogReaderService
+    public logReaderService: LogReaderService,
+    public messageService: MessageService,
+    public trackerService: TrackerService
   ) {
     this.apiKey = this.apiService.apiKey + '';
+    logService.logEvents.subscribe((logs) => {
+      const systemLogs = logs.filter((log) => log.channel === 'system');
+      const mostRecentSystemLog = systemLogs[systemLogs.length - 1];
+      if (mostRecentSystemLog) {
+        this.onSystemLog(mostRecentSystemLog);
+      }
+    });
   }
 
   getThemeMenuOptions() {
@@ -92,4 +109,21 @@ export class AppComponent {
       this.logReaderService.setDirectory(directory);
     }
   }
+
+  onSystemLog = (log: Log) => {
+    if ((this.mostRecentSystemLog?.sentAt.unix() || 0) < log.sentAt.unix()) {
+      if (this.mostRecentSystemLog) {
+        this.messageService.clear(this.mostRecentSystemLog.id.toString());
+      }
+      this.mostRecentSystemLog = log;
+    }
+    this.messageService.clear();
+    this.messageService.add({
+      severity: 'warn',
+      summary: '[SYSTEM]',
+      detail: log.text,
+      life: 59_000,
+    });
+    this.trackerService.playAlert(log)
+  };
 }

@@ -6,6 +6,8 @@ export interface Log {
   text: string;
   sentAt: Moment;
   channel:
+    | 'system'
+    | 'broadcast'
     | 'ooc'
     | 'auction'
     | 'shout'

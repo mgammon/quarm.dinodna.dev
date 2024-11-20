@@ -92,21 +92,25 @@ export class ChatLogComponent implements OnInit {
 
     // Add the channel flavor text
     const channelText =
-      this.log.channel === 'global-General'
-        ? " tells General,"
+      this.log.channel === 'system'
+        ? ' '
+        : this.log.channel === 'broadcast'
+        ? ' BROADCASTS,'
+        : this.log.channel === 'global-General'
+        ? ' tells General,'
         : this.log.channel === 'global-Lfg'
-        ? " tells Lfg,"
+        ? ' tells Lfg,'
         : this.log.channel === 'global-Auction'
-        ? " tells Auction,"
+        ? ' tells Auction,'
         : this.log.channel === 'global-Port'
-        ? " tells Port,"
+        ? ' tells Port,'
         : this.log.channel === 'auction'
-        ? " auctions,"
+        ? ' auctions,'
         : this.log.channel === 'ooc'
-        ? " says out of character,"
+        ? ' says out of character,'
         : this.log.channel === 'shout'
-        ? " shouts,"
-        : " says,";
+        ? ' shouts,'
+        : ' says,';
     this.logChunks.push({ type: 'text', displayText: channelText });
 
     let unparsedText = this.log.text + '';

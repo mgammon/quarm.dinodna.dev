@@ -77,31 +77,40 @@ export class LogService {
     const utcOffset = moment.tz(new Date(), 'America/Chicago').utcOffset();
     const sentAt = moment(dateText).subtract(utcOffset, 'minutes').toDate();
 
-    // Get the player
-    const player = rawText.split('] ')[1].split(' ')[0];
-
     // Get the channel
     const channelChunk = rawText.split(',')[0];
-    const channel = channelChunk.includes('General:')
-      ? 'global-General'
-      : channelChunk.includes('Lfg:')
-        ? 'global-Lfg'
-        : channelChunk.includes('Auction:')
-          ? 'global-Auction'
-          : channelChunk.includes('Port:')
-            ? 'global-Port'
-            : channelChunk.includes('auctions')
-              ? 'auction'
-              : channelChunk.includes('out of character')
-                ? 'ooc'
-                : channelChunk.includes('shouts')
-                  ? 'shout'
-                  : channelChunk.includes('says')
-                    ? 'say'
-                    : null;
+    const channel = channelChunk.includes('[SYSTEM]')
+      ? 'system'
+      : channelChunk.includes('BROADCASTS')
+        ? 'broadcast'
+        : channelChunk.includes('General:')
+          ? 'global-General'
+          : channelChunk.includes('Lfg:')
+            ? 'global-Lfg'
+            : channelChunk.includes('Auction:')
+              ? 'global-Auction'
+              : channelChunk.includes('Port:')
+                ? 'global-Port'
+                : channelChunk.includes('auctions')
+                  ? 'auction'
+                  : channelChunk.includes('out of character')
+                    ? 'ooc'
+                    : channelChunk.includes('shouts')
+                      ? 'shout'
+                      : channelChunk.includes('says')
+                        ? 'say'
+                        : null;
+
+    // Get the player
+    const player =
+      channel === 'system' ? '[SYSTEM]' : rawText.split('] ')[1].split(' ')[0];
 
     // Get the text
-    const startOfText = rawText.indexOf(', ');
+    const startOfText =
+      channel === 'system'
+        ? rawText.indexOf('[SYSTEM]') + '[SYSTEM]'.length
+        : rawText.indexOf(', ');
+
     const text = rawText
       .slice(startOfText + 1, rawText.length - 1)
       .replace('`', "'");
