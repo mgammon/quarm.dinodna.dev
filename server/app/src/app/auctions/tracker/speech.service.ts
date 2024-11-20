@@ -20,7 +20,7 @@ export class SpeechService {
 
   constructor() {}
 
-  public speak(message: string): void {
+  public speak(message: string, volume: number): void {
     if ('speechSynthesis' in window) {
       this.speechSynthesis = window.speechSynthesis;
       const allVoices = this.speechSynthesis.getVoices();
@@ -30,7 +30,7 @@ export class SpeechService {
       )[0];
       let utterance = new SpeechSynthesisUtterance(message);
       utterance.voice = preferredVoice || defaultVoice;
-
+      utterance.volume = volume;
       this.speechSynthesis?.speak(utterance);
     }
   }

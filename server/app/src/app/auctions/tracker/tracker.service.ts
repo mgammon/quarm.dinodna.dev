@@ -20,6 +20,7 @@ export interface ItemTracker {
 })
 export class TrackerService {
   public alertType: 'sound' | 'voice' | 'none';
+  public volume: number;
 
   public itemTrackers: ItemTracker[] = [];
 
@@ -29,6 +30,7 @@ export class TrackerService {
     private logService: LogService,
     private speechService: SpeechService
   ) {
+    this.volume = this.loadVolume();
     this.alertType =
       (localStorage.getItem('trackerAlertType') as any) || 'none';
     this.loadTrackers();
@@ -150,16 +152,37 @@ export class TrackerService {
 
   private alertAudio = new Audio('../../assets/alert.mp3');
 
+  async soundTest() {
+    if (this.alertType === 'voice') {
+      this.speechService.speak(
+        `Crushbone Belt selling for one quadrillion`,
+        this.volume
+      );
+    } else {
+      this.alertAudio.volume = this.volume;
+      this.alertAudio.play();
+    }
+  }
+
+  saveVolume() {
+    localStorage.setItem('notificationVolume', this.volume.toString());
+  }
+
+  loadVolume() {
+    return parseFloat(localStorage.getItem('notificationVolume') || '1');
+  }
+
   playAlert(log: Log, auction: Auction) {
     if (this.alertType === 'none') {
       return;
     } else if (this.alertType === 'sound') {
+      this.alertAudio.volume = this.volume;
       this.alertAudio.play();
     } else if (this.alertType === 'voice') {
       const message = `${auction.itemText} ${
         auction.wts === true ? 'selling' : auction.wts === false ? 'buying' : ''
       } ${auction.price > 0 ? 'for ' + auction.price : 'no price set'}`;
-      this.speechService.speak(message);
+      this.speechService.speak(message, this.volume);
     }
   }
 

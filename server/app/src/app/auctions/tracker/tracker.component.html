@@ -2,23 +2,80 @@
   <p-panel header="Item Tracking">
     <ng-template pTemplate="icons">
       <button
+        *ngIf="
+          trackerService.alertType === 'voice' ||
+          trackerService.alertType === 'sound'
+        "
+        class="p-panel-header-icon p-link mr-2"
+        (click)="op.toggle($event)"
+        pTooltip="Notification volume"
+        tooltipPosition="left"
+      >
+        <span
+          class="pi {{
+            trackerService.volume > 0.5
+              ? 'pi-volume-up'
+              : trackerService.volume > 0
+              ? 'pi-volume-down'
+              : 'pi-volume-off'
+          }}"
+          style="color: var(--primary-color)"
+        ></span>
+      </button>
+      <p-overlayPanel #op>
+        <div style="height: 116px">
+          <div
+            style="
+              height: 85px;
+              width: 1em;
+              display: flex;
+              justify-content: center;
+            "
+          >
+            <p-slider
+              [(ngModel)]="trackerService.volume"
+              (onChange)="trackerService.saveVolume()"
+              orientation="vertical"
+              [step]="0.01"
+              [min]="0"
+              [max]="1"
+            ></p-slider>
+          </div>
+          <div style="margin-top: 1em">
+            <button
+              class="p-panel-header-icon p-link mr-2"
+              (click)="trackerService.soundTest()"
+              [pTooltip]="'Test volume at ' + trackerService.volume * 100 + '%'"
+            >
+              <span
+                class="pi pi-volume-up"
+                style="color: var(--primary-color)"
+              ></span>
+            </button>
+          </div>
+        </div>
+      </p-overlayPanel>
+      <button
         class="p-panel-header-icon p-link mr-2"
         (click)="trackerService.toggleAlertType()"
       >
         <span
           [pTooltip]="'Voice notifications enabled'"
+          tooltipPosition="left"
           *ngIf="trackerService.alertType === 'voice'"
           class="pi pi-comment"
           style="color: var(--primary-color)"
         ></span>
         <span
           [pTooltip]="'Notification sound enabled'"
+          tooltipPosition="left"
           *ngIf="trackerService.alertType === 'sound'"
           class="pi pi-bell"
           style="color: var(--primary-color)"
         ></span>
         <span
           [pTooltip]="'Notifications muted'"
+          tooltipPosition="left"
           *ngIf="trackerService.alertType === 'none'"
           class="pi pi-ban"
         ></span>

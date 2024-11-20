@@ -22,6 +22,9 @@ import { ItemTracker, TrackerService } from './tracker.service';
 import * as moment from 'moment';
 import { DateFromNowComponent } from './date-from-now.component';
 import { UsageService } from '../../usage.service';
+import { SliderModule } from 'primeng/slider';
+import { FormsModule } from '@angular/forms';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
 
 moment.updateLocale('en', {
   relativeTime: {
@@ -54,9 +57,14 @@ moment.updateLocale('en', {
     TableModule,
     TooltipModule,
     DateFromNowComponent,
+    SliderModule,
+    FormsModule, OverlayPanelModule
   ],
 })
 export class TrackerComponent {
+
+  public showVolume = false;
+
   onTrackersReordered() {
     throw new Error('Method not implemented.');
   }
