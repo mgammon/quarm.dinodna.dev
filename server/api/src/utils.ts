@@ -121,3 +121,9 @@ export const getApiKey = (authHeader: string) => {
   const tokens = authHeader.split(/\s+/);
   return tokens[1] || null;
 };
+
+export enum Duration {
+  Minute = 60_000,
+  Hour = 60_000 * 60,
+  Day = 60_000 * 60 * 24,
+}

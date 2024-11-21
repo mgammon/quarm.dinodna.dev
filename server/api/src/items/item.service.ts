@@ -35,6 +35,7 @@ import {
 } from '../npcs/npc.entity';
 import {
   compareNumber,
+  Duration,
   idToBitmask,
   sanitizeSearch,
   selectRelevance,
@@ -363,7 +364,7 @@ export class ItemService {
             scrollEffect: true,
           },
         }),
-      Infinity,
+      Duration.Day * 1,
     );
   }
 
