@@ -364,7 +364,7 @@ export class ItemService {
             scrollEffect: true,
           },
         }),
-      Duration.Day * 1,
+      Duration.Hour * 4,
     );
   }
 
