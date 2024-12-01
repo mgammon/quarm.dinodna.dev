@@ -420,7 +420,10 @@ export class ItemService {
   }
 
   getAllByIds(ids: number[]) {
-    return this.itemRepository.find({ where: { id: In(ids) } });
+    return this.itemRepository.find({
+      where: { id: In(ids) },
+      relations: { wornEffect: true },
+    });
   }
 
   private getLootDrops(itemId: number) {
