@@ -1,0 +1,9 @@
+:host ::ng-deep input.p-inputtext {
+  width: 375px;
+}
+
+.p-inputtext.p-chips-multiple-container {
+  flex-direction: column;
+  align-items: inherit;
+}
+

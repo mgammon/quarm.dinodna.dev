@@ -14,13 +14,20 @@ import { ChatLogComponent } from './chat-log.component';
 import { PanelModule } from 'primeng/panel';
 import { TooltipModule } from 'primeng/tooltip';
 import { TrackerService } from '../tracker/tracker.service';
+import { IgnoreListComponent } from './ignore-list/ignore-list.component';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss',
-  imports: [CommonModule, ChatLogComponent, PanelModule, TooltipModule],
+  imports: [
+    CommonModule,
+    ChatLogComponent,
+    PanelModule,
+    TooltipModule,
+    IgnoreListComponent,
+  ],
 })
 export class ChatComponent implements OnInit {
   @ViewChildren('chatWindow')

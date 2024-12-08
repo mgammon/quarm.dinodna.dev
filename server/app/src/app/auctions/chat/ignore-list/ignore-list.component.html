@@ -1,0 +1,26 @@
+<p-button
+  icon="pi pi-user-minus"
+  [rounded]="true"
+  [text]="true"
+  [pTooltip]="
+    'Ignore list (ignoring ' + logService.ignoreList.length + ' players)'
+  "
+  class="p-panel-header-icon p-link mr-2"
+  (onClick)="ignoreList.toggle($event)"
+/>
+
+<p-overlayPanel #ignoreList>
+  <ng-template pTemplate="content">
+    <div style="max-width: 400px">
+      <br />
+      <p-floatLabel>
+        <p-chips
+          id="ignore-list"
+          [(ngModel)]="logService.ignoreList"
+          (ngModelChange)="onChange()"
+        />
+        <label for="ignore-list" style="font-weight: bold">Ignore List</label>
+      </p-floatLabel>
+    </div>
+  </ng-template>
+</p-overlayPanel>
