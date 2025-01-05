@@ -1,7 +1,7 @@
 import { Classes } from '../../api/classes';
 import { PlayableRaces } from '../../api/race';
 
-// [str,sta,agy,dex,wis,int,cha,bonus]
+// [str,sta,agi,dex,wis,int,cha,bonus]
 export const baseStats: Record<number, Record<number, number[]>> = {
   [Classes.Warrior]: {
     [PlayableRaces.Barbarian]: [113, 105, 87, 70, 70, 60, 55, 25],
@@ -15,6 +15,7 @@ export const baseStats: Record<number, Record<number, number[]>> = {
     [PlayableRaces.Ogre]: [140, 132, 75, 70, 67, 60, 37, 25],
     [PlayableRaces.Troll]: [118, 119, 88, 75, 60, 52, 40, 25],
     [PlayableRaces.WoodElf]: [75, 75, 100, 80, 80, 75, 75, 25],
+    [PlayableRaces.Vahshir]: [100, 85, 95, 70, 70, 65, 65, 25]
   },
   [Classes.Wizard]: {
     [PlayableRaces.DarkElf]: [60, 75, 90, 75, 83, 109, 60, 30],
@@ -49,6 +50,7 @@ export const baseStats: Record<number, Record<number, number[]>> = {
     [PlayableRaces.Iksar]: [70, 75, 90, 85, 90, 75, 60, 30],
     [PlayableRaces.Ogre]: [130, 127, 70, 70, 77, 60, 42, 30],
     [PlayableRaces.Troll]: [108, 114, 83, 75, 70, 52, 45, 30],
+    [PlayableRaces.Vahshir]: [90, 80, 90, 70, 80, 65, 70, 30]
   },
   [Classes.Druid]: {
     [PlayableRaces.WoodElf]: [65, 75, 95, 80, 90, 75, 75, 30],
@@ -65,6 +67,7 @@ export const baseStats: Record<number, Record<number, number[]>> = {
     [PlayableRaces.WoodElf]: [70, 65, 95, 90, 80, 75, 85, 25],
     [PlayableRaces.HalfElf]: [75, 70, 90, 95, 60, 75, 85, 25],
     [PlayableRaces.Human]: [80, 75, 75, 85, 75, 75, 85, 25],
+    [PlayableRaces.Vahshir]: [95, 75, 90, 80, 70, 65, 75, 25]
   },
   [Classes.Cleric]: {
     [PlayableRaces.DarkElf]: [65, 70, 90, 75, 93, 99, 60, 30],
@@ -81,6 +84,7 @@ export const baseStats: Record<number, Record<number, number[]>> = {
     [PlayableRaces.HalfElf]: [80, 75, 90, 85, 65, 75, 85, 20],
     [PlayableRaces.HighElf]: [65, 70, 85, 70, 100, 92, 90, 20],
     [PlayableRaces.Human]: [85, 80, 75, 75, 80, 75, 85, 20],
+    [PlayableRaces.Barbarian]: [113, 100, 82, 70, 75, 60, 65, 20]
   },
   [Classes.Monk]: {
     [PlayableRaces.Human]: [80, 80, 85, 85, 75, 75, 75, 20],
@@ -95,6 +99,7 @@ export const baseStats: Record<number, Record<number, number[]>> = {
     [PlayableRaces.Halfling]: [70, 75, 105, 100, 80, 67, 50, 30],
     [PlayableRaces.Human]: [75, 75, 85, 85, 75, 75, 75, 30],
     [PlayableRaces.WoodElf]: [65, 65, 105, 90, 80, 75, 75, 30],
+    [PlayableRaces.Vahshir]: [90, 75, 100, 80, 70, 65, 65, 30]
   },
   [Classes.ShadowKnight]: {
     [PlayableRaces.DarkElf]: [70, 70, 90, 75, 83, 109, 65, 20],
@@ -104,6 +109,13 @@ export const baseStats: Record<number, Record<number, number[]>> = {
     [PlayableRaces.Ogre]: [140, 127, 70, 70, 67, 70, 42, 20],
     [PlayableRaces.Troll]: [118, 114, 83, 75, 60, 62, 45, 20],
   },
+  [Classes.Beastlord]: {
+    [PlayableRaces.Vahshir]: [90, 85, 95, 70, 80, 65, 70, 20],
+    [PlayableRaces.Barbarian]: [103, 105, 87, 70, 80, 60, 60, 20],
+    [PlayableRaces.Troll]: [108, 119, 88, 75, 70, 52, 45, 20],
+    [PlayableRaces.Ogre]: [130, 132, 75, 70, 77, 60, 42, 20],
+    [PlayableRaces.Iksar]: [70, 80, 95, 85, 90, 75, 60, 20],
+  }
 };
 
 const getClassIDName = (class_id: number, level: number) => {

@@ -15,13 +15,11 @@ export class PlayerService {
     level: number,
   ): Promise<{ skillId: number; value: number }[]> {
     return this.skillCapRepository.query(
-      `SELECT skillID as skillId, MAX(cap) as value
+      `SELECT skill_id as skillId, MAX(cap) as value
       FROM skill_caps
-      WHERE class = ? AND level <= ?
+      WHERE class_id = ? AND level <= ?
       GROUP BY skillId`,
       [classId, level],
     );
   }
-
-  getBaseStats(raceId: number, classId: number) {}
 }

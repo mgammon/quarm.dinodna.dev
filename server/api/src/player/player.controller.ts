@@ -13,14 +13,4 @@ export class PlayerController {
     const levelAsNumber = parseInt(level);
     return this.playerService.getMaxSkills(classIdAsNumber, levelAsNumber);
   }
-
-  @Get(`/base-stats/:race/:class`)
-  public async getBaseStats(
-    @Param('race') raceId: string,
-    @Param('class') classId: string,
-  ) {
-    const raceIdAsNumber = parseInt(raceId);
-    const classIdAsNumber = parseInt(classId);
-    this.playerService.getBaseStats(raceIdAsNumber, classIdAsNumber);
-  }
 }
