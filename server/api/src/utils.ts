@@ -40,11 +40,23 @@ export function selectRelevance(
     multiplier: number,
     booleanSearch = true,
   ) => {
+    const matchAgainstWithoutBooleanOperators = matchAgainst
+      .replaceAll('\\(', '')
+      .replaceAll('\\)', '')
+      .replaceAll('*', '')
+      .replaceAll('~', '')
+      .replaceAll('<', '')
+      .replaceAll('>', '')
+      .replaceAll('+', '')
+      .replaceAll('@distance', '')
+      .replaceAll('-', '')
+      .replaceAll('"', '');
+
     const matchedProportion = `(${
       matchAgainst.replaceAll('*', '').length
     } / LENGTH(${searchField}))`;
     return {
-      text: `((MATCH(${searchField}) AGAINST('${matchAgainst}' ${
+      text: `((MATCH(${searchField}) AGAINST('${matchAgainstWithoutBooleanOperators}' ${
         booleanSearch ? 'IN BOOLEAN MODE' : ''
       })) * ${multiplier} * ${matchedProportion})`,
       param: matchAgainst,
