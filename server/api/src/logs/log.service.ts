@@ -15,6 +15,7 @@ import * as moment from 'moment-timezone';
 import { AuctionService } from '../auctions/auction.service';
 import { Auction, AuctionDto } from '../auctions/auction.entity';
 import { config } from '../config';
+import { FeedbackService } from '../feedback/feedback.service';
 
 @Injectable()
 export class LogService {
@@ -23,6 +24,7 @@ export class LogService {
   constructor(
     @InjectRepository(Log) private logRepository: Repository<Log>,
     private auctionService: AuctionService,
+    private feedbackService: FeedbackService
   ) {
     this.loadRecentLogs();
   }
@@ -91,6 +93,7 @@ export class LogService {
       for (const log of addedLogs) {
         const auctions = await this.auctionService.addAuctions(log);
         log.auctions = auctions;
+        this.feedbackService.sendEcChat(log.raw);
       }
       logs.push(...addedLogs);
     }

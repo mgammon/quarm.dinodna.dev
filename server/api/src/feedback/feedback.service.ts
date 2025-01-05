@@ -6,13 +6,48 @@ import * as moment from 'moment';
 
 @Injectable()
 export class FeedbackService {
-  private webhookClient = new WebhookClient({
-    url: config.discordFeedbackWebhook,
+  private webhookFeedbackClient = new WebhookClient({
+    url: config.discord.feedbackWebhook,
+  });
+
+  private webhookEcChatClient = new WebhookClient({
+    url: config.discord.ecChatWebhook,
+  });
+
+  private webhookGeneralClient = new WebhookClient({
+    url: config.discord.generalWebhook,
   });
 
   private lastSendAtMap = new Map<string, number>();
 
-  send(apiKey: string, feedback: Feedback) {
+  private noRecentEcChatTimeout?: NodeJS.Timeout;
+  private ecChatIsUp = true;
+  private lastEcChatMessageAt = Date.now();
+
+  sendEcChat(rawLog: string) {
+    if (config.apiKey === 'super-secret-api-key') {
+      return;
+    }
+    if (this.ecChatIsUp === false) {
+      const outageDuration = moment(this.lastEcChatMessageAt).fromNow(true);
+      this.webhookGeneralClient.send({
+        content: `Mule is UP: It was down for ${outageDuration}.`,
+      });
+    }
+    this.lastEcChatMessageAt = Date.now();
+    this.ecChatIsUp = true;
+    this.webhookEcChatClient.send({ content: rawLog });
+    clearTimeout(this.noRecentEcChatTimeout);
+    this.noRecentEcChatTimeout = setTimeout(() => {
+      this.webhookGeneralClient.send({
+        content:
+          'Mule is DOWN: No chat messages received in the last 15 minutes',
+      });
+      this.ecChatIsUp = false;
+    }, 60_000 * 15);
+  }
+
+  sendFeedback(apiKey: string, feedback: Feedback) {
     // Check if they already sent a message recently
     const lastSentAt = this.lastSendAtMap.get(apiKey);
     const recentlySent =
@@ -39,6 +74,6 @@ export class FeedbackService {
     `;
 
     // Send
-    this.webhookClient.send({ content });
+    this.webhookFeedbackClient.send({ content });
   }
 }

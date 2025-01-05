@@ -15,6 +15,6 @@ export class FeedbackController {
     @Param('apiKey') apiKey: string,
     @Body() feedback: Feedback,
   ) {
-    this.feedbackService.send(apiKey, feedback);
+    this.feedbackService.sendFeedback(apiKey, feedback);
   }
 }
