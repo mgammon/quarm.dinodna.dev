@@ -1,5 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { In, Repository } from 'typeorm';
+import {
+  And,
+  In,
+  LessThan,
+  LessThanOrEqual,
+  MoreThan,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Log, LogDto } from './log.entity';
 // import * as moment from 'moment';
@@ -31,6 +39,32 @@ export class LogService {
 
   getLogs() {
     return this.recentLogs;
+  }
+
+  getLogsBefore(before: number, size = 10) {
+    return this.logRepository.find({
+      where: { id: And(LessThan(before), MoreThanOrEqual(before - size)) },
+    });
+  }
+
+  getLogsAfter(after: number, size = 10) {
+    return this.logRepository.find({
+      where: { id: And(MoreThan(after), LessThanOrEqual(after + size)) },
+    });
+  }
+
+  getRawLogsBefore(before: number, size = 10) {
+    return this.logRepository.find({
+      where: { id: And(LessThan(before), MoreThanOrEqual(before - size)) },
+      select: ['id', 'raw'],
+    });
+  }
+
+  getRawLogsAfter(after: number, size = 10) {
+    return this.logRepository.find({
+      where: { id: And(MoreThan(after), LessThanOrEqual(after + size)) },
+      select: ['id', 'raw'],
+    });
   }
 
   async onLogs(rawLogs: string[]) {
