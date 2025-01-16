@@ -94,7 +94,7 @@ export class RespawnService {
     });
   }
 
-  getRespawnTime(zoneId: string, respawntime: number) {
+  getRespawnTime(zoneId: string, respawntime: number, level: number) {
     const zone = this.reducedRespawnZones.find(
       (zone) => zone.short_name === zoneId,
     );
@@ -106,6 +106,11 @@ export class RespawnService {
       zone.castdungeon > 0
         ? this.respawnReductions.dungeon
         : this.respawnReductions.normal;
+
+    // Fast respawns are only in dungeons, or below level 15
+    if (zone.castdungeon <= 0 && level >= 15) {
+      return respawntime;
+    }
 
     if (
       respawntime >= respawnReductions.lower.min &&

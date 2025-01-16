@@ -294,6 +294,7 @@ export class NpcService {
                     (spawn.respawntime = this.respawnService.getRespawnTime(
                       spawn.zone,
                       spawn.respawntime,
+                      r.level,
                     )),
                 ),
             ),
@@ -395,6 +396,7 @@ export class NpcService {
       .andWhere('spawn.min_expansion <= 1')
       .select([
         'npc.name',
+        'npc.level',
         'spawn.zone',
         'spawn.x',
         'spawn.y',
@@ -420,6 +422,7 @@ export class NpcService {
                   (spawn.respawntime = this.respawnService.getRespawnTime(
                     spawn.zone,
                     spawn.respawntime,
+                    result.level,
                   )),
               ),
           );
