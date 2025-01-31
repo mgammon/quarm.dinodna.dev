@@ -7,7 +7,7 @@ class InMemoryLruCache {
   private CACHE_DURATION = 60_000 * 60; // 1 hour
   private cache = new Map<any, CachedItem>();
 
-  private stats = { hits: 0, misses: 0, expired: 0, evicted: 0 };
+  private stats = { hits: 0, misses: 0, expired: 0, evicted: 0, cleared: 0 };
 
   constructor(private maxSize: number = 10_000) {
     console.log(
@@ -67,6 +67,14 @@ class InMemoryLruCache {
     this.set<T>(key, item);
     return item;
   }
+
+  clear(partialKey: string) {
+    const keysToDelete = Array.from(this.cache.keys()).filter((key) =>
+      (key.toString() as string).includes(partialKey),
+    );
+    keysToDelete.forEach((key) => this.cache.delete(key));
+    this.stats.cleared += keysToDelete.length;
+  }
 }
 
 // not nestified, but whatever, for now.
@@ -78,4 +86,8 @@ export function cache<T>(
   duration?: number,
 ) {
   return inMemoryCache.cached<T>(topic + key, retrieve, duration);
+}
+
+export function clearCache(partialKey: string) {
+  return inMemoryCache.clear(partialKey);
 }

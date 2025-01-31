@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import {
   And,
+  ILike,
+  In,
   LessThan,
   LessThanOrEqual,
+  MoreThan,
   MoreThanOrEqual,
   Repository,
 } from 'typeorm';
@@ -13,6 +16,8 @@ import { Log } from '../logs/log.entity';
 import * as moment from 'moment';
 import { Item } from '../items/item.entity';
 import { Cron } from '@nestjs/schedule';
+import { LogService } from '../logs/log.service';
+import { clearCache } from '../items/in-memory-cache';
 
 @Injectable()
 export class AuctionService {
@@ -21,6 +26,8 @@ export class AuctionService {
     @InjectRepository(DailyAuction)
     private dailyAuctionRepository: Repository<DailyAuction>,
     @InjectRepository(Item) private itemRepository: Repository<Item>,
+    @InjectRepository(Log) private logRepository: Repository<Log>,
+    @Inject(forwardRef(() => LogService)) private logService: LogService,
     private auctionParser: AuctionParser,
   ) {}
 
@@ -36,11 +43,9 @@ export class AuctionService {
 
   async addAuctions(log: Log) {
     const auctions = await this.auctionParser.parseAuctions(log);
-
     for (const auction of auctions) {
       await this.auctionRepository.insert(auction);
       await this.upsertDailyAuction(auction);
-      await this.getStats(auction.itemId, 7);
     }
     return this.auctionRepository.find({ where: { logId: log.id } });
   }
@@ -291,5 +296,58 @@ export class AuctionService {
     const { logId, itemText, itemId, player, price, wts, sentAt } = auction;
 
     return { logId, player, itemId, itemText, price, wts, sentAt, key };
+  }
+
+  async rerunAuctionParsing(days: number = 30, matchingText?: string) {
+    const start = new Date();
+    start.setDate(start.getDate() - days);
+
+    const logFilters: { sentAt: any; raw?: any } = {
+      sentAt: And(MoreThan(start)),
+    };
+    if (matchingText) {
+      logFilters.raw = ILike(`%${matchingText}%`);
+    }
+    const logCount = await this.logRepository.count({ where: logFilters });
+    console.log(
+      `Parsing auctions for the last ${days} days, with matching text: ${matchingText} (${logCount} total logs)`,
+    );
+    // Page over all the logs
+    let hasMoreLogs = true;
+    let logsRerun = 0;
+    const PAGE_SIZE = 500;
+    while (hasMoreLogs) {
+      // Find all the logs in this page
+      const logs = await this.logRepository.find({
+        where: logFilters,
+        take: PAGE_SIZE,
+        skip: logsRerun,
+        order: { sentAt: 'ASC' },
+      });
+      // Delete their auctions
+      this.auctionRepository.delete({ logId: In(logs.map((log) => log.id)) });
+      this.dailyAuctionRepository.delete({
+        logId: In(logs.map((log) => log.id)),
+      });
+      // Re-parse their auctions
+      for (const log of logs) {
+        await this.addAuctions(log);
+      }
+      // Keep track of what log page we're on
+      logsRerun += logs.length;
+      hasMoreLogs = logs.length === PAGE_SIZE;
+      console.log(
+        `Reran auction parsing for ${logsRerun} logs so far (${Math.round(
+          (logsRerun / logCount) * 100,
+        )}%)`,
+      );
+    }
+
+    // Reset recent logs, clear auction logs
+    this.logService.loadRecentLogs();
+    clearCache('itemDailyAuctions');
+    clearCache('itemAuctionSummaries');
+
+    console.log('Done rerunning auction parsing');
   }
 }

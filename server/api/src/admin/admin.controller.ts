@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { DatabaseUpdateService } from './databaseUpdate.service';
 import { AuctionService } from '../auctions/auction.service';
 import { config } from '../config';
@@ -27,5 +27,13 @@ export class AdminController {
     await this.auctionService.updateAllAverages();
     console.log('Item averages updated');
     return 'Database updated';
+  }
+
+  @Get(`/rerun-auction-parsing/:days/:matchingText/${config.apiKey}`)
+  public async rerunAuctionParsing(
+    @Param('matchingText') matchingText: string,
+    @Param('days') days: string,
+  ) {
+    this.auctionService.rerunAuctionParsing(parseInt(days), matchingText);
   }
 }

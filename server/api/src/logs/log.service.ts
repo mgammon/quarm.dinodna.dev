@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import {
   And,
   In,
@@ -23,13 +23,17 @@ export class LogService {
 
   constructor(
     @InjectRepository(Log) private logRepository: Repository<Log>,
+    @Inject(forwardRef(() => AuctionService))
     private auctionService: AuctionService,
-    private feedbackService: FeedbackService
+    private feedbackService: FeedbackService,
   ) {
     this.loadRecentLogs();
   }
 
   async loadRecentLogs() {
+    while (this.recentLogs.length) {
+      this.recentLogs.shift();
+    }
     const logs = await this.logRepository.find({
       relations: { auctions: true },
       order: { sentAt: 'DESC' },
