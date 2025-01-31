@@ -76,8 +76,8 @@ export class AuctionParser {
     // Find any matching item names in the message, removing matching text as we go
     // so things like Wu's Quivering Staff don't match on Wu's Quivering Staff and Quiver and Staff
     // lol that's a lot to filter on, tho
-    const lowerCaseText = text.toLowerCase();
-    let matchableText = text.toLowerCase();
+    const lowerCaseText = text.toLowerCase().replace('`', "'");
+    let matchableText = text.toLowerCase().replace('`', "'");
     const matches = this.items
       .filter((item) => {
         const isMatch = matchableText.includes(item.name);
