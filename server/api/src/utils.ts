@@ -43,7 +43,6 @@ export function selectRelevance(
     const matchAgainstWithoutBooleanOperators = matchAgainst
       .replaceAll('\\(', '')
       .replaceAll('\\)', '')
-      .replaceAll('*', '')
       .replaceAll('~', '')
       .replaceAll('<', '')
       .replaceAll('>', '')
