@@ -298,7 +298,7 @@ export class ItemService {
       { mana: compareNumber(options.stats.mana) },
       { damage: compareNumber(options.stats.dmg) },
       { delay: compareNumber(options.stats.delay) },
-      { weight: compareNumber(options.stats.weight) },
+      { weight: compareNumber(options.stats.weight, false) },
       { average7d: compareNumber(options.stats.average7d) },
       { average30d: compareNumber(options.stats.average30d) },
     ].filter(
