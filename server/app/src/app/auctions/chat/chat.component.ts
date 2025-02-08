@@ -38,11 +38,10 @@ export class ChatComponent implements OnInit {
   filterMessagesWithAlerts = false;
 
   shouldScrollToBottom = true;
-  hasScrolledAboveBottom = false;
+  hasScrolledUp = false;
   hasDoneFirstAutoScroll = false;
 
   lastScrollTop = 0;
-
   constructor(
     public logService: LogService,
     private trackerService: TrackerService
@@ -101,16 +100,23 @@ export class ChatComponent implements OnInit {
     this.lastScrollTop = el.scrollTop;
   }
 
+  private autoScrollTimeout: any;
   autoScroll() {
     // Check if it was scrolled to the bottom before we rendered this new log info
     const elementRef = this.chatWindow.first;
     if (this.shouldScrollToBottom || !this.hasDoneFirstAutoScroll) {
-      setTimeout(() => {
+      clearTimeout(this.autoScrollTimeout);
+      this.autoScrollTimeout = setTimeout(() => {
         const el = elementRef.nativeElement;
         el.scrollTop = el.scrollHeight;
         this.hasDoneFirstAutoScroll = true;
       }, 33);
     }
+  }
+
+  scrollToBottom() {
+    this.shouldScrollToBottom = true;
+    this.autoScroll();
   }
 
   toggleFilterMessagesWithAlerts() {

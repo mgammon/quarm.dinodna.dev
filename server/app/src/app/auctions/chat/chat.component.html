@@ -50,9 +50,18 @@
       </button>
     </ng-template>
 
-    <div #chatWindow id="chat-window" (scroll)="onScroll($event)">
-      <div *ngFor="let log of logs" class="chat-log">
-        <app-chat-log [log]="log"></app-chat-log>
+    <div style="position: relative">
+      <div #chatWindow id="chat-window" (scroll)="onScroll($event)">
+        <div *ngFor="let log of logs" class="chat-log">
+          <app-chat-log [log]="log"></app-chat-log>
+        </div>
+      </div>
+      <div
+        *ngIf="!shouldScrollToBottom"
+        (click)="scrollToBottom()"
+        class="jump-to-present"
+      >
+        Jump to present <i class="pi pi-chevron-down"></i>
       </div>
     </div>
   </p-panel>
