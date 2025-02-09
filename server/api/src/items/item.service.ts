@@ -78,7 +78,7 @@ export class ItemService {
 
   async getAllItemNames(): Promise<{ id: number; name: string }[]> {
     return this.itemRepository.query(
-      'SELECT id, REPLACE(REPLACE(LOWER(name), "-", " "), "`", "\'" ) as name from items ORDER BY LENGTH(name) DESC',
+      'SELECT id, REPLACE(REPLACE(REPLACE(LOWER(name), "-", " "), "`", " "), "\'", " ") as name from items ORDER BY LENGTH(name) DESC',
     );
   }
 

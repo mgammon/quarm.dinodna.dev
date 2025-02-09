@@ -119,6 +119,9 @@ export class ChatLogComponent implements OnInit {
       // Find the start and end of the item text
       const itemStartIndex = unparsedText
         .toLowerCase()
+        .replaceAll('`', ' ')
+        .replaceAll('-', ' ')
+        .replaceAll("'", ' ')
         .indexOf(auction.itemText);
       const itemEndIndex = itemStartIndex + auction.itemText.length;
       // If there's text before the item, add that chunk.
