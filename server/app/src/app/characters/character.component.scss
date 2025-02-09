@@ -87,7 +87,16 @@ table {
 }
 
 :host ::ng-deep .p-divider {
-  margin:0;
-  padding:0;
-  margin-bottom:1em;
+  margin: 0;
+  padding: 0;
+  margin-bottom: 1em;
+}
+
+.import-from-zeal {
+  text-align: center;
+  position: absolute;
+  margin-top: -4em;
+  font-size: 0.8em;
+  width: 121px;
+  margin-left: 67px;
 }

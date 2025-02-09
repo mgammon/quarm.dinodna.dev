@@ -32,6 +32,7 @@ import { UsageService } from '../usage.service';
 import { PanelModule } from 'primeng/panel';
 import { baseStats } from './quarm/quarm.classes';
 import { DividerModule } from 'primeng/divider';
+import { ApiService } from '../api/api.service';
 
 interface LabelValue<T> {
   label: string;
@@ -93,7 +94,8 @@ export class CharacterComponent {
     public characterService: CharacterService,
     private route: ActivatedRoute,
     private usageService: UsageService,
-    private location: Location
+    private location: Location,
+    private apiService: ApiService
   ) {
     this.classOptions = this.getClassOptions();
     this.raceOptions = this.getRaceOptions();
@@ -128,7 +130,7 @@ export class CharacterComponent {
       this.location.go(`characters/${this.character.id}`);
     } else {
       this.character = await this.characterService.loadPlayer(characterId);
-      if (this.character){
+      if (this.character) {
         this.location.go(`characters/${this.character.id}`);
       }
     }
@@ -248,5 +250,54 @@ export class CharacterComponent {
     const validRaceClassCombo = this.isValidRaceClassCombo();
 
     return validLevelRange && validRace && validClass && validRaceClassCombo;
+  }
+
+  onZealInventoryFileChanged($event: any) {
+    const fileInput = $event.target as any;
+    if (!fileInput || !fileInput.files || !fileInput.files.length) {
+      return;
+    }
+    const file: File = fileInput.files[0];
+    const fileReader = new FileReader();
+    fileReader.onload = (event: ProgressEvent<FileReader>) =>
+      this.parseZealInventoryFile(event.target?.result);
+    fileReader.readAsText(file);
+  }
+
+  async parseZealInventoryFile(data: ArrayBuffer | string | undefined | null) {
+    if (!data) {
+      return;
+    }
+    // Parse the text into inventory
+    const text = data.toString();
+    const lines = text.replaceAll('\r', '').split('\n');
+    const inventory = lines.map((line) => {
+      const [location, name, id, count, slots] = line.split('\t');
+      return {
+        location,
+        name,
+        id: parseInt(id),
+        count: parseInt(count),
+        slots: parseInt(slots),
+      };
+    });
+
+    // Load all the items from the equippable parts of the inventory
+    const equippables = inventory.slice(1, 21);
+    const items = await this.apiService.getItemSnippets(
+      equippables.map((equippable) => equippable.id).filter((x) => !!x)
+    );
+
+    // Equip everything!
+    equippables.forEach((equippable, index) => {
+      const slotId = index + 1;
+      const item = items.find((i) => i.id === equippable.id);
+      const slot = this.character?.slots.find(
+        (slot) => slot.slotId === slotId
+      ) as Slot;
+      this.character?.equip(item, slot);
+    });
+
+    this.savePlayer();
   }
 }

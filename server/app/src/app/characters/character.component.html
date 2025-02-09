@@ -252,6 +252,11 @@
               </div>
             </div>
           </div>
+          <div class="import-from-zeal">
+            <p-button size="small"  label="Import" [escape]="false" pTooltip='Import your equipment from a Zeal inventory file.<br /> <br /> Type "/outputfile inventory" in-game, then select the "[Character Name]-Inventory.txt" file from your EQ directory' (click)="fileInput.click()">
+              <input accept=".txt" #fileInput type="file" hidden (change)="onZealInventoryFileChanged($event)">
+            </p-button>
+          </div>
           <div class="bottom">
             <div *ngFor="let slotId of [18, 19]">
               <app-character-slot
@@ -401,9 +406,9 @@
   </p-panel>
 </div>
 
-
 <h5>Latest changes:</h5>
 <ul>
+  <li>Feb 8th 2025 - Added Zeal inventory file import</li>
   <li>Jan 4th 2025 - Fixed Beastlords, Vahshir, and Barbarian Paladins</li>
 </ul>
 
