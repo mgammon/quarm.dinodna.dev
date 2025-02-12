@@ -276,12 +276,12 @@ export abstract class Character {
       const slotName = slotIds[slotId];
       const ids = slotsGroupedByName.find((slots) => slots.label === slotName)
         ?.value as number[];
-        const item = slotIdItemMap?.get(slotId);
+      const item = slotIdItemMap?.get(slotId);
       this.slots.push({
         slotName,
         slotId,
         slotIds: ids,
-        item
+        item,
       });
     }
 
@@ -505,7 +505,7 @@ export class Player extends Character {
   }
 
   initializeStats(allocatedStats?: Partial<Stats>) {
-    if (!this.classId || !this.raceId) {
+    if (!this.classId || this.raceId == null || this.raceId === undefined) {
       return;
     }
 
