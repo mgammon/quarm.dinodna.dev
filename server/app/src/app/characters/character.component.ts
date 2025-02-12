@@ -15,6 +15,7 @@ import { OverlayPanel, OverlayPanelModule } from 'primeng/overlaypanel';
 import { ItemLinkComponent } from '../items/item-link.component/item-link.component';
 import {
   AllocatableStat,
+  getDefaultStats,
   NpcCharacter,
   Player,
   Simulation,
@@ -176,9 +177,12 @@ export class CharacterComponent {
     }
   }
 
-  onCharacterChange() {
+  onCharacterChange(didBaseCharacterChange: boolean) {
     if (!this.character) {
       return;
+    }
+    if (didBaseCharacterChange) {
+      this.character.allocatedStats = { ...getDefaultStats() };
     }
     this.character.onCharacterChange();
     this.savePlayer();

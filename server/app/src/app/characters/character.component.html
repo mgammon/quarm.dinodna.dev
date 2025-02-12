@@ -100,7 +100,7 @@
                   min="1"
                   maxFractionDigits="0"
                   placeholder="Level"
-                  (ngModelChange)="onCharacterChange()"
+                  (ngModelChange)="onCharacterChange(false)"
                 /><label for="level">Level</label>
               </span>
             </div>
@@ -116,7 +116,7 @@
                   [showClear]="false"
                   placeholder="Race"
                   class="p-inputtext-sm"
-                  (ngModelChange)="onCharacterChange()"
+                  (ngModelChange)="onCharacterChange(true)"
                 ></p-dropdown>
                 <label for="race">Race</label>
               </span>
@@ -131,7 +131,7 @@
                   [showClear]="false"
                   placeholder="Class"
                   class="p-inputtext-sm"
-                  (ngModelChange)="onCharacterChange()"
+                  (ngModelChange)="onCharacterChange(true)"
                 ></p-dropdown>
                 <label for="class">Class</label>
               </span>

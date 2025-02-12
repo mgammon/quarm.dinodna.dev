@@ -544,7 +544,7 @@ export class Player extends Character {
   }
 
   onCharacterChange() {
-    this.initializeStats();
+    this.initializeStats(this.allocatedStats);
     this.initializeMaxSkills();
     this.refreshEquipmentCalcs();
     this.calcStats();
