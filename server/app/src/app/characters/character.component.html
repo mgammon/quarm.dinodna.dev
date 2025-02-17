@@ -253,8 +253,20 @@
             </div>
           </div>
           <div class="import-from-zeal">
-            <p-button size="small"  label="Import" [escape]="false" pTooltip='Import your equipment from a Zeal inventory file.<br /> <br /> Type "/outputfile inventory" in-game, then select the "[Character Name]-Inventory.txt" file from your EQ directory' (click)="fileInput.click()">
-              <input accept=".txt" #fileInput type="file" hidden (change)="onZealInventoryFileChanged($event)">
+            <p-button
+              size="small"
+              label="Import"
+              [escape]="false"
+              pTooltip='Import your equipment from a Zeal inventory file.<br /> <br /> Type "/outputfile inventory" in-game, then select the "[Character Name]-Inventory.txt" file from your EQ directory'
+              (click)="fileInput.click()"
+            >
+              <input
+                accept=".txt"
+                #fileInput
+                type="file"
+                hidden
+                (change)="onZealInventoryFileChanged($event)"
+              />
             </p-button>
           </div>
           <div class="bottom">
@@ -294,6 +306,15 @@
               >
               </span>
             </button>
+          </div>
+        </div>
+        <div class="inventory">
+          <div *ngFor="let slot of character.inventory">
+            <app-inventory-slot
+              [character]="character"
+              [slot]="slot"
+              [hideText]="hideText"
+            ></app-inventory-slot>
           </div>
         </div>
       </div>

@@ -1,8 +1,5 @@
 <!-- Update background image to bag or container slot icon -->
-<div
-  class="slot"
-  style="background-image: url('assets/slots/1.png')"
->
+<div class="slot" style="background-image: url('assets/slots/1.png')">
   <span *ngIf="!slot.item" style="color: #ddd" class="name"></span>
   <app-item-link
     *ngIf="slot.item"
@@ -14,5 +11,8 @@
   />
   <span class="item-text" *ngIf="slot.item && !hideText">{{
     slot.item.name
+  }}</span>
+  <span class="count" *ngIf="(slot.item?.stacksize || 1) > 1">{{
+    slot.count
   }}</span>
 </div>

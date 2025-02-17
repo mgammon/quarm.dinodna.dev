@@ -21,7 +21,11 @@ import {
   Simulation,
   Slot,
 } from './quarm/quarm.character';
-import { CharacterDto, CharacterService } from './character.service';
+import {
+  CharacterDto,
+  CharacterService,
+  InventorySlot,
+} from './character.service';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
 import { Npc } from '../npcs/npc.entity';
@@ -34,10 +38,22 @@ import { PanelModule } from 'primeng/panel';
 import { baseStats } from './quarm/quarm.classes';
 import { DividerModule } from 'primeng/divider';
 import { ApiService } from '../api/api.service';
+import { InventorySlotComponent } from './slots/inventory-slot.component';
 
 interface LabelValue<T> {
   label: string;
   value: T;
+}
+
+interface Inventory {
+  bank: {
+    coins: number;
+    bagSlots: (InventorySlot & { slots: InventorySlot[] })[];
+  };
+  general: {
+    coins: number;
+    bagSlots: (InventorySlot & { slots: InventorySlot[] })[];
+  };
 }
 
 @Component({
@@ -65,6 +81,7 @@ interface LabelValue<T> {
     TagModule,
     PanelModule,
     DividerModule,
+    InventorySlotComponent,
   ],
 })
 export class CharacterComponent {
@@ -135,7 +152,7 @@ export class CharacterComponent {
         this.location.go(`characters/${this.character.id}`);
       }
     }
-    console.log(this.character);
+    this.initializeInventory();
     this.loading = false;
   }
 
@@ -314,5 +331,55 @@ export class CharacterComponent {
     }
 
     this.savePlayer();
+  }
+
+  initializeInventory() {
+    if (!this.character?.inventory) {
+      return;
+    }
+
+    const inventory: Inventory = {
+      general: { bagSlots: [], coins: 0 },
+      bank: { bagSlots: [], coins: 0 },
+    };
+
+    this.character.inventory
+      .filter(
+        (inv) => inv.slot?.includes('General') || inv.slot?.includes('Bank')
+      )
+      .forEach((inv) => {
+        const isGeneral = inv.slot?.includes('General');
+        const isBagSlot = !inv.slot?.includes('-');
+        const isCoinSlot = inv.slot?.includes('-Coin');
+
+        if (isBagSlot) {
+          const bagSlot = parseInt(
+            (isGeneral
+              ? inv.slot?.slice(7, 8)
+              : inv.slot?.slice(4, 5)) as string
+          );
+          inventory[isGeneral ? 'general' : 'bank'].bagSlots[bagSlot - 1] = {
+            ...inv,
+            slots: [],
+          };
+          console.log('pushing bag');
+          console.log(inventory);
+        } else if (isCoinSlot) {
+          inventory[isGeneral ? 'general' : 'bank'].coins = inv.count;
+        } else {
+          const bagSlot = parseInt(
+            (isGeneral
+              ? inv.slot?.slice(7, 8)
+              : inv.slot?.slice(4, 5)) as string
+          );
+          console.log(bagSlot);
+          inventory[isGeneral ? 'general' : 'bank'].bagSlots[
+            bagSlot - 1
+          ].slots.push(inv);
+        }
+      });
+
+    console.log('INVENTORY');
+    console.log(inventory);
   }
 }
