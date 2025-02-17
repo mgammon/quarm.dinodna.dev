@@ -42,7 +42,7 @@ import { PlayerModule } from './player/player.module';
 import { SkillCap } from './player/skill-cap.entity';
 import { FeedbackModule } from './feedback/feedback.module';
 import { NpcSpellsEntry, NpcSpells } from './spells/npc-spells.entity';
-import { Character } from './characters/character.entity';
+import { Character, InventorySlot } from './characters/character.entity';
 import { CharacterModule } from './characters/character.module';
 
 @Module({
@@ -98,6 +98,7 @@ import { CharacterModule } from './characters/character.module';
         Rule,
         SkillCap,
         Character,
+        InventorySlot,
       ],
       migrationsRun: true,
       migrations: ['dist/migrations/*{.ts,.js}'],

@@ -5,6 +5,12 @@ import { PlayableRaces } from '../api/race';
 import { Classes } from '../api/classes';
 import { Item } from '../items/item.entity';
 
+export interface InventorySlot {
+  slot: string;
+  itemId: number | null;
+  count: number;
+}
+
 export interface CharacterDto {
   id: number;
   name?: string;
@@ -21,6 +27,8 @@ export interface CharacterDto {
 
   updatedAt: string;
   owner: boolean;
+
+  inventory?: InventorySlot[];
 }
 
 @Injectable({
@@ -41,7 +49,7 @@ export class CharacterService {
   }
 
   mapToCharacterDto = (player: Player) => {
-    let { name, level, raceId, classId, allocatedStats } = player;
+    let { name, level, raceId, classId, allocatedStats, inventory } = player;
     const { str, sta, agi, dex, int, wis, cha } = allocatedStats;
     const stats = [str, sta, agi, dex, wis, int, cha].join(',');
     const slots = [...player.slots]
@@ -60,6 +68,7 @@ export class CharacterService {
       class: classId,
       slots,
       stats,
+      inventory,
     };
 
     return characterDto;
@@ -69,7 +78,7 @@ export class CharacterService {
     // Parse stats
     const [str, sta, agi, dex, wis, int, cha] = characterDto.stats
       .split(',')
-      .map(stat => parseInt(stat));
+      .map((stat) => parseInt(stat));
 
     // Parse slots and load Items
     const slots = characterDto.slots.split(',').map((s) => parseInt(s) || null);
@@ -103,7 +112,8 @@ export class CharacterService {
         cha: cha || 0,
       },
       slotIdItemMap,
-      characterDto.owner
+      characterDto.owner,
+      characterDto.inventory
     );
   }
 

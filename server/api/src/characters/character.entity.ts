@@ -4,6 +4,9 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
+  JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 
 @Entity({ synchronize: true, name: 'characters' })
@@ -42,4 +45,36 @@ export class Character {
 
   @UpdateDateColumn()
   updatedAt?: Date;
+
+  @OneToMany(() => InventorySlot, (inventorySlot) => inventorySlot.character)
+  @JoinColumn({ name: 'id', referencedColumnName: 'characterId' })
+  inventory?: InventorySlot[];
+}
+
+@Entity({ synchronize: true, name: 'inventory_slot' })
+export class InventorySlot {
+  @PrimaryGeneratedColumn()
+  id?: number;
+
+  @Column()
+  characterId: number;
+
+  @Column({ length: 100 })
+  slot: string;
+
+  @Column({ nullable: true })
+  itemId: number;
+
+  @Column({ nullable: true })
+  count: number;
+
+  @CreateDateColumn()
+  createdAt?: Date;
+
+  @UpdateDateColumn()
+  updatedAt?: Date;
+
+  @ManyToOne(() => Character, (character) => character.inventory)
+  @JoinColumn({ name: 'characterId', referencedColumnName: 'id' })
+  character: Character;
 }

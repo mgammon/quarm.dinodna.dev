@@ -302,6 +302,15 @@ export class CharacterComponent {
       this.character?.equip(item, slot);
     });
 
+    // Inventory
+    if (this.character) {
+      this.character.inventory = inventory.map((slot) => ({
+        slot: slot.location,
+        itemId: slot.id || null,
+        count: slot.count,
+      }));
+    }
+
     this.savePlayer();
   }
 }

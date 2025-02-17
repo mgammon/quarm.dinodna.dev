@@ -23,7 +23,7 @@ import {
   getHandToHandDelay,
   isWeapon,
 } from './quarm.attack';
-import { CharacterService } from '../character.service';
+import { CharacterService, InventorySlot } from '../character.service';
 import {
   calcMaxHP,
   clientCalcAC,
@@ -487,6 +487,8 @@ export class Player extends Character {
   public unallocatedStatPoints: number = 0;
   public owned: boolean;
 
+  public inventory?: InventorySlot[];
+
   constructor(
     protected override characterService: CharacterService,
     id: number,
@@ -496,12 +498,14 @@ export class Player extends Character {
     level: number,
     allocatedStats: Partial<Stats>,
     slots: Map<number, Item | undefined>,
-    owned: boolean
+    owned: boolean,
+    inventory?: InventorySlot[]
   ) {
     super(characterService, id, name, raceId, classId, level);
     this.owned = owned;
     this.initializeStats(allocatedStats);
     this.initializeSlots(slots);
+    this.inventory = inventory;
   }
 
   initializeStats(allocatedStats?: Partial<Stats>) {
