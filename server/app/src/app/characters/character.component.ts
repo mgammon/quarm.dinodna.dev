@@ -135,6 +135,7 @@ export class CharacterComponent {
         this.location.go(`characters/${this.character.id}`);
       }
     }
+    console.log(this.character);
     this.loading = false;
   }
 
@@ -304,7 +305,8 @@ export class CharacterComponent {
 
     // Inventory
     if (this.character) {
-      this.character.inventory = inventory.map((slot) => ({
+      this.character.inventory = inventory.map((slot, i) => ({
+        slotId: i,
         slot: slot.location,
         itemId: slot.id || null,
         count: slot.count,

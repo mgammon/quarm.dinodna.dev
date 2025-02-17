@@ -6,8 +6,10 @@ import { Classes } from '../api/classes';
 import { Item } from '../items/item.entity';
 
 export interface InventorySlot {
-  slot: string;
+  slotId: number;
+  slot?: string;
   itemId: number | null;
+  item?: Item;
   count: number;
 }
 
@@ -60,6 +62,22 @@ export class CharacterService {
       ? name.replace(/[^A-Z\s]/gi, '').trim()
       : undefined;
 
+    // If we never filled inventory, initialize it
+    if (!inventory) {
+      inventory = [];
+    }
+
+    // Overwrite equippable inventory slots from player.slots
+    [...player.slots]
+      .sort((a, b) => a.slotId - b.slotId)
+      .forEach((slot) => {
+        (inventory as InventorySlot[])[slot.slotId] = {
+          slotId: slot.slotId,
+          itemId: slot.item?.id || null,
+          count: 1,
+        };
+      });
+
     const characterDto: Partial<CharacterDto> = {
       id: player.id,
       name: sanitizedName,
@@ -80,11 +98,17 @@ export class CharacterService {
       .split(',')
       .map((stat) => parseInt(stat));
 
-    // Parse slots and load Items
+    // Parse slots and inventory and load Items
     const slots = characterDto.slots.split(',').map((s) => parseInt(s) || null);
+    const slotItemIds = slots.filter((slot) => slot !== null) as number[];
+    const inventoryItemIds = characterDto.inventory
+      ? (characterDto.inventory
+          .filter((slot) => slot.itemId !== null)
+          .map((slot) => slot.itemId) as number[])
+      : [];
     const itemIds = Array.from(
-      slots.filter((slot) => slot !== null)
-    ) as number[];
+      new Set([...slotItemIds, ...inventoryItemIds]).values()
+    );
     const items = itemIds.length
       ? await this.apiService.getItemSnippets(itemIds)
       : [];
@@ -94,6 +118,11 @@ export class CharacterService {
         return [slotId, item];
       })
     );
+
+    // Inventory items
+    characterDto.inventory?.forEach((inventorySlot) => {
+      inventorySlot.item = items.find((i) => i.id === inventorySlot.itemId);
+    });
 
     return new Player(
       this,

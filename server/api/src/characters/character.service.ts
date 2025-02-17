@@ -39,7 +39,9 @@ export class CharacterService {
     if (
       inventory &&
       (inventory.length > 250 ||
-        inventory.some((i) => i.slot.length > 100 || !!i.characterId || !!i.id))
+        inventory.some(
+          (i) => (i.slot && i.slot.length > 100) || !!i.characterId || !!i.id,
+        ))
     ) {
       throw new BadRequestException();
     }
@@ -48,7 +50,7 @@ export class CharacterService {
   async createInventory(
     characterId: number,
     apiKey: string,
-    inventory: { slot: string; itemId: number; count: number }[],
+    inventory: InventorySlot[],
   ) {
     const existsAndOwnedByApiKey = await this.characterRepository.exists({
       where: { id: characterId, apiKey },

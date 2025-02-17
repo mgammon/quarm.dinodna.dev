@@ -1,0 +1,17 @@
+.slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  width: 50px;
+  font-size: 0.7em;
+border:0;
+  cursor: pointer;
+  background-size: 100% auto;
+}
+
+.item-text {
+  width: 40px;
+  position: absolute;
+  text-align: center;
+}
