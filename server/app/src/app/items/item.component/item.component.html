@@ -1,5 +1,5 @@
 <div *ngIf="item" class="item">
-  <div class="item-name">{{ item.name }}</div>
+  <div class="item-name">{{ item.name }} <span *ngIf="subtitle">({{subtitle}})</span></div>
   <div class="item-details" style="position: relative">
     <span
       style="position: absolute; display: inline-block; top: 1em; right: 1em"

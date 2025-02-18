@@ -39,6 +39,9 @@ import { baseStats } from './quarm/quarm.classes';
 import { DividerModule } from 'primeng/divider';
 import { ApiService } from '../api/api.service';
 import { InventorySlotComponent } from './slots/inventory-slot.component';
+import { PriceComponent } from '../items/price.component/price.component';
+import { TabViewModule } from 'primeng/tabview';
+import { CardModule } from 'primeng/card';
 
 interface LabelValue<T> {
   label: string;
@@ -82,6 +85,9 @@ interface Inventory {
     PanelModule,
     DividerModule,
     InventorySlotComponent,
+    PriceComponent,
+    TabViewModule,
+    CardModule,
   ],
 })
 export class CharacterComponent {
@@ -91,7 +97,7 @@ export class CharacterComponent {
   public prettyClasses = allClasses;
   public simulation?: Simulation;
   public loading = false;
-
+  public inventory?: Inventory;
   public Math = Math;
   character?: Player;
   selectedCharacter?: CharacterDto;
@@ -246,6 +252,7 @@ export class CharacterComponent {
   async createNewCharacter() {
     const characterDto = await this.characterService.createNewCharacter();
     this.character = await this.characterService.mapToPlayer(characterDto);
+    this.inventory = undefined;
     this.selectedCharacter = characterDto;
   }
 
@@ -304,13 +311,16 @@ export class CharacterComponent {
       };
     });
 
-    // Load all the items from the equippable parts of the inventory
-    const equippables = inventory.slice(1, 21);
+    // Load all the items
+    const itemIds = new Set(
+      inventory?.filter((slot) => !!slot.id).map((slot) => slot.id)
+    ) as Set<number>;
     const items = await this.apiService.getItemSnippets(
-      equippables.map((equippable) => equippable.id).filter((x) => !!x)
+      Array.from(itemIds.values())
     );
 
     // Equip everything!
+    const equippables = inventory.slice(1, 21);
     equippables.forEach((equippable, index) => {
       const slotId = index + 1;
       const item = items.find((i) => i.id === equippable.id);
@@ -323,17 +333,18 @@ export class CharacterComponent {
     // Inventory
     if (this.character) {
       this.character.inventory = inventory.map((slot, i) => ({
-        slotId: i,
         slot: slot.location,
+        item: items.find((i) => i.id === slot.id),
         itemId: slot.id || null,
         count: slot.count,
       }));
     }
-
-    this.savePlayer();
+    this.initializeInventory();
+    await this.savePlayer();
   }
 
   initializeInventory() {
+    this.inventory = undefined;
     if (!this.character?.inventory) {
       return;
     }
@@ -362,8 +373,6 @@ export class CharacterComponent {
             ...inv,
             slots: [],
           };
-          console.log('pushing bag');
-          console.log(inventory);
         } else if (isCoinSlot) {
           inventory[isGeneral ? 'general' : 'bank'].coins = inv.count;
         } else {
@@ -372,14 +381,12 @@ export class CharacterComponent {
               ? inv.slot?.slice(7, 8)
               : inv.slot?.slice(4, 5)) as string
           );
-          console.log(bagSlot);
           inventory[isGeneral ? 'general' : 'bank'].bagSlots[
             bagSlot - 1
           ].slots.push(inv);
         }
       });
 
-    console.log('INVENTORY');
-    console.log(inventory);
+    this.inventory = inventory;
   }
 }

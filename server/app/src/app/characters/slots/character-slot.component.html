@@ -1,6 +1,6 @@
 <div
   class="slot {{ !isEquippable() ? 'not-equippable' : '' }}"
-  (click)="search.toggle($event)"
+  (click)="character.owned && search.toggle($event)"
   style="background-image: url('assets/slots/{{ slot.slotId }}.png')"
 >
   <span *ngIf="!slot.item" style="color: #ddd" class="name">{{

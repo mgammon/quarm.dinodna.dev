@@ -59,9 +59,6 @@ export class InventorySlot {
   @Column()
   characterId: number;
 
-  @Column({ nullable: true })
-  slotId?: number;
-
   @Column({ length: 100, nullable: true })
   slot?: string;
 

@@ -86,6 +86,15 @@ table {
   margin: 0 1em;
 }
 
+:host ::ng-deep .p-card-content {
+  padding-top: 0;
+  margin-top: -1em;
+}
+
+:host ::ng-deep .p-tabview-panels {
+  margin-top: 0.5em;
+}
+
 :host ::ng-deep .p-divider {
   margin: 0;
   padding: 0;
@@ -99,4 +108,17 @@ table {
   font-size: 0.8em;
   width: 121px;
   margin-left: 67px;
+}
+
+.general-inventory,
+.bank-inventory {
+  // scale: 0.8;
+}
+
+.bag-container {
+  display: flex;
+}
+
+.bag-slots {
+  display: flex;
 }

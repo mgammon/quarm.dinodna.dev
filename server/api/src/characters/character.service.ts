@@ -134,7 +134,6 @@ export class CharacterService {
     }
     const inventory = character.inventory?.map((inventorySlot) => ({
       slot: inventorySlot.slot,
-      slotId: inventorySlot.slotId,
       itemId: inventorySlot.itemId,
       count: inventorySlot.count,
     }));

@@ -1,11 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  EventEmitter,
-  HostListener,
-  Input,
-  Output,
-} from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { Item } from '../../items/item.entity';
@@ -13,7 +7,7 @@ import { Item } from '../../items/item.entity';
 import { SearchComponent } from '../../search/search.component';
 import { OverlayPanel, OverlayPanelModule } from 'primeng/overlaypanel';
 import { ItemLinkComponent } from '../../items/item-link.component/item-link.component';
-import { Character, Slot } from '../quarm/quarm.character';
+import { Player, Slot } from '../quarm/quarm.character';
 import { ApiService } from '../../api/api.service';
 import { isEquippable } from '../quarm/quarm.attack';
 
@@ -32,9 +26,8 @@ import { isEquippable } from '../quarm/quarm.attack';
   ],
 })
 export class CharacterSlotComponent {
-
-  @Input({required: true})
-  character!: Character;
+  @Input({ required: true })
+  character!: Player;
 
   @Input({ required: true })
   slot!: Slot;
@@ -47,7 +40,7 @@ export class CharacterSlotComponent {
 
   constructor(private apiService: ApiService) {}
 
-  isEquippable(){
+  isEquippable() {
     return !this.slot.item || isEquippable(this.slot.item, this.character);
   }
 

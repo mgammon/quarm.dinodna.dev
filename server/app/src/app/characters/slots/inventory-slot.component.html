@@ -1,5 +1,5 @@
 <!-- Update background image to bag or container slot icon -->
-<div class="slot" style="background-image: url('assets/slots/1.png')">
+<div class="slot" style="background-image: url('assets/slots/bag.png');">
   <span *ngIf="!slot.item" style="color: #ddd" class="name"></span>
   <app-item-link
     *ngIf="slot.item"
@@ -8,6 +8,7 @@
     [itemIcon]="slot.item.icon"
     [noNav]="true"
     [hideText]="true"
+    [subtitle]="subtitle"
   />
   <span class="item-text" *ngIf="slot.item && !hideText">{{
     slot.item.name

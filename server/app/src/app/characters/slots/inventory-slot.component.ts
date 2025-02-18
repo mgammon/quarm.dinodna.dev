@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 
@@ -23,7 +23,20 @@ import { InventorySlot } from '../character.service';
     ItemLinkComponent,
   ],
 })
-export class InventorySlotComponent {
+export class InventorySlotComponent implements OnInit {
+  public subtitle?: string;
+  ngOnInit(): void {
+    if (this.slot.slot) {
+      const characterName = `${this.character.name || 'No name'}`;
+      const slotName = this.slot.slot
+        .replace('-', ', ')
+        .replace('Slot', 'Slot ')
+        .replace('Bank', 'Bank Bag ')
+        .replace('General', 'Inventory Bag ');
+      this.subtitle = `${characterName}, ${slotName}`;
+    }
+  }
+
   @Input({ required: true })
   character!: Character;
 
@@ -32,4 +45,7 @@ export class InventorySlotComponent {
 
   @Input({ required: false })
   hideText!: boolean;
+
+  @Input({ required: false })
+  scale!: number;
 }

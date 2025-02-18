@@ -6,7 +6,6 @@ import { Classes } from '../api/classes';
 import { Item } from '../items/item.entity';
 
 export interface InventorySlot {
-  slotId: number;
   slot?: string;
   itemId: number | null;
   item?: Item;
@@ -66,17 +65,6 @@ export class CharacterService {
     if (!inventory) {
       inventory = [];
     }
-
-    // Overwrite equippable inventory slots from player.slots
-    [...player.slots]
-      .sort((a, b) => a.slotId - b.slotId)
-      .forEach((slot) => {
-        (inventory as InventorySlot[])[slot.slotId] = {
-          slotId: slot.slotId,
-          itemId: slot.item?.id || null,
-          count: 1,
-        };
-      });
 
     const characterDto: Partial<CharacterDto> = {
       id: player.id,

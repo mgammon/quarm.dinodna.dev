@@ -26,6 +26,9 @@ export class ItemComponent {
   @Input()
   public item!: Item;
 
+  @Input({ required: false })
+  public subtitle?: string;
+
   getSlotsString() {
     return getSlotsString(this.item.slots);
   }

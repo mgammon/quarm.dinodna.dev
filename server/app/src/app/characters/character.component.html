@@ -252,7 +252,7 @@
               </div>
             </div>
           </div>
-          <div class="import-from-zeal">
+          <div *ngIf="character.owned" class="import-from-zeal">
             <p-button
               size="small"
               label="Import"
@@ -308,123 +308,203 @@
             </button>
           </div>
         </div>
-        <div class="inventory">
-          <div *ngFor="let slot of character.inventory">
-            <app-inventory-slot
-              [character]="character"
-              [slot]="slot"
-              [hideText]="hideText"
-            ></app-inventory-slot>
-          </div>
-        </div>
       </div>
     </p-panel>
   </div>
 
-  <p-panel>
-    <ng-template pTemplate="icons">
-      <div style="display: flex; flex-direction: row">
-        <span class="p-float-label">
-          <div class="item-search">
-            <app-search
-              [types]="['npcs']"
-              [skipNavigation]="true"
-              placeholder="Select an NPC to attack"
-              (onNpcSelected)="onNpcSelected($event)"
-              class="p-inputtext-sm"
-            ></app-search>
-            <p-button
-              [disabled]="!targetDummy"
-              label="Attack"
-              icon="pi pi-forward"
-              iconPos="right"
-              size="small"
-              (click)="runSimulation()"
-            ></p-button>
-          </div>
-        </span>
-      </div>
-    </ng-template>
-    <ng-template pTemplate="header">
-      <div style="font-weight: bold">Auto-Attack Simulation</div>
-    </ng-template>
-    <!-- Simulation -->
-    <div style="padding: 1em; margin-left: 1em; margin-bottom: 1em">
-      <div
-        *ngIf="!simulation"
-        style="
-          text-align: center;
-          font-weight: bold;
-          opacity: 0.5;
-          padding: 3em;
+  <p-card>
+    <p-tabView>
+      <p-tabPanel
+        header="Inventory"
+        [disabled]="
+          !character || !inventory || !inventory.general.bagSlots.length
         "
       >
-        No simulations run yet. <br />Search for an NPC to simulate
-        auto-attacking.
-      </div>
-      <table *ngIf="simulation">
-        <thead>
-          <tr>
-            <th colspan="2">Simulation</th>
-          </tr>
-        </thead>
-        <tr>
-          <th>DPS</th>
-          <td>{{ simulation.dps | number : "1.0-1" }}</td>
-        </tr>
-        <tr>
-          <th>Min Primary Damage</th>
-          <td>{{ simulation.minPrimaryDamage }}</td>
-        </tr>
-        <tr>
-          <th>Max Primary Damage</th>
-          <td>{{ simulation.maxPrimaryDamage }}</td>
-        </tr>
-        <tr>
-          <th>Avg Primary Damage</th>
-          <td>
-            {{
-              simulation.primaryDamage / simulation.primaryHits
-                | number : "1.0-1"
-            }}
-          </td>
-        </tr>
-        <tr *ngIf="simulation.secondaryDamage > 0">
-          <th>Min Secondary Damage</th>
-          <td>{{ simulation.minSecondaryDamage }}</td>
-        </tr>
-        <tr *ngIf="simulation.secondaryDamage > 0">
-          <th>Max Secondary Damage</th>
-          <td>{{ simulation.maxSecondaryDamage }}</td>
-        </tr>
-        <tr *ngIf="simulation.secondaryDamage > 0">
-          <th>Avg Secondary Damage</th>
-          <td>
-            {{
-              simulation.secondaryDamage / simulation.secondaryHits
-                | number : "1.0-1"
-            }}
-          </td>
-        </tr>
-        <tr *ngIf="simulation.dualWieldSuccess > 0">
-          <th>Dual Wield %</th>
-          <td>{{ simulation.dualWieldPercent | number : "1.0-1" }}%</td>
-        </tr>
-        <tr *ngIf="simulation.doubleAttackSuccess > 0">
-          <th>Double Attack %</th>
-          <td>{{ simulation.doubleAttackPercent | number : "1.0-1" }}%</td>
-        </tr>
-        <tr>
-          <th>Hit Chance (Front)</th>
-          <td>{{ simulation.hitChanceFromFront | number : "1.1-1" }}%</td>
-        </tr>
-        <tr>
-          <th>Hit Chance (Behind)</th>
-          <td>{{ simulation.hitChanceFromBehind | number : "1.1-1" }}%</td>
-        </tr>
-      </table>
-    </div>
-  </p-panel>
+        <div
+          *ngIf="!!character && inventory && inventory.general.bagSlots.length"
+        >
+          <div
+            class="general-inventory"
+            *ngIf="inventory && inventory.general.bagSlots.length"
+          >
+            <h3 style="display: inline-block">Inventory</h3>
+            <app-price
+              style="margin-left: 1em"
+              [noZeroes]="true"
+              [price]="inventory.general.coins"
+            />
+            <button
+              class="p-panel-header-icon p-link mr-2"
+              style="vertical-align: middle; margin-left: 1em"
+              (click)="hideText = !hideText"
+            >
+              <span
+                class="pi pi-info-circle"
+                [pTooltip]="
+                  hideText ? 'Hiding item names' : 'Showing item names'
+                "
+                [style]="
+                  !hideText
+                    ? 'color: var(--primary-color)'
+                    : 'color: var(--secondary-color)'
+                "
+              >
+              </span>
+            </button>
+            <div
+              class="bag-container"
+              *ngFor="let bagSlot of inventory.general.bagSlots"
+            >
+              <app-inventory-slot
+                [character]="character"
+                [slot]="bagSlot"
+                [hideText]="hideText"
+              ></app-inventory-slot>
+              <div class="bag-slots">
+                <div *ngFor="let slot of bagSlot.slots">
+                  <app-inventory-slot
+                    [character]="character"
+                    [slot]="slot"
+                    [hideText]="hideText"
+                  ></app-inventory-slot>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="bank-inventory"
+            *ngIf="inventory && inventory.bank.bagSlots.length"
+          >
+            <h3 style="display: inline-block">Bank</h3>
+            <app-price
+              style="margin-left: 1em"
+              [noZeroes]="true"
+              [price]="inventory.bank.coins"
+            />
+            <div
+              class="bag-container"
+              *ngFor="let bagSlot of inventory.bank.bagSlots"
+            >
+              <app-inventory-slot
+                [character]="character"
+                [slot]="bagSlot"
+                [hideText]="hideText"
+              ></app-inventory-slot>
+              <div class="bag-slots">
+                <div *ngFor="let slot of bagSlot.slots">
+                  <app-inventory-slot
+                    [character]="character"
+                    [slot]="slot"
+                    [hideText]="hideText"
+                  ></app-inventory-slot>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+      <p-tabPanel header="Auto-Attack Simulation">
+        <!-- Simulation NPC search and Run button -->
+        <div style="display: flex; flex-direction: row">
+          <span class="p-float-label">
+            <div class="item-search">
+              <app-search
+                [types]="['npcs']"
+                [skipNavigation]="true"
+                placeholder="Select an NPC to attack"
+                (onNpcSelected)="onNpcSelected($event)"
+                class="p-inputtext-sm"
+              ></app-search>
+              <p-button
+                [disabled]="!targetDummy"
+                label="Attack"
+                icon="pi pi-forward"
+                iconPos="right"
+                size="small"
+                (click)="runSimulation()"
+              ></p-button>
+            </div>
+          </span>
+        </div>
+        <!-- Simulation results -->
+        <div style="padding: 1em; margin-left: 1em; margin-bottom: 1em">
+          <div
+            *ngIf="!simulation"
+            style="
+              text-align: center;
+              font-weight: bold;
+              opacity: 0.5;
+              padding: 3em;
+            "
+          >
+            No simulations run yet. <br />Search for an NPC to simulate
+            auto-attacking.
+          </div>
+          <table *ngIf="simulation">
+            <thead>
+              <tr>
+                <th colspan="2">Simulation</th>
+              </tr>
+            </thead>
+            <tr>
+              <th>DPS</th>
+              <td>{{ simulation.dps | number : "1.0-1" }}</td>
+            </tr>
+            <tr>
+              <th>Min Primary Damage</th>
+              <td>{{ simulation.minPrimaryDamage }}</td>
+            </tr>
+            <tr>
+              <th>Max Primary Damage</th>
+              <td>{{ simulation.maxPrimaryDamage }}</td>
+            </tr>
+            <tr>
+              <th>Avg Primary Damage</th>
+              <td>
+                {{
+                  simulation.primaryDamage / simulation.primaryHits
+                    | number : "1.0-1"
+                }}
+              </td>
+            </tr>
+            <tr *ngIf="simulation.secondaryDamage > 0">
+              <th>Min Secondary Damage</th>
+              <td>{{ simulation.minSecondaryDamage }}</td>
+            </tr>
+            <tr *ngIf="simulation.secondaryDamage > 0">
+              <th>Max Secondary Damage</th>
+              <td>{{ simulation.maxSecondaryDamage }}</td>
+            </tr>
+            <tr *ngIf="simulation.secondaryDamage > 0">
+              <th>Avg Secondary Damage</th>
+              <td>
+                {{
+                  simulation.secondaryDamage / simulation.secondaryHits
+                    | number : "1.0-1"
+                }}
+              </td>
+            </tr>
+            <tr *ngIf="simulation.dualWieldSuccess > 0">
+              <th>Dual Wield %</th>
+              <td>{{ simulation.dualWieldPercent | number : "1.0-1" }}%</td>
+            </tr>
+            <tr *ngIf="simulation.doubleAttackSuccess > 0">
+              <th>Double Attack %</th>
+              <td>{{ simulation.doubleAttackPercent | number : "1.0-1" }}%</td>
+            </tr>
+            <tr>
+              <th>Hit Chance (Front)</th>
+              <td>{{ simulation.hitChanceFromFront | number : "1.1-1" }}%</td>
+            </tr>
+            <tr>
+              <th>Hit Chance (Behind)</th>
+              <td>{{ simulation.hitChanceFromBehind | number : "1.1-1" }}%</td>
+            </tr>
+          </table>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+  </p-card>
 </div>
 
 <h5>Latest changes:</h5>
