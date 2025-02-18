@@ -319,17 +319,13 @@
           *ngIf="
             !!character && (!inventory || !inventory.general.bagSlots.length)
           "
+          style="width: 450px"
         >
           <div
             *ngIf="character.owned"
-            style="
-              text-align: center;
-              max-width: 500px;
-            "
+            style="text-align: center"
           >
-            <p>
-              Import your equipment from a Zeal inventory file
-            </p>
+            <p>Import your equipment from a Zeal inventory file</p>
             <p>
               Type <span class="code">/outputfile inventory</span> in-game, then
               select the
@@ -349,6 +345,7 @@
         </div>
         <div
           *ngIf="!!character && inventory && inventory.general.bagSlots.length"
+          style="width: 450px"
         >
           <div
             class="general-inventory"
@@ -432,7 +429,7 @@
       </p-tabPanel>
       <p-tabPanel header="Auto-Attack Simulation">
         <!-- Simulation NPC search and Run button -->
-        <div style="display: flex; flex-direction: row">
+        <div style="display: flex; flex-direction: row; width: 450px">
           <span class="p-float-label">
             <div class="item-search">
               <app-search
