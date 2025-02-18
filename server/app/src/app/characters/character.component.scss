@@ -122,3 +122,12 @@ table {
 .bag-slots {
   display: flex;
 }
+
+
+.code {
+  font-family: 'Courier New', Courier, monospace;
+  background: rgba(50,50,50,0.95);
+  border-radius: 0.25em;
+  padding:0.125em;
+  display:inline-block;
+}
