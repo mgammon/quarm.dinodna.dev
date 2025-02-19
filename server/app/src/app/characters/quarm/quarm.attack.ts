@@ -442,14 +442,14 @@ export const isEquippable = (item: Item, character: Character) => {
 
   // Not the right race
   if (!bitmaskIncludesId(item.races, raceId)) {
-    console.log('not the right race');
+    // console.log('not the right race');
     return false;
   }
 
   // Not the right class
   if (!bitmaskIncludesId(item.classes, classId - 1)) {
-    console.log(item.classes, classId);
-    console.log('not the right class');
+    // console.log(item.classes, classId);
+    // console.log('not the right class');
     return false;
   }
 

@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { ApiService } from '../api/api.service';
-import { Player } from './quarm/quarm.character';
+import { Player, Slot } from './quarm/quarm.character';
 import { PlayableRaces } from '../api/race';
 import { Classes } from '../api/classes';
 import { Item } from '../items/item.entity';
@@ -37,6 +37,8 @@ export interface CharacterDto {
 })
 export class CharacterService {
   public characterDtos: CharacterDto[] = [];
+
+  public characterChangedEvents = new EventEmitter<CharacterDto>();
 
   constructor(private apiService: ApiService) {}
 
@@ -138,12 +140,13 @@ export class CharacterService {
     const characterDto = this.mapToCharacterDto(player);
     if (player.id) {
       const updated = await this.apiService.updateCharacter(characterDto);
-      const existing = this.characterDtos.find(
+      const existingIndex = this.characterDtos.findIndex(
         (existing) => existing.id === updated.id
       );
-      if (existing) {
-        existing.name = updated.name;
+      if (existingIndex > -1) {
+        this.characterDtos[existingIndex] = updated;
       }
+      this.characterChangedEvents.emit(updated);
       return updated;
     } else {
       const character = await this.apiService.createCharacter(characterDto);
@@ -174,9 +177,10 @@ export class CharacterService {
     );
   };
 
-  createNewCharacter = async () => {
+  createNewCharacter = async (name?: string) => {
     const characterDto = await this.apiService.createCharacter({
       level: 50,
+      name,
       class: Classes.Monk,
       race: PlayableRaces.Iksar,
       stats: '',
@@ -185,4 +189,85 @@ export class CharacterService {
     this.characterDtos = [...this.characterDtos, characterDto];
     return characterDto;
   };
+
+  onZealInventoryFileEvent($event: any, character: Player) {
+    const fileInput = $event.target as any;
+    if (!fileInput || !fileInput.files || !fileInput.files.length) {
+      return;
+    }
+    const file: File = fileInput.files[0];
+    const fileReader = new FileReader();
+    fileReader.onload = (event: ProgressEvent<FileReader>) =>
+      this.parseZealInventoryFile(event.target?.result, file.name, character);
+    fileReader.readAsText(file);
+  }
+
+  private async parseZealInventoryFile(
+    data: ArrayBuffer | string | undefined | null,
+    filename: string,
+    character?: Player
+  ) {
+    if (!data || !filename) {
+      return;
+    }
+
+    // Load the character from the filename, or create a new one
+    if (!character) {
+      const characterName = filename.split('-')[0] || 'No name';
+      await this.loadMyCharacters();
+      const existingCharacter = this.characterDtos.find(
+        (dto) => dto.name === characterName
+      );
+      if (existingCharacter) {
+        character = await this.mapToPlayer(existingCharacter);
+      } else {
+        character = await this.mapToPlayer(
+          await this.createNewCharacter(characterName)
+        );
+      }
+    }
+
+    // Parse the text into inventory
+    const text = data.toString();
+    const lines = text.replaceAll('\r', '').split('\n');
+    const inventory = lines.map((line) => {
+      const [location, name, id, count, slots] = line.split('\t');
+      return {
+        location,
+        name,
+        id: parseInt(id),
+        count: parseInt(count),
+        slots: parseInt(slots),
+      };
+    });
+
+    // Load all the items
+    const itemIds = new Set(
+      inventory?.filter((slot) => !!slot.id).map((slot) => slot.id)
+    ) as Set<number>;
+    const items = await this.apiService.getItemSnippets(
+      Array.from(itemIds.values())
+    );
+
+    // Equip everything!
+    const equippables = inventory.slice(1, 21);
+    equippables.forEach((equippable, index) => {
+      const slotId = index + 1;
+      const item = items.find((i) => i.id === equippable.id);
+      const slot = character?.slots.find(
+        (slot) => slot.slotId === slotId
+      ) as Slot;
+      character?.equip(item, slot);
+    });
+
+    // Inventory
+    character.inventory = inventory.map((slot, i) => ({
+      slot: slot.location,
+      item: items.find((i) => i.id === slot.id),
+      itemId: slot.id || null,
+      count: slot.count,
+    }));
+    return this.savePlayer(character);
+    
+  }
 }

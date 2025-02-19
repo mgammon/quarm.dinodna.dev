@@ -42,6 +42,7 @@ import { InventorySlotComponent } from './slots/inventory-slot.component';
 import { PriceComponent } from '../items/price.component/price.component';
 import { TabViewModule } from 'primeng/tabview';
 import { CardModule } from 'primeng/card';
+import { InventoryComponent } from './inventory/inventory.component';
 
 interface LabelValue<T> {
   label: string;
@@ -88,6 +89,7 @@ interface Inventory {
     PriceComponent,
     TabViewModule,
     CardModule,
+    InventoryComponent,
   ],
 })
 export class CharacterComponent {
@@ -97,7 +99,6 @@ export class CharacterComponent {
   public prettyClasses = allClasses;
   public simulation?: Simulation;
   public loading = false;
-  public inventory?: Inventory;
   public Math = Math;
   character?: Player;
   selectedCharacter?: CharacterDto;
@@ -119,7 +120,6 @@ export class CharacterComponent {
     private route: ActivatedRoute,
     private usageService: UsageService,
     private location: Location,
-    private apiService: ApiService
   ) {
     this.classOptions = this.getClassOptions();
     this.raceOptions = this.getRaceOptions();
@@ -158,7 +158,6 @@ export class CharacterComponent {
         this.location.go(`characters/${this.character.id}`);
       }
     }
-    this.initializeInventory();
     this.loading = false;
   }
 
@@ -252,7 +251,6 @@ export class CharacterComponent {
   async createNewCharacter() {
     const characterDto = await this.characterService.createNewCharacter();
     this.character = await this.characterService.mapToPlayer(characterDto);
-    this.inventory = undefined;
     this.selectedCharacter = characterDto;
   }
 
@@ -279,121 +277,5 @@ export class CharacterComponent {
     const validRaceClassCombo = this.isValidRaceClassCombo();
 
     return validLevelRange && validRace && validClass && validRaceClassCombo;
-  }
-
-  onZealInventoryFileChanged($event: any) {
-    const fileInput = $event.target as any;
-    if (!fileInput || !fileInput.files || !fileInput.files.length) {
-      return;
-    }
-    const file: File = fileInput.files[0];
-    const fileReader = new FileReader();
-    fileReader.onload = (event: ProgressEvent<FileReader>) =>
-      this.parseZealInventoryFile(event.target?.result);
-    fileReader.readAsText(file);
-  }
-
-  async parseZealInventoryFile(data: ArrayBuffer | string | undefined | null) {
-    if (!data) {
-      return;
-    }
-    // Parse the text into inventory
-    const text = data.toString();
-    const lines = text.replaceAll('\r', '').split('\n');
-    const inventory = lines.map((line) => {
-      const [location, name, id, count, slots] = line.split('\t');
-      return {
-        location,
-        name,
-        id: parseInt(id),
-        count: parseInt(count),
-        slots: parseInt(slots),
-      };
-    });
-
-    // Load all the items
-    const itemIds = new Set(
-      inventory?.filter((slot) => !!slot.id).map((slot) => slot.id)
-    ) as Set<number>;
-    const items = await this.apiService.getItemSnippets(
-      Array.from(itemIds.values())
-    );
-
-    // Equip everything!
-    const equippables = inventory.slice(1, 21);
-    equippables.forEach((equippable, index) => {
-      const slotId = index + 1;
-      const item = items.find((i) => i.id === equippable.id);
-      const slot = this.character?.slots.find(
-        (slot) => slot.slotId === slotId
-      ) as Slot;
-      this.character?.equip(item, slot);
-    });
-
-    // Inventory
-    if (this.character) {
-      this.character.inventory = inventory.map((slot, i) => ({
-        slot: slot.location,
-        item: items.find((i) => i.id === slot.id),
-        itemId: slot.id || null,
-        count: slot.count,
-      }));
-    }
-    this.initializeInventory();
-    await this.savePlayer();
-  }
-
-  initializeInventory() {
-    this.inventory = undefined;
-    if (!this.character?.inventory) {
-      return;
-    }
-
-    const inventory: Inventory = {
-      general: { bagSlots: [], coins: 0 },
-      bank: { bagSlots: [], coins: 0 },
-    };
-
-    const inventorySlots = this.character.inventory.filter(
-      (inv) => inv.slot?.includes('General') || inv.slot?.includes('Bank')
-    );
-
-    // Add the bag slots first
-    inventorySlots
-      .filter((inv) => !inv.slot?.includes('-'))
-      .forEach((inv) => {
-        if (!inv.slot) {
-          return;
-        }
-        const isGeneral = inv.slot.includes('General');
-        const bagSlot = parseInt(inv.slot.slice(inv.slot.length - 1));
-        inventory[isGeneral ? 'general' : 'bank'].bagSlots[bagSlot - 1] = {
-          ...inv,
-          slots: [],
-        };
-      });
-
-    // Then add the non-bag slots
-    this.character.inventory
-      .filter((inv) => inv.slot?.includes('-'))
-      .forEach((inv) => {
-        const isGeneral = inv.slot?.includes('General');
-        const isCoinSlot = inv.slot?.includes('-Coin');
-        if (isCoinSlot) {
-          inventory[isGeneral ? 'general' : 'bank'].coins = inv.count;
-        } else {
-          const bagSlot = parseInt(
-            (isGeneral
-              ? inv.slot?.slice(7, 8)
-              : inv.slot?.slice(4, 5)) as string
-          );
-          const bagSlots = inventory[isGeneral ? 'general' : 'bank'].bagSlots;
-          if (bagSlots) {
-            bagSlots[bagSlot - 1].slots.push(inv);
-          }
-        }
-      });
-
-    this.inventory = inventory;
   }
 }

@@ -1,0 +1,75 @@
+<div>
+  <div
+    class="general-inventory"
+    *ngIf="inventory && inventory.general && inventory.general.bagSlots.length"
+  >
+    <h3 style="display: inline-block">Inventory</h3>
+    <app-price
+      style="margin-left: 1em"
+      [noZeroes]="true"
+      [price]="inventory.general.coins"
+    />
+    <button
+      class="p-panel-header-icon p-link mr-2"
+      style="vertical-align: middle; margin-left: 1em"
+      (click)="hideText = !hideText"
+    >
+      <span
+        class="pi pi-info-circle"
+        [pTooltip]="hideText ? 'Hiding item names' : 'Showing item names'"
+        [style]="
+          !hideText
+            ? 'color: var(--primary-color)'
+            : 'color: var(--secondary-color)'
+        "
+      >
+      </span>
+    </button>
+    <div
+      class="bag-container"
+      *ngFor="let bagSlot of inventory.general.bagSlots"
+    >
+      <app-inventory-slot
+        [character]="character"
+        [slot]="bagSlot"
+        [hideText]="hideText"
+      ></app-inventory-slot>
+      <div class="bag-slots">
+        <div *ngFor="let slot of bagSlot.slots">
+          <app-inventory-slot
+            [character]="character"
+            [slot]="slot"
+            [hideText]="hideText"
+          ></app-inventory-slot>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="bank-inventory"
+    *ngIf="inventory && inventory.bank && inventory.bank.bagSlots.length"
+  >
+    <h3 style="display: inline-block">Bank</h3>
+    <app-price
+      style="margin-left: 1em"
+      [noZeroes]="true"
+      [price]="inventory.bank.coins"
+    />
+    <div class="bag-container" *ngFor="let bagSlot of inventory.bank.bagSlots">
+      <app-inventory-slot
+        [character]="character"
+        [slot]="bagSlot"
+        [hideText]="hideText"
+      ></app-inventory-slot>
+      <div class="bag-slots">
+        <div *ngFor="let slot of bagSlot.slots">
+          <app-inventory-slot
+            [character]="character"
+            [slot]="slot"
+            [hideText]="hideText"
+          ></app-inventory-slot>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
