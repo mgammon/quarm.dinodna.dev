@@ -354,26 +354,32 @@ export class CharacterComponent {
       bank: { bagSlots: [], coins: 0 },
     };
 
+    const inventorySlots = this.character.inventory.filter(
+      (inv) => inv.slot?.includes('General') || inv.slot?.includes('Bank')
+    );
+
+    // Add the bag slots first
+    inventorySlots
+      .filter((inv) => !inv.slot?.includes('-'))
+      .forEach((inv) => {
+        if (!inv.slot) {
+          return;
+        }
+        const isGeneral = inv.slot.includes('General');
+        const bagSlot = parseInt(inv.slot.slice(inv.slot.length - 1));
+        inventory[isGeneral ? 'general' : 'bank'].bagSlots[bagSlot - 1] = {
+          ...inv,
+          slots: [],
+        };
+      });
+
+    // Then add the non-bag slots
     this.character.inventory
-      .filter(
-        (inv) => inv.slot?.includes('General') || inv.slot?.includes('Bank')
-      )
+      .filter((inv) => inv.slot?.includes('-'))
       .forEach((inv) => {
         const isGeneral = inv.slot?.includes('General');
-        const isBagSlot = !inv.slot?.includes('-');
         const isCoinSlot = inv.slot?.includes('-Coin');
-
-        if (isBagSlot) {
-          const bagSlot = parseInt(
-            (isGeneral
-              ? inv.slot?.slice(7, 8)
-              : inv.slot?.slice(4, 5)) as string
-          );
-          inventory[isGeneral ? 'general' : 'bank'].bagSlots[bagSlot - 1] = {
-            ...inv,
-            slots: [],
-          };
-        } else if (isCoinSlot) {
+        if (isCoinSlot) {
           inventory[isGeneral ? 'general' : 'bank'].coins = inv.count;
         } else {
           const bagSlot = parseInt(
@@ -381,9 +387,10 @@ export class CharacterComponent {
               ? inv.slot?.slice(7, 8)
               : inv.slot?.slice(4, 5)) as string
           );
-          inventory[isGeneral ? 'general' : 'bank'].bagSlots[
-            bagSlot - 1
-          ].slots.push(inv);
+          const bagSlots = inventory[isGeneral ? 'general' : 'bank'].bagSlots;
+          if (bagSlots) {
+            bagSlots[bagSlot - 1].slots.push(inv);
+          }
         }
       });
 
