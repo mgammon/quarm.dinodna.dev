@@ -47,23 +47,36 @@
     </div>
     <div class="p-toolbar-group-center"></div>
     <div class="p-toolbar-group-end">
-      <div style="text-align: center" *ngIf="showSetEqDirectory">
+      <!-- <div style="text-align: center" *ngIf="showSetEqDirectory">
         <span
           *ngIf="logReaderService.isReading && logReaderService.directory"
-          style="font-size: 0.85em"
+          style="font-size: 0.85em;display:inline-block;text-align:left;margin-right:0.5em"
         >
-          Reading logs from: {{ logReaderService.directory.name }}
+          Reading logs from:<br/>&nbsp;&nbsp;&nbsp;&nbsp;{{ logReaderService.directory.name }}
         </span>
         <span
           *ngIf="!logReaderService.isReading && logReaderService.directory"
-          style="font-size: 0.85em"
+          style="font-size: 0.85em;display:inline-block;text-align:left;margin-right:0.5em"
         >
-          EQ directory: {{ logReaderService.directory.name }}
+          EQ directory:<br />&nbsp;&nbsp;&nbsp;&nbsp;{{ logReaderService.directory.name }}
         </span>
-        <span *ngIf="!logReaderService.directory" style="font-size: 0.85em">
+        <p-button
+          type="button"
+          severity="info"
+          (onClick)="openDirectoryPicker()"
+          icon="pi pi-{{
+            logReaderService.directory ? 'folder-open' : 'folder'
+          }}"
+          styleClass="white circle"
+          tooltipPosition="bottom"
+          [pTooltip]="
+            'Setting your EQ directory gives access to your EQ logs to show your location on the map.  After setting your directory, you may need to re-log or re-zone before your location shows.'
+          "
+        ></p-button> -->
+      <!-- <span *ngIf="!logReaderService.directory" style="font-size: 0.85em">
           No EQ directory set
-        </span>
-        <button
+        </span> -->
+      <!-- <button
           (click)="openDirectoryPicker()"
           style="color: white; font-weight: bold; vertical-align: middle"
           type="button"
@@ -76,8 +89,13 @@
         >
           {{ logReaderService.directory ? "Change" : "Set" }} EQ Directory
           <p-badge value="BETA" />
-        </button>
-      </div>
+        </button> -->
+      <!-- </div> -->
+      <app-countdown
+        title="Velious"
+        [date]="veliousLaunchDate"
+        tooltip="Velious launches April 1st, 2025"
+      />
       <app-feedback></app-feedback>
       <!-- <p-button
         type="button"

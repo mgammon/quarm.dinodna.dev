@@ -79,3 +79,11 @@ svg.zone-line {
 // .map-label-countdown {
 //   border:1px solid pink;
 // }
+
+body {
+  margin: 0;
+}
+
+.p-panel-header, .p-splitter, .p-panel-content {
+  border-radius:0;
+}

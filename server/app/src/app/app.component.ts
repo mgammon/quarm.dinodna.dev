@@ -16,7 +16,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { LogService } from './logs/log.service';
 import { FormsModule } from '@angular/forms';
-import { LogReaderService } from './logs/log-reader.service';
+// import { LogReaderService } from './logs/log-reader.service';
 import { LocationService } from './logs/location.service';
 import { ApiService } from './api/api.service';
 import { BadgeModule } from 'primeng/badge';
@@ -25,6 +25,9 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { Log } from './logs/log.entity';
 import { TrackerService } from './auctions/tracker/tracker.service';
+import * as moment from 'moment';
+import { TagModule } from 'primeng/tag';
+import { CountdownComponent } from './components/countdown/countdown.component';
 
 @Component({
   selector: 'app-root',
@@ -49,6 +52,8 @@ import { TrackerService } from './auctions/tracker/tracker.service';
     BadgeModule,
     FeedbackComponent,
     ToastModule,
+    TagModule,
+    CountdownComponent,
   ],
   providers: [MessageService],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -62,8 +67,10 @@ export class AppComponent {
 
   public mostRecentSystemLog?: Log;
 
+  public veliousLaunchDate = moment('2025-04-01T15:00:00-04:00');
+
   public liveButtonClass: string = 'yellow';
-  public showSetEqDirectory = (window as any).showDirectoryPicker;
+  // public showSetEqDirectory = (window as any).showDirectoryPicker;
 
   constructor(
     public navigationService: NavigationService,
@@ -72,7 +79,7 @@ export class AppComponent {
     public apiService: ApiService,
     public locationService: LocationService,
     private router: Router,
-    public logReaderService: LogReaderService,
+    // public logReaderService: LogReaderService,
     public messageService: MessageService,
     public trackerService: TrackerService
   ) {
@@ -101,14 +108,14 @@ export class AppComponent {
     }
   }
 
-  async openDirectoryPicker() {
-    if (!(window as any).showDirectoryPicker) {
-      return;
-    } else {
-      const directory = await (window as any).showDirectoryPicker();
-      this.logReaderService.setDirectory(directory);
-    }
-  }
+  // async openDirectoryPicker() {
+  //   if (!(window as any).showDirectoryPicker) {
+  //     return;
+  //   } else {
+  //     const directory = await (window as any).showDirectoryPicker();
+  //     this.logReaderService.setDirectory(directory);
+  //   }
+  // }
 
   onSystemLog = (log: Log) => {
     if ((this.mostRecentSystemLog?.sentAt.unix() || 0) < log.sentAt.unix()) {
@@ -124,6 +131,6 @@ export class AppComponent {
       detail: log.text,
       life: 59_000,
     });
-    this.trackerService.playAlert(log)
+    this.trackerService.playAlert(log);
   };
 }

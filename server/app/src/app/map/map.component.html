@@ -16,8 +16,8 @@
     <a [routerLink]="['/zones', zoneShortName]" style="">{{ zoneFullName }}</a>
   </div>
   <div id="map">
-    <div class="live-buttons">
-      <p-button
+    <!-- <div class="live-buttons"> -->
+      <!-- <p-button
         *ngIf="shouldShowMapOptions()"
         type="button"
         icon="pi pi-map-marker"
@@ -42,8 +42,8 @@
             : 'Auto loading map disabled'
         "
         (click)="toggleAutoLoadZone()"
-      ></p-button>
-      <p-button
+      ></p-button> -->
+      <!-- <p-button
         *ngIf="locationService.currentLocation.zoneId !== zoneShortName && locationService.currentLocation.coords"
         type="button"
         icon="pi pi-globe"
@@ -58,8 +58,8 @@
         (click)="
           showLocationAnyhow = !showLocationAnyhow; updateCurrentLocation()
         "
-      ></p-button>
-      <p-button
+      ></p-button> -->
+      <!-- <p-button
         *ngIf="shouldShowMapOptions()"
         type="button"
         icon="pi pi-bolt"
@@ -72,8 +72,8 @@
             ? 'Last location update was a while ago.  Is your EQ directory set?  Did you close your original tab for this site?'
             : 'Receiving location updates'
         "
-      ></p-button>
-    </div>
+      ></p-button> -->
+    <!-- </div> -->
     <div
       *ngIf="hideControls !== true"
       class="z-slider"
