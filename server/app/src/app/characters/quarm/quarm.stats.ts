@@ -9,7 +9,7 @@ import { Character, getDefaultStats, Stats } from './quarm.character';
 // Calc MR, PR, DR, FR, CR totally should go under the Character class.
 // Buuut they're fucking huge functions, so I'm splitting it out to here.
 
-const MAX_STAT = 250;
+const MAX_STAT = 255;
 const MAX_RESIST = 500;
 
 export const calcMR = (character: Character) => {
