@@ -5,11 +5,11 @@
 >
   <div
     class="equipped"
-    *ngIf="character && character.slots && character.slots.length"
+    *ngIf="character && character.slots && character.slots.length && !hideEquipped"
   >
     <h3 style="display: inline-block">Equipped</h3>
     <!-- Slots -->
-    <div class="slots-container" *ngIf="!hideEquipped">
+    <div class="slots-container">
       <div class="top">
         <div *ngFor="let slotId of [1, 5, 2, 3, 4]">
           <app-character-slot
@@ -96,7 +96,7 @@
       </div>
     </div>
   </div>
-  <p-divider layout="vertical" />
+  <p-divider *ngIf="!hideEquipped" layout="vertical" />
   <div
     class="general-inventory"
     *ngIf="inventory && inventory.general && inventory.general.bagSlots.length"
@@ -145,7 +145,7 @@
       </div>
     </div>
   </div>
-  <p-divider layout="vertical" />
+  <p-divider *ngIf="!hideEquipped" layout="vertical" />
   <div
     class="bank-inventory"
     *ngIf="inventory && inventory.bank && inventory.bank.bagSlots.length"

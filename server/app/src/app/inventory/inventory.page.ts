@@ -85,7 +85,6 @@ export class InventoryPage {
       .map((c, i) => i)
       .slice(charactersLength);
     if (newCharacterIndexes.length) {
-      console.log(newCharacterIndexes);
       this.activeIndex.push(...newCharacterIndexes);
     }
     this.initializeItems();
