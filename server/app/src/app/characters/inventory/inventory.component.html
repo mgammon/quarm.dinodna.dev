@@ -1,4 +1,102 @@
-<div>
+<div
+  style="display:flex;flex-direction: {{
+    direction
+  }}; justify-content:center; align-content:center; flex-wrap:wrap;"
+>
+  <div
+    class="equipped"
+    *ngIf="character && character.slots && character.slots.length"
+  >
+    <h3 style="display: inline-block">Equipped</h3>
+    <!-- Slots -->
+    <div class="slots-container" *ngIf="!hideEquipped">
+      <div class="top">
+        <div *ngFor="let slotId of [1, 5, 2, 3, 4]">
+          <app-character-slot
+            [character]="character"
+            [slot]="character.slots[slotId]"
+            [hideText]="hideText"
+            [disableChanges]="true"
+            [small]="true"
+            [filterText]="filterText"
+          ></app-character-slot>
+        </div>
+      </div>
+      <div class="middle">
+        <div class="left">
+          <div *ngFor="let slotId of [17, 7, 9, 20, 15]">
+            <app-character-slot
+              [character]="character"
+              [slot]="character.slots[slotId]"
+              [hideText]="hideText"
+              [disableChanges]="true"
+              [small]="true"
+              [filterText]="filterText"
+            ></app-character-slot>
+          </div>
+        </div>
+        <div class="class-icon">
+          <img
+            *ngIf="character.classId"
+            src="assets/classes/{{ character.classId }}.gif"
+          />
+        </div>
+        <div class="right">
+          <div *ngFor="let slotId of [8, 6, 10, 12, 16]">
+            <app-character-slot
+              [character]="character"
+              [slot]="character.slots[slotId]"
+              [hideText]="hideText"
+              [disableChanges]="true"
+              [small]="true"
+              [filterText]="filterText"
+            ></app-character-slot>
+          </div>
+        </div>
+      </div>
+      <div class="bottom" style="margin-top:-20px;">
+        <div *ngFor="let slotId of [18, 19]">
+          <app-character-slot
+            [character]="character"
+            [slot]="character.slots[slotId]"
+            [hideText]="hideText"
+            [disableChanges]="true"
+            [small]="true"
+            [filterText]="filterText"
+          ></app-character-slot>
+        </div>
+      </div>
+      <div class="bottom" style="position: relative">
+        <div *ngFor="let slotId of [13, 14, 11]">
+          <app-character-slot
+            [character]="character"
+            [slot]="character.slots[slotId]"
+            [hideText]="hideText"
+            [disableChanges]="true"
+            [small]="true"
+            [filterText]="filterText"
+          ></app-character-slot>
+        </div>
+        <button
+          class="p-panel-header-icon p-link mr-2"
+          style="position: absolute; bottom: 0; right: 32px"
+          (click)="hideText = !hideText"
+        >
+          <span
+            class="pi pi-info-circle"
+            [pTooltip]="hideText ? 'Hiding item names' : 'Showing item names'"
+            [style]="
+              !hideText
+                ? 'color: var(--primary-color)'
+                : 'color: var(--secondary-color)'
+            "
+          >
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <p-divider layout="vertical" />
   <div
     class="general-inventory"
     *ngIf="inventory && inventory.general && inventory.general.bagSlots.length"
@@ -33,6 +131,7 @@
         [character]="character"
         [slot]="bagSlot"
         [hideText]="hideText"
+        [filterText]="filterText"
       ></app-inventory-slot>
       <div class="bag-slots">
         <div *ngFor="let slot of bagSlot.slots">
@@ -40,11 +139,13 @@
             [character]="character"
             [slot]="slot"
             [hideText]="hideText"
+            [filterText]="filterText"
           ></app-inventory-slot>
         </div>
       </div>
     </div>
   </div>
+  <p-divider layout="vertical" />
   <div
     class="bank-inventory"
     *ngIf="inventory && inventory.bank && inventory.bank.bagSlots.length"
@@ -60,6 +161,7 @@
         [character]="character"
         [slot]="bagSlot"
         [hideText]="hideText"
+        [filterText]="filterText"
       ></app-inventory-slot>
       <div class="bag-slots">
         <div *ngFor="let slot of bagSlot.slots">
@@ -67,6 +169,7 @@
             [character]="character"
             [slot]="slot"
             [hideText]="hideText"
+            [filterText]="filterText"
           ></app-inventory-slot>
         </div>
       </div>

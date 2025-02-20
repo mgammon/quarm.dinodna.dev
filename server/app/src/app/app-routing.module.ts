@@ -10,6 +10,7 @@ import { ZonesPage } from './zones/zones.page';
 import { ZoneDetailsPage } from './zones/zone-details.page/zone-details.page';
 import { AuctionsPage } from './auctions/auctions.page';
 import { CharacterComponent } from './characters/character.component';
+import { InventoryPage } from './inventory/inventory.page';
 
 const routes: Routes = [
   { path: 'items', component: ItemSearchPage },
@@ -25,6 +26,7 @@ const routes: Routes = [
   { path: 'dps', component: CharacterComponent },
   { path: 'characters', component: CharacterComponent },
   { path: 'characters/:id', component: CharacterComponent },
+  { path: 'inventory', component: InventoryPage },
 ];
 
 @NgModule({

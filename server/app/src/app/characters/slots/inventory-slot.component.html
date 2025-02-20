@@ -1,5 +1,14 @@
 <!-- Update background image to bag or container slot icon -->
-<div class="slot" style="background-image: url('assets/slots/bag.png');">
+<div
+  class="slot"
+  [class.filtered]="
+    filterText &&
+    (!slot.item ||
+      (!slot.item.name.toLowerCase().includes(filterText.toLowerCase()) &&
+        slot.item.id.toString() !== filterText))
+  "
+  style="background-image: url('assets/slots/bag.png')"
+>
   <span *ngIf="!slot.item" style="color: #ddd" class="name"></span>
   <app-item-link
     *ngIf="slot.item"

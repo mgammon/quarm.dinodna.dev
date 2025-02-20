@@ -1,0 +1,126 @@
+<div
+  style="
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-direction: column;
+    flex-wrap: wrap;
+    min-width: 520px;
+  "
+>
+  <div
+    style="
+      display: flex;
+      justify-content: space-between;
+      min-width: 520px;
+      margin: 0.5em 0;
+    "
+  >
+    <p-selectButton
+      [options]="viewAsOptions"
+      (onChange)="saveViewAs()"
+      [(ngModel)]="viewAs"
+    >
+      <ng-template let-item pTemplate>
+        <i class="pi {{item !== 'grid' ? 'pi-list' : 'pi-th-large'}}"></i>
+      </ng-template>
+    </p-selectButton>
+
+    <p-autoComplete
+      placeholder="Search"
+      [(ngModel)]="filterText"
+      [suggestions]="suggestions"
+      (completeMethod)="search()"
+    />
+
+    <p-button
+      size="small"
+      label="Import"
+      [escape]="false"
+      pTooltip='Import your inventory from a Zeal inventory file.<br /> <br /> Type "/outputfile inventory" in-game, then select the "[Character Name]-Inventory.txt" file from your EQ directory'
+      (click)="fileInput.click()"
+    >
+      <input
+        accept=".txt"
+        [multiple]="true"
+        #fileInput
+        type="file"
+        hidden
+        (change)="importFromZeal($event)"
+      />
+    </p-button>
+  </div>
+  <p-card *ngIf="loading"
+    ><div style="text-align: center">
+      <p-progressSpinner ariaLabel="loading" /></div
+  ></p-card>
+  <p-card *ngIf="hasNoInventory && !loading">
+    <div style="text-align: center">
+      <p>Import your inventory from a Zeal inventory file</p>
+      <p>
+        Type <span class="code">/outputfile inventory</span> in-game, then
+        select the <span class="code">[Character Name]-Inventory.txt</span> file
+        from your EQ directory
+      </p>
+      <p>You can import multiple inventory files at once</p>
+      <p-button size="small" label="Import" (click)="fileInput.click()">
+        <input
+          accept=".txt"
+          #fileInput
+          [multiple]="true"
+          type="file"
+          hidden
+          (change)="
+            characterService.onZealInventoryFileEvent($event)
+          "
+        />
+      </p-button>
+    </div>
+  </p-card>
+  <div
+    *ngIf="!hasNoInventory && viewAs === 'list'"
+    style="width: fit-content; min-width: 520px"
+  >
+    <app-inventory-list [filterText]="filterText"></app-inventory-list>
+  </div>
+  <div
+    *ngIf="!hasNoInventory && (viewAs === 'grid' || !viewAs)"
+    style="width: fit-content; min-width: 520px"
+  >
+    <p-accordion
+      (activeIndexChange)="activeIndexChange($event)"
+      [multiple]="true"
+      [activeIndex]="activeIndex"
+    >
+      <ng-container *ngFor="let character of characterService.characters">
+        <p-accordionTab
+          [ariaExpanded]="true"
+          *ngIf="character.inventory && character.inventory.length"
+        >
+          <ng-template pTemplate="header">
+            <div
+              style="display: flex; justify-content: space-between; width: 100%"
+            >
+              <span style="font-weight: bold; align-self: center"
+                >{{character.name}}
+              </span>
+              <p-button
+                type="button"
+                size="small"
+                (click)="deleteCharacter(character)"
+                icon="pi pi-trash"
+                [outlined]="true"
+                pTooltip="Delete character"
+              ></p-button>
+            </div>
+          </ng-template>
+          <app-inventory
+            [character]="character"
+            [hideText]="true"
+            [filterText]="filterText"
+          ></app-inventory>
+        </p-accordionTab>
+      </ng-container>
+    </p-accordion>
+  </div>
+</div>

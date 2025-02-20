@@ -33,6 +33,9 @@
         <a class="header-link" [routerLink]="'npcs'">NPCs</a>
         <a class="header-link" [routerLink]="'zones'">Zones</a>
         <a class="header-link" [routerLink]="'characters'">Characters</a>
+        <a class="header-link" [routerLink]="'inventory'"
+          >Inventory <p-tag severity="info" value="Beta"
+        /></a>
         <p-button
           *ngIf="locationService.currentLocation.zoneId"
           (click)="goToLiveMap()"

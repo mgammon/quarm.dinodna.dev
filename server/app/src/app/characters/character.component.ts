@@ -21,11 +21,7 @@ import {
   Simulation,
   Slot,
 } from './quarm/quarm.character';
-import {
-  CharacterDto,
-  CharacterService,
-  InventorySlot,
-} from './character.service';
+import { CharacterService, InventorySlot } from './character.service';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
 import { Npc } from '../npcs/npc.entity';
@@ -101,7 +97,7 @@ export class CharacterComponent {
   public loading = false;
   public Math = Math;
   character?: Player;
-  selectedCharacter?: CharacterDto;
+  selectedCharacter?: Player;
 
   targetDummy?: NpcCharacter;
   public hideText = true;
@@ -119,7 +115,7 @@ export class CharacterComponent {
     public characterService: CharacterService,
     private route: ActivatedRoute,
     private usageService: UsageService,
-    private location: Location,
+    private location: Location
   ) {
     this.classOptions = this.getClassOptions();
     this.raceOptions = this.getRaceOptions();
@@ -140,16 +136,14 @@ export class CharacterComponent {
   async initializeCharacter(characterId?: number) {
     this.loading = true;
     await this.characterService.loadMyCharacters();
-    this.selectedCharacter = this.characterService.characterDtos.find(
+    this.selectedCharacter = this.characterService.characters.find(
       (character) => character.id === characterId
     );
     if (!characterId || !Number.isInteger(characterId)) {
-      if (this.characterService.characterDtos.length) {
-        const characterDto = this.characterService.characterDtos[0];
-        this.character = await this.characterService.mapToPlayer(characterDto);
+      if (this.characterService.characters.length) {
+        this.character = this.characterService.characters[0];
       } else {
-        const characterDto = await this.characterService.createNewCharacter();
-        this.character = await this.characterService.mapToPlayer(characterDto);
+        this.character = await this.characterService.createNewCharacter();
       }
       this.location.go(`characters/${this.character.id}`);
     } else {
@@ -240,18 +234,17 @@ export class CharacterComponent {
   async deleteCharacter() {
     if (this.character?.id) {
       await this.characterService.deletePlayer(this.character?.id);
-      if (this.characterService.characterDtos.length === 0) {
+      if (this.characterService.characters.length === 0) {
         this.initializeCharacter();
       } else {
-        this.initializeCharacter(this.characterService.characterDtos[0].id);
+        this.initializeCharacter(this.characterService.characters[0].id);
       }
     }
   }
 
   async createNewCharacter() {
-    const characterDto = await this.characterService.createNewCharacter();
-    this.character = await this.characterService.mapToPlayer(characterDto);
-    this.selectedCharacter = characterDto;
+    this.character = await this.characterService.createNewCharacter();
+    this.selectedCharacter = this.character;
   }
 
   selectCharacter(character: Player) {

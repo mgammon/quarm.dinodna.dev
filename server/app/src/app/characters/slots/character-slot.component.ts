@@ -35,6 +35,15 @@ export class CharacterSlotComponent {
   @Input({ required: false })
   hideText!: boolean;
 
+  @Input({ required: false })
+  disableChanges: boolean = false;
+
+  @Input({ required: false })
+  filterText?: string;
+
+  @Input({ required: false })
+  small: boolean = false;
+
   @Output()
   onItemSelected = new EventEmitter<{ item: Item | undefined; slot: Slot }>();
 

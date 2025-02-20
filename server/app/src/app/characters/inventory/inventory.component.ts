@@ -1,4 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Player } from '../quarm/quarm.character';
 import { CharacterService, InventorySlot } from '../character.service';
@@ -6,6 +12,8 @@ import { InventorySlotComponent } from '../slots/inventory-slot.component';
 import { PriceComponent } from '../../items/price.component/price.component';
 import { TooltipModule } from 'primeng/tooltip';
 import { CommonModule } from '@angular/common';
+import { CharacterSlotComponent } from '../slots/character-slot.component';
+import { DividerModule } from 'primeng/divider';
 
 interface Inventory {
   bank: {
@@ -29,14 +37,25 @@ interface Inventory {
     PriceComponent,
     TooltipModule,
     CommonModule,
+    CharacterSlotComponent,
+    DividerModule,
   ],
 })
-export class InventoryComponent implements OnInit {
+export class InventoryComponent implements OnInit, OnChanges {
   @Input({ required: true })
   character!: Player;
 
   @Input({ required: false })
   hideText: boolean = true;
+
+  @Input({ required: false })
+  hideEquipped: boolean = false;
+
+  @Input({ required: false })
+  direction: 'row' | 'column' = 'row';
+
+  @Input({ required: false })
+  filterText?: string;
 
   public inventory: Inventory | undefined;
 
@@ -51,6 +70,20 @@ export class InventoryComponent implements OnInit {
         }
       }
     );
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    // Character changed
+    if (
+      changes['character'] &&
+      changes['character'].previousValue &&
+      changes['character'].currentValue &&
+      changes['character'].previousValue?.id !==
+        changes['character'].currentValue?.id
+    ) {
+      console.log('character changed');
+      this.buildInventory();
+    }
   }
 
   buildInventory() {

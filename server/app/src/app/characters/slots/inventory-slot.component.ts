@@ -40,6 +40,9 @@ export class InventorySlotComponent implements OnInit {
   @Input({ required: true })
   character!: Character;
 
+  @Input({ required: false })
+  filterText?: string;
+
   @Input({ required: true })
   slot!: InventorySlot;
 

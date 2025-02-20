@@ -1,6 +1,14 @@
 <div
   class="slot {{ !isEquippable() ? 'not-equippable' : '' }}"
-  (click)="character.owned && search.toggle($event)"
+  [class.not-equippable]="!isEquippable()"
+  [class.filtered]="
+    filterText &&
+    (!slot.item ||
+      (!slot.item.name.toLowerCase().includes(filterText.toLowerCase()) &&
+        slot.item.id.toString() !== filterText))
+  "
+  [class.small]="small"
+  (click)="character.owned && !disableChanges && search.toggle($event)"
   style="background-image: url('assets/slots/{{ slot.slotId }}.png')"
 >
   <span *ngIf="!slot.item" style="color: #ddd" class="name">{{

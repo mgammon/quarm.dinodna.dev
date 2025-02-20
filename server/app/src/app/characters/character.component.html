@@ -6,7 +6,7 @@
           <span class="p-float-label">
             <p-dropdown
               inputId="character"
-              [options]="characterService.characterDtos"
+              [options]="characterService.characters"
               [(ngModel)]="selectedCharacter"
               (ngModelChange)="onCharacterSelect()"
               optionLabel="name"
@@ -318,7 +318,9 @@
     <p-tabView>
       <p-tabPanel header="Inventory">
         <div
-          *ngIf="character && (!character.inventory || !character.inventory.length)"
+          *ngIf="
+            character && (!character.inventory || !character.inventory.length)
+          "
           style="width: 450px"
         >
           <div *ngIf="character.owned" style="text-align: center">
@@ -349,6 +351,8 @@
           <app-inventory
             [character]="character"
             [hideText]="hideText"
+            [hideEquipped]="true"
+            direction="column"
           ></app-inventory>
         </div>
       </p-tabPanel>

@@ -36,9 +36,9 @@ export interface CharacterDto {
   providedIn: 'root',
 })
 export class CharacterService {
-  public characterDtos: CharacterDto[] = [];
+  public characters: Player[] = [];
 
-  public characterChangedEvents = new EventEmitter<CharacterDto>();
+  public characterChangedEvents = new EventEmitter<Player>();
 
   constructor(private apiService: ApiService) {}
 
@@ -139,20 +139,19 @@ export class CharacterService {
   savePlayer = async (player: Player) => {
     const characterDto = this.mapToCharacterDto(player);
     if (player.id) {
-      const updated = await this.apiService.updateCharacter(characterDto);
-      const existingIndex = this.characterDtos.findIndex(
-        (existing) => existing.id === updated.id
+      const updatedDto = await this.apiService.updateCharacter(characterDto);
+      const updatedCharacter = await this.mapToPlayer(updatedDto);
+      const existingIndex = this.characters.findIndex(
+        (existing) => existing.id === updatedCharacter.id
       );
       if (existingIndex > -1) {
-        this.characterDtos[existingIndex] = updated;
+        this.characters[existingIndex] = updatedCharacter;
       }
-      this.characterChangedEvents.emit(updated);
-      return updated;
+      this.characterChangedEvents.emit(updatedCharacter);
     } else {
       const character = await this.apiService.createCharacter(characterDto);
-      this.characterDtos.push(character);
+      this.characters.push(await this.mapToPlayer(character));
       player.id = character.id;
-      return character;
     }
   };
 
@@ -165,16 +164,16 @@ export class CharacterService {
   };
 
   loadMyCharacters = async () => {
-    if (!this.characterDtos.length) {
-      this.characterDtos = await this.apiService.getCharacters();
+    if (!this.characters.length) {
+      this.characters = await Promise.all(
+        (await this.apiService.getCharacters()).map((c) => this.mapToPlayer(c))
+      );
     }
   };
 
   deletePlayer = async (id: number) => {
     await this.apiService.deleteCharacter(id);
-    this.characterDtos = this.characterDtos.filter(
-      (player) => player.id !== id
-    );
+    this.characters = this.characters.filter((c) => c.id !== id);
   };
 
   createNewCharacter = async (name?: string) => {
@@ -186,20 +185,41 @@ export class CharacterService {
       stats: '',
       slots: '',
     });
-    this.characterDtos = [...this.characterDtos, characterDto];
-    return characterDto;
+    const character = await this.mapToPlayer(characterDto);
+    this.characters = [...this.characters, character];
+    this.characterChangedEvents.emit(character);
+    return character;
   };
 
-  onZealInventoryFileEvent($event: any, character: Player) {
+  async onZealInventoryFileEvent($event: any, character?: Player) {
     const fileInput = $event.target as any;
     if (!fileInput || !fileInput.files || !fileInput.files.length) {
       return;
     }
-    const file: File = fileInput.files[0];
-    const fileReader = new FileReader();
-    fileReader.onload = (event: ProgressEvent<FileReader>) =>
-      this.parseZealInventoryFile(event.target?.result, file.name, character);
-    fileReader.readAsText(file);
+
+    const filePromises: Promise<void>[] = [];
+    for (let i = 0; i < fileInput.files.length; i++) {
+      const file: File = fileInput.files[i];
+      if (file.size > 15_000) {
+        return;
+      }
+      filePromises.push(
+        new Promise<void>((resolve) => {
+          const fileReader = new FileReader();
+          fileReader.onload = async (event: ProgressEvent<FileReader>) => {
+            await this.parseZealInventoryFile(
+              event.target?.result,
+              file.name,
+              character
+            );
+            resolve();
+          };
+          fileReader.readAsText(file);
+        })
+      );
+    }
+    await Promise.all(filePromises);
+    fileInput.value = '';
   }
 
   private async parseZealInventoryFile(
@@ -215,15 +235,14 @@ export class CharacterService {
     if (!character) {
       const characterName = filename.split('-')[0] || 'No name';
       await this.loadMyCharacters();
-      const existingCharacter = this.characterDtos.find(
-        (dto) => dto.name === characterName
+
+      const existingCharacter = this.characters.find(
+        (char) => char.name === characterName
       );
       if (existingCharacter) {
-        character = await this.mapToPlayer(existingCharacter);
+        character = existingCharacter;
       } else {
-        character = await this.mapToPlayer(
-          await this.createNewCharacter(characterName)
-        );
+        character = await this.createNewCharacter(characterName);
       }
     }
 
@@ -268,6 +287,5 @@ export class CharacterService {
       count: slot.count,
     }));
     return this.savePlayer(character);
-    
   }
 }

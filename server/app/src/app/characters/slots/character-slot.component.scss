@@ -8,6 +8,11 @@
 border:0;
   cursor: pointer;
   background-size: 100% auto;
+
+  &.small {
+    height: 40px;
+    width: 40px;
+  }
 }
 
 .item-text {
@@ -19,4 +24,12 @@ border:0;
 .not-equippable {
   background-color: rgba(255, 0, 0, 0.75);
   background-blend-mode: multiply;
+}
+
+.filtered {
+  background-color: rgba(0, 0, 0, 0.75);
+  background-blend-mode: multiply;
+  app-item-link {
+    opacity: 0.33;
+  }
 }

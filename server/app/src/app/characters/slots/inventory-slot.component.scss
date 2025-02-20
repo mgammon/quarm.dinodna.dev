@@ -22,3 +22,11 @@
   margin-left: 28px;
   position: absolute;
 }
+
+.filtered {
+  background-color: rgba(0, 0, 0, 0.75);
+  background-blend-mode: multiply; 
+  app-item-link {
+    opacity: 0.33;
+  }
+}
