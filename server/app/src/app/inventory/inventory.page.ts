@@ -10,13 +10,11 @@ import { InventoryComponent } from '../characters/inventory/inventory.component'
 import { AccordionModule } from 'primeng/accordion';
 import { ButtonModule } from 'primeng/button';
 import { SelectButtonModule } from 'primeng/selectbutton';
-import {
-  AutoCompleteCompleteEvent,
-  AutoCompleteModule,
-} from 'primeng/autocomplete';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 import { InventoryListComponent } from './inventory-list/inventory-list.component';
 import { CardModule } from 'primeng/card';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { UsageService } from '../usage.service';
 
 @Component({
   selector: 'app-inventory-page',
@@ -41,7 +39,10 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 })
 export class InventoryPage {
   public activeIndex: number[] = [];
-  constructor(public characterService: CharacterService) {
+  constructor(
+    public characterService: CharacterService,
+    private usageService: UsageService
+  ) {
     this.loadViewAs();
   }
 
@@ -50,6 +51,7 @@ export class InventoryPage {
   public loading = true;
 
   async ngOnInit() {
+    this.usageService.send('opened inventory page');
     await this.characterService.loadMyCharacters();
     this.activeIndex = this.characterService.characters.map((c, i) => i);
     this.initializeItems();
