@@ -97,7 +97,7 @@
       ></p-button>
       <p-table
         [reorderableColumns]="true"
-        (onRowReorder)="this.trackerService.saveTrackers()"
+        (onRowReorder)="this.trackerService.saveLocalTrackers()"
         [value]="itemTrackers"
         styleClass="p-datatable-striped"
       >
@@ -208,7 +208,7 @@
                   <app-comparable-number-input
                     *ngIf="!tracker.saved"
                     [comparableNumber]="tracker.price"
-                    (onChange)="this.trackerService.saveTrackers()"
+                    (onChange)="this.trackerService.saveLocalTrackers()"
                     placeholder="plat"
                     [min]="0"
                     [max]="10000000"

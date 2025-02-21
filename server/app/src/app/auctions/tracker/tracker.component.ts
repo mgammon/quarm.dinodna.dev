@@ -1,12 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Log } from '../../logs/log.entity';
 import { PanelModule } from 'primeng/panel';
 import { TabViewModule } from 'primeng/tabview';
-import {
-  ComparableNumber,
-  ComparableNumberInputComponent,
-} from '../../items/comparable-number-input.component/comparable-number-input.component';
+import { ComparableNumberInputComponent } from '../../items/comparable-number-input.component/comparable-number-input.component';
 import { SearchComponent } from '../../search/search.component';
 import { Item } from '../../items/item.entity';
 import { ButtonModule } from 'primeng/button';
@@ -58,11 +55,11 @@ moment.updateLocale('en', {
     TooltipModule,
     DateFromNowComponent,
     SliderModule,
-    FormsModule, OverlayPanelModule
+    FormsModule,
+    OverlayPanelModule,
   ],
 })
 export class TrackerComponent {
-
   public showVolume = false;
 
   onTrackersReordered() {
@@ -89,8 +86,8 @@ export class TrackerComponent {
       itemtype: item.itemtype,
     };
     tracker.item = partialItem as Item;
-
-    this.trackerService.saveTrackers();
+    this.trackerService.refreshMatchingLogs(tracker);
+    return this.trackerService.updateItemTracker(tracker);
   }
 
   toggleWts(tracker: ItemTracker) {
@@ -102,7 +99,7 @@ export class TrackerComponent {
       tracker.wts = true;
     }
 
-    this.trackerService.saveTrackers();
+    return this.trackerService.updateItemTracker(tracker);
   }
 
   addItemTracker() {
@@ -120,7 +117,7 @@ export class TrackerComponent {
     if (tracker.item) {
       tracker.saved = true;
       this.trackerService.refreshMatchingLogs(tracker);
-      this.trackerService.saveTrackers();
+      this.trackerService.updateItemTracker(tracker);
     }
   }
 
@@ -165,7 +162,7 @@ export class TrackerComponent {
     tracker.matchingLogs = tracker.matchingLogs.filter(
       (log) => log !== matchingLog
     );
-    this.trackerService.saveTrackers();
+    this.trackerService.saveLocalTrackers();
   }
   sendTell(log: Log, tracker: ItemTracker) {
     this.clipboard.copy(

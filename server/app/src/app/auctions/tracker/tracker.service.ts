@@ -5,14 +5,50 @@ import { Auction, Log } from '../../logs/log.entity';
 import { LogService } from '../../logs/log.service';
 import { SpeechService } from './speech.service';
 import * as moment from 'moment';
+import { ApiService } from '../../api/api.service';
+
+export interface ItemTrackerDto {
+  id?: number;
+  itemId: number;
+  price: ComparableNumber;
+  wts?: boolean;
+  item?: Item;
+}
 
 export interface ItemTracker {
+  id?: number;
+  itemId?: number;
   item?: Item;
   price: ComparableNumber;
   wts?: boolean;
   matchingLogs: Log[];
-  onSelectItem?: (item: Item) => void;
   saved: boolean;
+}
+
+function mapToItemTrackerDto(itemTracker: ItemTracker): ItemTrackerDto {
+  const { itemId, price, wts, id, item } = itemTracker;
+  return { id, itemId: item?.id || (itemId as number), price, wts };
+}
+
+function mapToItemTracker(
+  itemTrackerDto: ItemTrackerDto,
+  localTracker?: ItemTracker
+): ItemTracker {
+  const { id, itemId, price, wts, item } = itemTrackerDto;
+  const itemTracker: ItemTracker = {
+    id,
+    itemId,
+    price,
+    wts,
+    item, // TODO:  ONLY RETURN id, name, icon, itemtype from server
+    saved: true,
+    matchingLogs: [],
+  };
+  if (localTracker) {
+    itemTracker.matchingLogs = localTracker.matchingLogs;
+    itemTracker.saved = localTracker.saved;
+  }
+  return itemTracker;
 }
 
 @Injectable({
@@ -28,7 +64,8 @@ export class TrackerService {
 
   constructor(
     private logService: LogService,
-    private speechService: SpeechService
+    private speechService: SpeechService,
+    private apiService: ApiService
   ) {
     this.volume = this.loadVolume();
     this.alertType =
@@ -81,7 +118,7 @@ export class TrackerService {
               (a, b) => a.sentAt.valueOf() - b.sentAt.valueOf()
             );
           }
-          this.saveTrackers();
+          this.saveLocalTrackers();
           if (sendAlerts && logs.length < 50) {
             this.playAlert(log, auction);
           }
@@ -97,38 +134,96 @@ export class TrackerService {
     });
   }
 
-  saveTrackers() {
+  saveLocalTrackers() {
     const jsonToSave = JSON.stringify(this.itemTrackers);
     localStorage.setItem('auctionTrackers', jsonToSave);
     this.trackersChanged.emit();
   }
 
-  deleteItemTracker(itemTracker: ItemTracker) {
+  async deleteItemTracker(itemTracker: ItemTracker) {
+    if (!itemTracker.id) {
+      return;
+    }
+    await this.apiService.deleteItemTracker(itemTracker.id);
     const indexToDelete = this.itemTrackers.findIndex(
       (tracker) => tracker === itemTracker
     );
     this.itemTrackers.splice(indexToDelete, 1);
-    this.saveTrackers();
+    this.saveLocalTrackers();
   }
 
-  addItemTracker(itemTracker: ItemTracker) {
-    this.itemTrackers.unshift(itemTracker);
-    this.saveTrackers();
+  async addItemTracker(itemTracker: ItemTracker) {
+    const createdTrackerDto = await this.apiService.createItemTracker(
+      mapToItemTrackerDto(itemTracker)
+    );
+    this.itemTrackers.unshift(mapToItemTracker(createdTrackerDto));
+    this.saveLocalTrackers();
   }
 
-  private loadTrackers() {
+  async updateItemTracker(itemTracker: ItemTracker) {
+    await this.apiService.updateItemTracker(mapToItemTrackerDto(itemTracker));
+    this.saveLocalTrackers();
+  }
+
+  private async loadTrackers() {
+    // Load trackers from localStorage
     const savedJson = localStorage.getItem('auctionTrackers');
+    let localItemTrackers: ItemTracker[] = [];
     if (savedJson && savedJson.length > 0) {
-      this.itemTrackers = JSON.parse(savedJson);
-      this.itemTrackers.forEach((tracker) => {
-        tracker.matchingLogs.forEach((matchingLog) => {
+      localItemTrackers = JSON.parse(savedJson);
+      localItemTrackers.forEach((localTracker) => {
+        localTracker.matchingLogs.forEach((matchingLog) => {
           matchingLog.sentAt = moment(matchingLog.sentAt);
         });
-        tracker.matchingLogs.sort(
+        localTracker.matchingLogs.sort(
           (a, b) => a.sentAt.valueOf() - b.sentAt.valueOf()
         );
       });
     }
+
+    // Load trackers from API, then add any matching logs from the local trackers
+    this.itemTrackers = (await this.apiService.getItemTrackers()).map((dto) =>
+      mapToItemTracker(dto)
+    );
+
+    // For each local tracker that doesn't have a matching (by item ID) tracker, create the tracker
+    // Ex: haven't ever saved them, but we loaded old ones from local, so we'll create them on the API
+    const localTrackersWithoutItemTracker = localItemTrackers.filter((local) =>
+      this.itemTrackers.every(
+        (tracker) => tracker.itemId !== local.item?.id && !local.id
+      )
+    );
+    for (const localItemTracker of localTrackersWithoutItemTracker) {
+      this.itemTrackers.push(
+        mapToItemTracker(
+          await this.apiService.createItemTracker(
+            mapToItemTrackerDto(localItemTracker)
+          )
+        )
+      );
+    }
+
+    this.itemTrackers.forEach((itemTracker) => {
+      const localItemTracker = localItemTrackers.find(
+        (local) => local.item?.id === itemTracker.itemId
+      );
+      if (localItemTracker) {
+        itemTracker.matchingLogs = localItemTracker.matchingLogs;
+      }
+    });
+
+    // Sort them like localTrackers are sorted (API doesn't track order)
+    this.itemTrackers.sort(
+      (a, b) =>
+        localItemTrackers.findIndex((local) => local.id === a.id) -
+        localItemTrackers.findIndex((local) => local.id === b.id)
+    );
+
+    if (localTrackersWithoutItemTracker.length) {
+      this.saveLocalTrackers();
+    }
+
+    this.checkForMatchingLogs(this.logService.logs);
   }
 
   private compare(comparableNumber: ComparableNumber, value: number) {
@@ -182,7 +277,11 @@ export class TrackerService {
       let message: string;
       if (auction) {
         message = `${auction.itemText} ${
-          auction.wts === true ? 'selling' : auction.wts === false ? 'buying' : ''
+          auction.wts === true
+            ? 'selling'
+            : auction.wts === false
+            ? 'buying'
+            : ''
         } ${auction.price > 0 ? 'for ' + auction.price : 'no price set'}`;
       } else {
         message = log.text;

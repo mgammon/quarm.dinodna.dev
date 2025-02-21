@@ -44,6 +44,8 @@ import { FeedbackModule } from './feedback/feedback.module';
 import { NpcSpellsEntry, NpcSpells } from './spells/npc-spells.entity';
 import { Character, InventorySlot } from './characters/character.entity';
 import { CharacterModule } from './characters/character.module';
+import { ItemTracker } from './item-trackers/item-tracker.entity';
+import { ItemTrackerModule } from './item-trackers/item-tracker.module';
 
 @Module({
   imports: [
@@ -59,6 +61,7 @@ import { CharacterModule } from './characters/character.module';
     PlayerModule,
     FeedbackModule,
     CharacterModule,
+    ItemTrackerModule,
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     ServeStaticModule.forRoot({
@@ -99,6 +102,7 @@ import { CharacterModule } from './characters/character.module';
         SkillCap,
         Character,
         InventorySlot,
+        ItemTracker,
       ],
       migrationsRun: true,
       migrations: ['dist/migrations/*{.ts,.js}'],

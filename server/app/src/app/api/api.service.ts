@@ -10,6 +10,7 @@ import { Zone } from '../zones/zone.entity';
 import { Log } from '../logs/log.entity';
 import { environment } from '../../environments/environment';
 import { CharacterDto } from '../characters/character.service';
+import { ItemTrackerDto } from '../auctions/tracker/tracker.service';
 
 const LOCAL_STORAGE_CACHE_ENABLED = false;
 
@@ -60,6 +61,16 @@ export class ApiService {
   constructor(private http: HttpClient) {
     this.setApiKey();
   }
+
+  public changeApiKey(key: string) {
+    if (!key || key.length !== 15) {
+      return;
+    }
+
+    this.apiKey = key;
+    localStorage.setItem('apiKey', this.apiKey);
+  }
+
   private setApiKey() {
     this.apiKey = localStorage.getItem('apiKey') || this.generateApiKey();
     localStorage.setItem('apiKey', this.apiKey);
@@ -325,6 +336,46 @@ export class ApiService {
       this.http.get<CharacterDto>(`${this.apiUrl}/characters/${id}`, {
         headers: { Authorization: `Bearer ${this.apiKey}` },
       })
+    );
+  }
+
+  async getItemTrackers() {
+    return this.toPromise(
+      this.http.get<ItemTrackerDto[]>(`${this.apiUrl}/item-trackers/`, {
+        headers: { Authorization: `Bearer ${this.apiKey}` },
+      })
+    );
+  }
+
+  async createItemTracker(itemTrackerDto: ItemTrackerDto) {
+    return this.toPromise(
+      this.http.post<ItemTrackerDto>(
+        `${this.apiUrl}/item-trackers/`,
+        itemTrackerDto,
+        {
+          headers: { Authorization: `Bearer ${this.apiKey}` },
+        }
+      )
+    );
+  }
+
+  async deleteItemTracker(id: number) {
+    return this.toPromise(
+      this.http.delete<void>(`${this.apiUrl}/item-trackers/${id}`, {
+        headers: { Authorization: `Bearer ${this.apiKey}` },
+      })
+    );
+  }
+
+  async updateItemTracker(itemTrackerDto: ItemTrackerDto) {
+    return this.toPromise(
+      this.http.put<ItemTrackerDto>(
+        `${this.apiUrl}/item-trackers/${itemTrackerDto.id}`,
+        itemTrackerDto,
+        {
+          headers: { Authorization: `Bearer ${this.apiKey}` },
+        }
+      )
     );
   }
 }

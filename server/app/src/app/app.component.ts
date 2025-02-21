@@ -133,4 +133,11 @@ export class AppComponent {
     });
     this.trackerService.playAlert(log);
   };
+
+  changeApiKey() {
+    if (this.apiKey) {
+      this.apiService.changeApiKey(this.apiKey);
+      location.reload();
+    }
+  }
 }

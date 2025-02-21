@@ -100,7 +100,7 @@
         tooltip="Velious launches April 1st, 2025"
       />
       <app-feedback></app-feedback>
-      <!-- <p-button
+      <p-button
         type="button"
         (onClick)="settingsMenu.toggle($event)"
         icon="pi pi-cog"
@@ -108,8 +108,63 @@
         [outlined]="true"
       ></p-button>
       <p-overlayPanel #settingsMenu>
-        <ng-template pTemplate="content"> </ng-template>
-      </p-overlayPanel> -->
+        <ng-template pTemplate="content">
+          <div>
+            <div>
+              <label for="apiKey" style="font-weight: bold"
+                >API Key
+                <i
+                  class="pi pi-info-circle"
+                  [escape]="false"
+                  pTooltip="Using the same API key on multiple browsers and devices will let you use item trackers, characters, and inventories across them all.
+            <br /> <br />To do this, copy your API key from one browser/device, then paste that API key into here on all your other browsers/devices. 
+            <br /> <br />You may want to back-up your API key before changing it."
+                ></i
+              ></label>
+            </div>
+            <div style="margin-top: 0.5em">
+              <p-inputgroup>
+                <input pInputText [(ngModel)]="apiKey" />
+                <p-inputgroup-addon>
+                  <i
+                    style="padding-left: 0.5em; color: green; font-weight: bold"
+                    *ngIf="apiKey === apiService.apiKey"
+                    class="pi pi-check"
+                    pTooltip="This is your current API key"
+                  ></i>
+                  <i
+                    style="padding-left: 0.5em; color: white; font-weight: bold"
+                    *ngIf="
+                      apiKey !== apiService.apiKey &&
+                      apiKey &&
+                      apiKey.length >= 15
+                    "
+                    class="pi pi-pencil"
+                    pTooltip="Your API key has been edited, but not saved"
+                  ></i>
+                  <i
+                    style="padding-left: 0.5em; color: red; font-weight: bold"
+                    *ngIf="!apiKey || apiKey.length < 15 || apiKey.length > 64"
+                    class="pi pi-times"
+                    pTooltip="API key is not valid"
+                  ></i>
+                </p-inputgroup-addon>
+              </p-inputgroup>
+            </div>
+            <div style="text-align: center; margin-top: 0.5em">
+              <p-button
+                [disabled]="
+                  apiKey === apiService.apiKey ||
+                  !apiKey ||
+                  apiKey.length < 15
+                "
+                label="Change API key"
+                (onClick)="changeApiKey()"
+              />
+            </div>
+          </div>
+        </ng-template>
+      </p-overlayPanel>
       <p-menu #fontSizeMenu [model]="themeService.fontSizes" [popup]="true">
         <ng-template pTemplate="recentPage" let-fontSize>
           <div

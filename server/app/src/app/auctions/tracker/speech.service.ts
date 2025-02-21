@@ -8,7 +8,6 @@ export interface ItemTracker {
   price: ComparableNumber;
   wts?: boolean;
   matchingLogs: Log[];
-  onSelectItem?: (item: Item) => void;
   saved: boolean;
 }
 

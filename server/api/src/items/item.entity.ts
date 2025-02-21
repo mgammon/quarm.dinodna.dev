@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { SpellNew } from '../spells/spell-new.entity';
 import { AuctionSummary, DailyAuction } from '../auctions/auction.entity';
+import { ItemTracker } from '../item-trackers/item-tracker.entity';
 
 @Entity({ name: 'items', synchronize: false })
 export class Item {
@@ -187,6 +188,10 @@ export class Item {
   @ManyToOne(() => SpellNew, (spell) => spell.wornItems)
   @JoinColumn({ name: 'worneffect', referencedColumnName: 'id' })
   wornEffect: SpellNew;
+
+  @OneToMany(() => ItemTracker, (itemTracker) => itemTracker.item)
+  @JoinColumn({ name: 'id', referencedColumnName: 'itemId' })
+  itemTrackers?: ItemTracker[];
 
   @Column({ nullable: true })
   average7d: number;
