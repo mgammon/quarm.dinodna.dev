@@ -63,7 +63,7 @@ export class ApiService {
   }
 
   public changeApiKey(key: string) {
-    if (!key || key.length !== 15) {
+    if (!key || key.length < 15) {
       return;
     }
 
