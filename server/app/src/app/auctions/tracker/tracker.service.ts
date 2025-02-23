@@ -141,10 +141,13 @@ export class TrackerService {
   }
 
   async deleteItemTracker(itemTracker: ItemTracker) {
-    if (!itemTracker.id) {
-      return;
+    if (
+      itemTracker.id &&
+      this.apiService.apiKey &&
+      this.apiService.apiKey !== 'null'
+    ) {
+      await this.apiService.deleteItemTracker(itemTracker.id);
     }
-    await this.apiService.deleteItemTracker(itemTracker.id);
     const indexToDelete = this.itemTrackers.findIndex(
       (tracker) => tracker === itemTracker
     );
@@ -153,15 +156,22 @@ export class TrackerService {
   }
 
   async addItemTracker(itemTracker: ItemTracker) {
-    const createdTrackerDto = await this.apiService.createItemTracker(
-      mapToItemTrackerDto(itemTracker)
-    );
-    this.itemTrackers.unshift(mapToItemTracker(createdTrackerDto));
-    this.saveLocalTrackers();
+    if (!this.apiService.apiKey || this.apiService.apiKey === 'null') {
+      this.itemTrackers.unshift(itemTracker);
+      this.saveLocalTrackers();
+    } else {
+      const createdTrackerDto = await this.apiService.createItemTracker(
+        mapToItemTrackerDto(itemTracker)
+      );
+      this.itemTrackers.unshift(mapToItemTracker(createdTrackerDto));
+      this.saveLocalTrackers();
+    }
   }
 
   async updateItemTracker(itemTracker: ItemTracker) {
-    await this.apiService.updateItemTracker(mapToItemTrackerDto(itemTracker));
+    if (this.apiService.apiKey && this.apiService.apiKey !== 'null') {
+      await this.apiService.updateItemTracker(mapToItemTrackerDto(itemTracker));
+    }
     this.saveLocalTrackers();
   }
 
@@ -181,26 +191,35 @@ export class TrackerService {
       });
     }
 
-    // Load trackers from API, then add any matching logs from the local trackers
-    this.itemTrackers = (await this.apiService.getItemTrackers()).map((dto) =>
-      mapToItemTracker(dto)
-    );
-
-    // For each local tracker that doesn't have a matching (by item ID) tracker, create the tracker
-    // Ex: haven't ever saved them, but we loaded old ones from local, so we'll create them on the API
-    const localTrackersWithoutItemTracker = localItemTrackers.filter((local) =>
-      this.itemTrackers.every(
-        (tracker) => tracker.itemId !== local.item?.id && !local.id
-      )
-    );
-    for (const localItemTracker of localTrackersWithoutItemTracker) {
-      this.itemTrackers.push(
-        mapToItemTracker(
-          await this.apiService.createItemTracker(
-            mapToItemTrackerDto(localItemTracker)
-          )
-        )
+    // If there's no API key, just use the local trackers
+    if (!this.apiService.apiKey || this.apiService.apiKey === 'null') {
+      this.itemTrackers = localItemTrackers;
+    } else {
+      // Load trackers from API, then add any matching logs from the local trackers
+      this.itemTrackers = (await this.apiService.getItemTrackers()).map((dto) =>
+        mapToItemTracker(dto)
       );
+      // For each local tracker that doesn't have a matching (by item ID) tracker, create the tracker
+      // Ex: haven't ever saved them, but we loaded old ones from local, so we'll create them on the API
+      const localTrackersWithoutItemTracker = localItemTrackers.filter(
+        (local) =>
+          this.itemTrackers.every(
+            (tracker) => tracker.itemId !== local.item?.id && !local.id
+          )
+      );
+      for (const localItemTracker of localTrackersWithoutItemTracker) {
+        this.itemTrackers.push(
+          mapToItemTracker(
+            await this.apiService.createItemTracker(
+              mapToItemTrackerDto(localItemTracker)
+            )
+          )
+        );
+      }
+
+      if (localTrackersWithoutItemTracker.length) {
+        this.saveLocalTrackers();
+      }
     }
 
     this.itemTrackers.forEach((itemTracker) => {
@@ -218,10 +237,6 @@ export class TrackerService {
         localItemTrackers.findIndex((local) => local.id === a.id) -
         localItemTrackers.findIndex((local) => local.id === b.id)
     );
-
-    if (localTrackersWithoutItemTracker.length) {
-      this.saveLocalTrackers();
-    }
 
     this.checkForMatchingLogs(this.logService.logs);
   }

@@ -52,7 +52,7 @@ export class ApiService {
     mapfiles: new Cache<string>('mapfiles'),
   };
 
-  public apiKey!: string;
+  public apiKey?: string;
   public baseUrl = environment.production
     ? `https://${window.location.host}`
     : 'http://localhost:3000';
@@ -73,7 +73,11 @@ export class ApiService {
 
   private setApiKey() {
     this.apiKey = localStorage.getItem('apiKey') || this.generateApiKey();
+    if (this.apiKey === 'null' || !this.apiKey) {
+      this.apiKey = this.generateApiKey();
+    }
     localStorage.setItem('apiKey', this.apiKey);
+    this.apiKey = localStorage.getItem('apiKey') as string;
   }
 
   private generateApiKey() {
