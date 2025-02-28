@@ -19,11 +19,12 @@ export class ItemTrackerService {
     }
 
     // Create it
-    const { itemId, wts, price } = itemTrackerDto;
+    const { itemId, wts, price, requirePrice } = itemTrackerDto;
     const { id } = await this.itemTrackerRepository.save({
       apiKey,
       itemId,
       wts,
+      requirePrice,
       priceValue: price.value,
       priceOperator: price.operator,
     });
@@ -47,13 +48,14 @@ export class ItemTrackerService {
     }
 
     // Update it
-    const { itemId, wts, price } = itemTrackerDto;
+    const { itemId, wts, price, requirePrice } = itemTrackerDto;
     await this.itemTrackerRepository.update(
       { id },
       {
         apiKey,
         itemId,
         wts,
+        requirePrice,
         priceValue: price.value,
         priceOperator: price.operator,
       },
@@ -100,6 +102,7 @@ export class ItemTrackerService {
       id: itemTracker.id,
       itemId: itemTracker.itemId,
       wts: itemTracker.wts,
+      requirePrice: itemTracker.requirePrice,
       price: {
         value: itemTracker.priceValue,
         operator: itemTracker.priceOperator,

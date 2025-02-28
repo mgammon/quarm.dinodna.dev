@@ -15,6 +15,7 @@ export interface ItemTrackerDto {
   item?: Partial<Item>;
   itemId: number;
   wts: boolean;
+  requirePrice: boolean;
   price: ComparableNumber;
 }
 
@@ -34,6 +35,9 @@ export class ItemTracker {
 
   @Column({ nullable: true })
   priceValue: number;
+
+  @Column({ default: false })
+  requirePrice: boolean;
 
   @Column()
   priceOperator: '>' | '>=' | '=' | '<=' | '<';

@@ -12,6 +12,7 @@ export interface ItemTrackerDto {
   itemId: number;
   price: ComparableNumber;
   wts?: boolean;
+  requirePrice: boolean;
   item?: Item;
 }
 
@@ -20,25 +21,33 @@ export interface ItemTracker {
   itemId?: number;
   item?: Item;
   price: ComparableNumber;
+  requirePrice: boolean;
   wts?: boolean;
   matchingLogs: Log[];
   saved: boolean;
 }
 
 function mapToItemTrackerDto(itemTracker: ItemTracker): ItemTrackerDto {
-  const { itemId, price, wts, id, item } = itemTracker;
-  return { id, itemId: item?.id || (itemId as number), price, wts };
+  const { itemId, price, wts, id, item, requirePrice } = itemTracker;
+  return {
+    id,
+    itemId: item?.id || (itemId as number),
+    price,
+    wts,
+    requirePrice,
+  };
 }
 
 function mapToItemTracker(
   itemTrackerDto: ItemTrackerDto,
   localTracker?: ItemTracker
 ): ItemTracker {
-  const { id, itemId, price, wts, item } = itemTrackerDto;
+  const { id, itemId, price, wts, item, requirePrice } = itemTrackerDto;
   const itemTracker: ItemTracker = {
     id,
     itemId,
     price,
+    requirePrice,
     wts,
     item, // TODO:  ONLY RETURN id, name, icon, itemtype from server
     saved: true,
@@ -95,7 +104,7 @@ export class TrackerService {
         if (
           tracker.item &&
           auction.itemId === tracker.item.id &&
-          this.compare(tracker.price, auction.price) &&
+          this.compare(tracker, auction) &&
           (tracker.wts === undefined || tracker.wts !== auction.wts)
         ) {
           const existingLog = tracker.matchingLogs.find(
@@ -241,20 +250,27 @@ export class TrackerService {
     this.checkForMatchingLogs(this.logService.logs);
   }
 
-  private compare(comparableNumber: ComparableNumber, value: number) {
-    if (!comparableNumber.value) {
+  private compare(itemTracker: ItemTracker, auction: Auction) {
+    const { price, requirePrice } = itemTracker;
+
+    if (requirePrice && !auction.price) {
+      return false;
+    }
+
+    if (!price.value) {
       return true;
     }
-    if (comparableNumber.operator === '<=') {
-      return value <= comparableNumber.value;
-    } else if (comparableNumber.operator === '<') {
-      return value < comparableNumber.value;
-    } else if (comparableNumber.operator === '>=') {
-      return value >= comparableNumber.value;
-    } else if (comparableNumber.operator === '>') {
-      return value > comparableNumber.value;
-    } else if (comparableNumber.operator === '=') {
-      return value === comparableNumber.value;
+
+    if (price.operator === '<=') {
+      return auction.price <= price.value;
+    } else if (price.operator === '<') {
+      return auction.price < price.value;
+    } else if (price.operator === '>=') {
+      return auction.price >= price.value;
+    } else if (price.operator === '>') {
+      return auction.price > price.value;
+    } else if (price.operator === '=') {
+      return auction.price === price.value;
     }
 
     return false;

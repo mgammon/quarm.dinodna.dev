@@ -217,6 +217,19 @@
                     *ngIf="!tracker.saved"
                     type="button"
                     size="small"
+                    (click)="tracker.requirePrice = !tracker.requirePrice"
+                    [outlined]="true"
+                    icon="pi "
+                    [pTooltip]="
+                      tracker.requirePrice
+                        ? 'Auctions must have a price set to trigger an alert'
+                        : 'Auctions without a price set will also trigger an alert'
+                    "
+                  >{{tracker.requirePrice ? '$' : '*'}}</p-button>
+                  <p-button
+                    *ngIf="!tracker.saved"
+                    type="button"
+                    size="small"
                     (click)="saveTracker(tracker)"
                     icon="pi pi-check"
                     [outlined]="true"

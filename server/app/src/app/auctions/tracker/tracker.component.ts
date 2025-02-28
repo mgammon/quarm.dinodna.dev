@@ -22,6 +22,8 @@ import { UsageService } from '../../usage.service';
 import { SliderModule } from 'primeng/slider';
 import { FormsModule } from '@angular/forms';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { ToggleButtonModule } from 'primeng/togglebutton';
+import { InputGroupModule } from 'primeng/inputgroup';
 
 moment.updateLocale('en', {
   relativeTime: {
@@ -57,6 +59,8 @@ moment.updateLocale('en', {
     SliderModule,
     FormsModule,
     OverlayPanelModule,
+    ToggleButtonModule,
+    InputGroupModule,
   ],
 })
 export class TrackerComponent {
@@ -106,6 +110,7 @@ export class TrackerComponent {
     const newTracker: ItemTracker = {
       price: { operator: '<=' },
       wts: false,
+      requirePrice: false,
       matchingLogs: [],
       saved: false,
     };
