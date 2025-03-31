@@ -4,7 +4,8 @@
     styleClass="bg-gray-900 shadow-2"
     [style]="{
       'background-image':
-        'linear-gradient(to right, var(--bluegray-500), var(--bluegray-800))'
+        'linear-gradient(to right, var(--bluegray-500), var(--bluegray-800))',
+        'padding': '1em 0'
     }"
   >
     <div class="p-toolbar-group-start">
@@ -94,11 +95,11 @@
           <p-badge value="BETA" />
         </button> -->
       <!-- </div> -->
-      <app-countdown
+      <!-- <app-countdown
         title="Velious"
         [date]="veliousLaunchDate"
         tooltip="Velious launches April 1st, 2025"
-      />
+      /> -->
       <app-feedback></app-feedback>
       <p-button
         type="button"

@@ -9,7 +9,7 @@ services:
     depends_on:
       - mysql
     environment:
-      QUARM_DATABASE_DUMP_URL: https://github.com/SecretsOTheP/EQMacEmu/raw/refs/heads/main/utils/sql/database_full/quarm_2025-01-14-03_55.tar.gz
+      QUARM_DATABASE_DUMP_URL: https://github.com/SecretsOTheP/EQMacEmu/raw/refs/heads/main/utils/sql/database_full/quarm_2025-03-30-17_08.tar.gz
     volumes:
       - ./server/api:/app
     ports:

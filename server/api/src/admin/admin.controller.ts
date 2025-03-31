@@ -12,13 +12,13 @@ export class AdminController {
 
   @Get(`/update-database/${config.apiKey}`)
   public async updateDatabase() {
-    console.log('Updating Quarm DBB');
+    console.log('Writing new db-update.sql from sql dump');
     await this.databaseUpdateService.update();
-    console.log('Quarm DB updated');
-    console.log('Updating item averages');
-    await this.auctionService.updateAllAverages();
-    console.log('Item averages updated');
-    return 'Database updated';
+    console.log('Done writing new db-update.sql');
+    // console.log('Updating item averages');
+    // await this.auctionService.updateAllAverages();
+    // console.log('Item averages updated');
+    return 'Done writing new db-update.sql';
   }
 
   @Get(`/update-auction-prices/${config.apiKey}`)

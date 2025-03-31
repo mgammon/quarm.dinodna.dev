@@ -17,5 +17,5 @@ export const config = {
   },
   quarmDatabaseDumpUrl:
     process.env.QUARM_DATABASE_DUMP_URL ||
-    'https://github.com/SecretsOTheP/EQMacEmu/blob/80c759031aa2a1668225f51c1226dae9bddc2eda/utils/sql/database_full/quarm_2024-10-21-13_53.tar.gz',
+    'https://github.com/SecretsOTheP/EQMacEmu/raw/refs/heads/main/utils/sql/database_full/quarm_2025-03-30-17_08.tar.gz',
 };
