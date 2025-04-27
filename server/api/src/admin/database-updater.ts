@@ -3,7 +3,7 @@ import { PassThrough, Stream } from 'stream';
 import { config } from '../config';
 import { writeFileSync, rmSync } from 'fs';
 import * as path from 'path';
-import { DataSource, QueryRunner } from 'typeorm';
+import { DataSource } from 'typeorm';
 const tar = require('tar-stream');
 const gunzip = require('gunzip-maybe');
 

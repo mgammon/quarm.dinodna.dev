@@ -1,0 +1,31 @@
+version: "3.8"
+
+# Fill this out for prod with actual secrets.  Safest is to just randomly generate a UUID for:
+# MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, MARIADB_USERNAME, MARIADB_PASSWORD, MARIADB_ROOT_PASSWORD, API_KEY
+# Then update the QUARM_DATABASE_DUMP_URL as needed
+# Also set up your discord webhooks for EC Chat and Feedback from the website
+services:
+  server:
+    environment:
+      # DISCORD_FEEDBACK_WEBHOOK: https://discord.com/api/webhooks/somewebhook/morewebhookinfo1
+      # DISCORD_EC_CHAT_WEBHOOK: https://discord.com/api/webhooks/somewebhook/morewebhookinfo2
+      # DISCORD_GENERAL_WEBHOOK: https://discord.com/api/webhooks/somewebhook/morewebhookinfo3
+      # MYSQL_HOST: quarm.dinodna.dev
+      # MYSQL_USERNAME: mysql
+      # MYSQL_PASSWORD: mysql
+      # MARIADB_HOST: quarm.dinodna.dev
+      # MARIADB_USERNAME: mariadb
+      # MARIADB_PASSWORD: mariadb
+      # API_KEY: super-secret-api-key
+      # QUARM_DATABASE_DUMP_URL: https://github.com/SecretsOTheP/EQMacEmu/raw/refs/heads/main/utils/sql/database_full/quarm_2025-03-30-17_08.tar.gz
+  
+  mysql: # Don't need mysql after I copy over item-trackers, characters, and inventories to mariadb
+    environment:
+      # MYSQL_USER: mysql
+      # MYSQL_PASSWORD: mysql
+      # MYSQL_ROOT_PASSWORD: mysql
+  mariadb:
+    environment:
+      # MYSQL_USER: mariadb
+      # MYSQL_PASSWORD: mariadb
+      # MYSQL_ROOT_PASSWORD: mariadb

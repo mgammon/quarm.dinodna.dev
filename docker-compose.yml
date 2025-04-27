@@ -8,6 +8,7 @@ services:
       context: ./server/api
     depends_on:
       - mysql
+      - mariadb
     environment:
       QUARM_DATABASE_DUMP_URL: https://github.com/SecretsOTheP/EQMacEmu/raw/refs/heads/main/utils/sql/database_full/quarm_2025-03-30-17_08.tar.gz
     volumes:
@@ -22,7 +23,8 @@ services:
       - ./server/app:/app
     ports:
       - 4200:4200
-  mysql:
+  
+  mysql: # Don't need mysql after I copy over item-trackers, characters, and inventories to mariadb
     image: mysql:8.0.35-debian
     command: --max_allowed_packet=325058560
     environment:

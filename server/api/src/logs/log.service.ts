@@ -14,7 +14,6 @@ import { Log, LogDto } from './log.entity';
 import * as moment from 'moment-timezone';
 import { AuctionService } from '../auctions/auction.service';
 import { Auction, AuctionDto } from '../auctions/auction.entity';
-import { config } from '../config';
 import { FeedbackService } from '../feedback/feedback.service';
 
 @Injectable()
@@ -74,9 +73,6 @@ export class LogService {
   }
 
   async onLogs(rawLogs: string[]) {
-    if (config.noNewLogs) {
-      return [];
-    }
     const logsToAdd = rawLogs.map((rawText) => this.parseLog(rawText));
 
     const logs: Log[] = [];

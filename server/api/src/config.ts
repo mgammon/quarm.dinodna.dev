@@ -1,5 +1,4 @@
 export const config = {
-  noNewLogs: process.env.NO_NEW_LOGS === 'true',
   httpPort: parseInt(process.env.HTTP_PORT || '3000'),
   apiKey: process.env.API_KEY || 'super-secret-api-key',
   mariadb: {
@@ -9,7 +8,6 @@ export const config = {
     username: process.env.MARIADB_USERNAME || 'mariadb',
     password: process.env.MARIADB_PASSWORD || 'mariadb',
   },
-
   discord: {
     feedbackWebhook: process.env.DISCORD_FEEDBACK_WEBHOOK,
     ecChatWebhook: process.env.DISCORD_EC_CHAT_WEBHOOK,
