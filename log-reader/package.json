@@ -1,11 +1,11 @@
 {
-  "name": "pq-log-provider",
+  "name": "dinodna-log-reader",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./src/main.js",
   "scripts": {
     "start": "webpack && node dist/bundle.js",
-    "build:admin": "webpack build --config ./webpack.admin.config.js && pkg --compress -t node18-win-x64 dist/bundle.js && mv bundle.exe admin-log-reader.exe"
+    "build": "webpack build --config ./webpack.config.js && pkg --compress -t node18-win-x64 dist/bundle.js && mv bundle.exe log-reader.exe"
   },
   "author": "",
   "license": "ISC",

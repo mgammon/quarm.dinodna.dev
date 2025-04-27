@@ -1,4 +1,4 @@
-import { adminLogReader } from "./admin-log-reader";
+import { logReader } from "./log-reader";
 
 process.on("uncaughtException", UncaughtExceptionHandler);
 
@@ -9,4 +9,4 @@ function UncaughtExceptionHandler(err: any) {
   setInterval(function () {}, 1000);
 }
 
-adminLogReader.watchLogs();
+logReader.watchLogs();

@@ -2,7 +2,7 @@ import fs from "fs";
 import readline from "readline";
 import { LogConfig, config } from "./config";
 import io, { Socket } from "socket.io-client";
-const { exec } = require("child_process");
+import { autoLogin } from "./auto-login";
 
 interface LogStats {
   filename: string;
@@ -23,8 +23,8 @@ const lastSentMessages: string[] = [];
 
 console.log(JSON.stringify(config, null, 2));
 
-class AdminLogReader {
-  private lastUploadedAt: number = 0;
+class LogReader {
+  public lastUploadedAt: number = 0;
   private sockets: Socket[] = [];
   private logFiles: LogConfig[] = [];
 
@@ -73,22 +73,19 @@ class AdminLogReader {
       }
     }
 
-    if (Date.now() - this.lastUploadedAt > 1 * 30_000) {
+    // Try to (re)open the quarm mule if it's been 5 minutes since we uploaded a message
+    if (Date.now() - this.lastUploadedAt > 5 * 60_000) {
       this.openQuarmMule();
     }
 
     config.save();
   }
 
-  private openQuarmMule() {
-    if (Date.now() - this.lastUploadedAt > 5 * 60_000) {
+  
+  private async openQuarmMule() {
+      const justOpenedLogReader = this.lastUploadedAt === 0;
       this.lastUploadedAt = Date.now(); // pretend we uploaded so we give it a chance to open the mule before running the open script again
-      exec("open-quarm-mule.ahk", (err: any) => {
-        if (err) {
-          console.log(err);
-        }
-      });
-    }
+      autoLogin(justOpenedLogReader);
   }
 
   // Read a logfile, starting from where we left off
@@ -168,4 +165,4 @@ class AdminLogReader {
   }
 }
 
-export const adminLogReader = new AdminLogReader();
+export const logReader = new LogReader();

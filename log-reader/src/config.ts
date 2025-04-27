@@ -10,10 +10,12 @@ interface ConfigData {
   apis: { url: string; key: string; path?: string }[];
   eqDirectory: string;
   logs: LogConfig[];
+  eqMulePassword: string;
 }
 
 class Config implements ConfigData {
   public apis: { url: string; key: string; path?: string }[];
+  public eqMulePassword: string;
   public eqDirectory: string;
   public logs: LogConfig[];
 
@@ -26,11 +28,13 @@ class Config implements ConfigData {
         { url: "https://quarm.dinodna.dev", key: this.generateApiKey() },
       ];
       this.eqDirectory = config.eqDirectory || "./";
+      this.eqMulePassword = config.eqMulePassword || "everquest-mule-password-here";
       this.logs = config.logs || [];
       this.logs.forEach((log) => (log.bytesRead = 0));
     } catch (ex) {
       if (ex.message.includes("no such file or directory")) {
         this.eqDirectory = "./";
+        this.eqMulePassword = "everquest-mule-password-here";
         this.logs = [];
         this.apis = [
           { url: "https://quarm.dinodna.dev", key: this.generateApiKey() },
@@ -43,10 +47,10 @@ class Config implements ConfigData {
   }
 
   save() {
-    const { eqDirectory, logs, apis } = this;
+    const { eqDirectory, logs, apis, eqMulePassword } = this;
     fs.writeFileSync(
       "./config.json",
-      JSON.stringify({ eqDirectory, logs, apis })
+      JSON.stringify({ eqDirectory, logs, apis, eqMulePassword })
     );
   }
 
