@@ -48,7 +48,9 @@ export class ItemTracker {
   @UpdateDateColumn()
   updatedAt?: Date;
 
-  @ManyToOne(() => Item, (item) => item.itemTrackers)
+  @ManyToOne(() => Item, (item) => item.itemTrackers, {
+    createForeignKeyConstraints: false,
+  })
   @JoinColumn({ name: 'itemId', referencedColumnName: 'id' })
   item?: Item;
 }

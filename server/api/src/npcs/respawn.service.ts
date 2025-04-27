@@ -3,7 +3,6 @@ import { Like, MoreThan, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Rule } from './rule.entity';
 import { Zone } from '../zones/zone.entity';
-import { config } from '../config';
 
 interface RespawnReduction {
   min: number;
@@ -28,30 +27,7 @@ export class RespawnService {
     this.loadRespawnRules();
   }
 
-  async waitUntilDbReady() {
-    const [result] = await this.ruleRepository.manager.query(`
-      SELECT EXISTS (
-        SELECT *
-        FROM information_schema.tables
-        WHERE table_schema = '${config.mysql.database}'
-          AND table_name = 'rule_values'
-      ) AND EXISTS (
-        SELECT *
-        FROM information_schema.tables
-        WHERE table_schema = '${config.mysql.database}'
-          AND table_name = 'zone'
-      ) as value;`);
-
-    const doesTableExist = Boolean(result.value);
-    if (!doesTableExist) {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      return this.waitUntilDbReady();
-    }
-  }
-
   async loadRespawnRules() {
-    await this.waitUntilDbReady();
-
     const respawnRules = await this.ruleRepository.find({
       where: { rule_name: Like(`${this.rulePrefix}%`) },
     });

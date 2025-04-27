@@ -46,6 +46,11 @@ import { Character, InventorySlot } from './characters/character.entity';
 import { CharacterModule } from './characters/character.module';
 import { ItemTracker } from './item-trackers/item-tracker.entity';
 import { ItemTrackerModule } from './item-trackers/item-tracker.module';
+import { DatabaseUpdater } from './admin/database-updater';
+
+// Fixes a dumb encoding issue trying to run a DB dump for an old-ass game
+const encodingCharset = require('../node_modules/mysql2/lib/constants/encoding_charset');
+encodingCharset.utf8mb3 = 192;
 
 @Module({
   imports: [
@@ -65,49 +70,54 @@ import { ItemTrackerModule } from './item-trackers/item-tracker.module';
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     ServeStaticModule.forRoot({
-      // rootPath: './public',
       rootPath: join(__dirname, '.', 'public'),
       exclude: ['/api/(.*)'],
     }),
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: config.mysql.host,
-      port: config.mysql.port,
-      username: config.mysql.username,
-      password: config.mysql.password,
-      database: config.mysql.database,
-      entities: [
-        // API Entities
-        Log,
-        Auction,
-        DailyAuction,
-        User,
-        AuctionTracker,
-        // Quarm Entities
-        Item,
-        SpellNew,
-        Npc,
-        Spawn,
-        SpawnGroup,
-        SpawnEntry,
-        NpcSpells,
-        NpcSpellsEntry,
-        LootTable,
-        LootTableEntry,
-        LootDrop,
-        LootDropEntry,
-        MerchantEntry,
-        Zone,
-        Rule,
-        SkillCap,
-        Character,
-        InventorySlot,
-        ItemTracker,
-      ],
-      migrationsRun: true,
-      migrations: ['dist/migrations/*{.ts,.js}'],
-      logging: ['error', 'warn'],
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      // First, make sure we have the quarm DB dump on the server
+      // Thennnn initialize our typeorm module, which synchronizes our entities (not the quarm DB entities)
+      useFactory: async () => {
+        await new DatabaseUpdater().initializeQuarmData();
+        return {
+          type: 'mariadb',
+          host: config.mariadb.host,
+          port: config.mariadb.port,
+          username: config.mariadb.username,
+          password: config.mariadb.password,
+          database: config.mariadb.database,
+          entities: [
+            // API Entities
+            Log,
+            Auction,
+            DailyAuction,
+            User,
+            AuctionTracker,
+            Character,
+            InventorySlot,
+            ItemTracker,
+            // Quarm Entities
+            Item,
+            SpellNew,
+            Npc,
+            Spawn,
+            SpawnGroup,
+            SpawnEntry,
+            NpcSpells,
+            NpcSpellsEntry,
+            LootTable,
+            LootTableEntry,
+            LootDrop,
+            LootDropEntry,
+            MerchantEntry,
+            Zone,
+            Rule,
+            SkillCap,
+          ],
+          migrationsRun: false,
+          logging: ['error', 'warn'],
+          synchronize: true,
+        };
+      },
     }),
   ],
 })

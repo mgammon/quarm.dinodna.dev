@@ -2,12 +2,12 @@ export const config = {
   noNewLogs: process.env.NO_NEW_LOGS === 'true',
   httpPort: parseInt(process.env.HTTP_PORT || '3000'),
   apiKey: process.env.API_KEY || 'super-secret-api-key',
-  mysql: {
-    host: process.env.MYSQL_HOST || 'mysql',
-    port: parseInt(process.env.MYSQL_PORT || '3306'),
-    database: process.env.MYSQL_DATABASE || 'quarm_data',
-    username: process.env.MYSQL_USERNAME || 'mysql',
-    password: process.env.MYSQL_PASSWORD || 'mysql',
+  mariadb: {
+    host: process.env.MARIADB_HOST || 'mariadb',
+    port: parseInt(process.env.MARIADB_PORT || '3307'),
+    database: process.env.MARIADB_DATABASE || 'quarm',
+    username: process.env.MARIADB_USERNAME || 'mariadb',
+    password: process.env.MARIADB_PASSWORD || 'mariadb',
   },
 
   discord: {

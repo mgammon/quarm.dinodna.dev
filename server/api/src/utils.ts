@@ -7,6 +7,8 @@ import {
   MoreThanOrEqual,
   Not,
 } from 'typeorm';
+import { config } from './config';
+import { ForbiddenException } from '@nestjs/common';
 
 export function sanitizeSearch(search: string) {
   if (!search) {
@@ -131,6 +133,14 @@ export const getApiKey = (authHeader: string) => {
 
   const tokens = authHeader.split(/\s+/);
   return tokens[1] || null;
+};
+
+export const validateIsAdmin = (authHeader: string) => {
+  const isAdmin = getApiKey(authHeader) === config.apiKey;
+  if (!isAdmin) {
+    console.log(getApiKey(authHeader));
+    throw new ForbiddenException();
+  }
 };
 
 export enum Duration {

@@ -1,13 +1,18 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
-import { DatabaseUpdateService } from '../admin/databaseUpdate.service';
+// import { MigrationInterface, QueryRunner } from 'typeorm';
+// import { DatabaseUpdateService } from '../admin/databaseUpdate.service';
 
-export class Initial1720331776058 implements MigrationInterface {
-  public async up(queryRunner: QueryRunner): Promise<void> {
-    const updateService = new DatabaseUpdateService();
-    console.log('Initializing');
-    await updateService.update();
-    console.log('Initialized!');
-  }
+// export class Initial1720331776058 implements MigrationInterface {
+//   public async up(queryRunner: QueryRunner): Promise<void> {
+//     const itemTableExists = await queryRunner.getTable('idk');
+//     const hasItemsTable = await queryRunner.hasTable('items');
+//     if (hasItemsTable) {
+      
+//     }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
-}
+//       queryRunner.ex
+//     const dbUpdateService = new DatabaseUpdateService();
+//     const allSql = await dbUpdateService.getSqlForUpdate();
+//   }
+
+//   public async down(queryRunner: QueryRunner): Promise<void> {}
+// }

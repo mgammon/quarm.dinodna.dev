@@ -142,3 +142,5 @@ certbot/
 app/src/assets/mapfiles/*
 
 docker-compose.override.yml
+
+db-update.sql

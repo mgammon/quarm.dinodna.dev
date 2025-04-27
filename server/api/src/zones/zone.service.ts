@@ -4,7 +4,6 @@ import { Zone } from './zone.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { NpcService } from '../npcs/npc.service';
 import { sanitizeSearch, selectRelevance } from '../utils';
-import { config } from '../config';
 
 @Injectable()
 export class ZoneService {
@@ -18,26 +17,8 @@ export class ZoneService {
   }
 
   async loadZoneNames() {
-    await this.waitUntilDbReady();
-
     this.zones = await this.zoneRepository.query(`
       SELECT short_name, id, long_name, file_name FROM zone`);
-  }
-
-  async waitUntilDbReady() {
-    const [result] = await this.zoneRepository.manager.query(`
-      SELECT EXISTS (
-        SELECT *
-        FROM information_schema.tables
-        WHERE table_schema = '${config.mysql.database}'
-          AND table_name = 'zone'
-      ) as value;`);
-
-    const doesTableExist = Boolean(result.value);
-    if (!doesTableExist) {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      return this.waitUntilDbReady();
-    }
   }
 
   async getAll() {
