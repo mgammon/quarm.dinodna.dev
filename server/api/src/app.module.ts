@@ -2,11 +2,7 @@ import { Module } from '@nestjs/common';
 import { Log } from './logs/log.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import {
-  Auction,
-  AuctionTracker,
-  DailyAuction,
-} from './auctions/auction.entity';
+import { Auction, DailyAuction } from './auctions/auction.entity';
 import { ItemModule } from './items/item.module';
 import {
   Item,
@@ -31,8 +27,6 @@ import { EventsModule } from './events/events.module';
 import { Rule } from './npcs/rule.entity';
 import { AdminModule } from './admin/admin.module';
 import { config } from './config';
-import { UserModule } from './user/user.module';
-import { User } from './user/user.entity';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { LogModule } from './logs/log.module';
@@ -62,7 +56,6 @@ encodingCharset.utf8mb3 = 192;
     ZoneModule,
     EventsModule,
     AdminModule,
-    UserModule,
     PlayerModule,
     FeedbackModule,
     CharacterModule,
@@ -90,8 +83,6 @@ encodingCharset.utf8mb3 = 192;
             Log,
             Auction,
             DailyAuction,
-            User,
-            AuctionTracker,
             Character,
             InventorySlot,
             ItemTracker,

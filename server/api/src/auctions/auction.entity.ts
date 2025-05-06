@@ -10,7 +10,6 @@ import {
   JoinColumn,
   Unique,
 } from 'typeorm';
-import { User } from '../user/user.entity';
 
 abstract class AuctionItem {
   @PrimaryGeneratedColumn()
@@ -36,7 +35,10 @@ abstract class AuctionItem {
 export class Auction extends AuctionItem {
   @Column() logId: number;
 
-  @ManyToOne(() => Log, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Log, {
+    onDelete: 'CASCADE',
+    createForeignKeyConstraints: false,
+  })
   @JoinColumn({ name: 'logId', referencedColumnName: 'id' })
   log?: Log;
 
@@ -58,13 +60,6 @@ export class Auction extends AuctionItem {
 export class DailyAuction extends Auction {
   @Column()
   key: string;
-}
-
-@Entity({ synchronize: true, name: 'auction_trackers' })
-export class AuctionTracker extends AuctionItem {
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
-  user: User;
 }
 
 export interface AuctionDto {
