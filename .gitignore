@@ -133,6 +133,7 @@ nginx-proxy-manager/
 data/
 postgres/
 mysql/
+mariadb/
 nginx/
 !nginx/app.conf
 letsencrypt/
@@ -144,3 +145,4 @@ app/src/assets/mapfiles/*
 docker-compose.override.yml
 
 db-update.sql
+

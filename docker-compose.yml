@@ -24,7 +24,7 @@ services:
     ports:
       - 4200:4200
   
-  mysql: # Don't need mysql after I copy over item-trackers, characters, and inventories to mariadb
+  mysql: # Don't need mysql after I copy over logs, auctions, daily auctions, item-trackers, characters, and inventories to mariadb
     image: mysql:8.0.35-debian
     command: --max_allowed_packet=325058560
     environment:
@@ -46,5 +46,7 @@ services:
       MARIADB_DATABASE: quarm
       MYSQL_TCP_PORT: 3307:3307
       MYSQL_UNIX_PORT: 3307:3307
+    volumes:
+      - ./mariadb:/var/lib/mysql
     ports:
       - "3307:3307"
