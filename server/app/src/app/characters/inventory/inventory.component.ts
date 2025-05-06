@@ -24,6 +24,10 @@ interface Inventory {
     coins: number;
     bagSlots: (InventorySlot & { slots: InventorySlot[] })[];
   };
+  shared: {
+    coins: number; // doesn't exist yet, but it may later.
+    bagSlots: (InventorySlot & { slots: InventorySlot[] })[];
+  };
 }
 
 @Component({
@@ -95,10 +99,14 @@ export class InventoryComponent implements OnInit, OnChanges {
     const inventory: Inventory = {
       general: { bagSlots: [], coins: 0 },
       bank: { bagSlots: [], coins: 0 },
+      shared: { bagSlots: [], coins: 0 },
     };
 
     const inventorySlots = this.character.inventory.filter(
-      (inv) => inv.slot?.includes('General') || inv.slot?.includes('Bank')
+      (inv) =>
+        inv.slot?.startsWith('General') ||
+        inv.slot?.startsWith('Bank') ||
+        inv.slot?.startsWith('SharedBank')
     );
 
     // Add the bag slots first
@@ -108,9 +116,23 @@ export class InventoryComponent implements OnInit, OnChanges {
         if (!inv.slot) {
           return;
         }
-        const isGeneral = inv.slot.includes('General');
-        const bagSlot = parseInt(inv.slot.slice(inv.slot.length - 1));
-        inventory[isGeneral ? 'general' : 'bank'].bagSlots[bagSlot - 1] = {
+        const isGeneral = inv.slot?.includes('General');
+        const isShared = inv.slot?.includes('SharedBank');
+        // numbers go up to 30 as of this commit (ex: Bank30)
+        const bagSlot = parseInt(
+          (isGeneral
+            ? inv.slot?.slice(7, 9)
+            : isShared
+            ? inv.slot?.slice(10, 12)
+            : inv.slot?.slice(4, 6)) as string
+        );
+        // Currently only 10 shared bag slots are available, if it changes, this should change
+        if (bagSlot > 10 && isShared) {
+          return;
+        }
+        inventory[
+          isGeneral ? 'general' : isShared ? 'shared' : 'bank'
+        ].bagSlots[bagSlot - 1] = {
           ...inv,
           slots: [],
         };
@@ -121,22 +143,31 @@ export class InventoryComponent implements OnInit, OnChanges {
       .filter((inv) => inv.slot?.includes('-'))
       .forEach((inv) => {
         const isGeneral = inv.slot?.includes('General');
+        const isShared = inv.slot?.includes('SharedBank');
         const isCoinSlot = inv.slot?.includes('-Coin');
         if (isCoinSlot) {
-          inventory[isGeneral ? 'general' : 'bank'].coins = inv.count;
+          inventory[
+            isGeneral ? 'general' : isShared ? 'shared' : 'bank'
+          ].coins = inv.count;
         } else {
+          // numbers go up to 30 as of this commit (ex: Bank30-Slot4)
           const bagSlot = parseInt(
             (isGeneral
-              ? inv.slot?.slice(7, 8)
-              : inv.slot?.slice(4, 5)) as string
+              ? inv.slot?.slice(7, 9)
+              : isShared
+              ? inv.slot?.slice(10, 12)
+              : inv.slot?.slice(4, 6)) as string
           );
-          const bagSlots = inventory[isGeneral ? 'general' : 'bank'].bagSlots;
+          const bagSlots =
+            inventory[isGeneral ? 'general' : isShared ? 'shared' : 'bank']
+              .bagSlots;
           if (bagSlots) {
             bagSlots[bagSlot - 1].slots.push(inv);
           }
         }
       });
 
+    console.log(inventory);
     this.inventory = inventory;
   }
 }

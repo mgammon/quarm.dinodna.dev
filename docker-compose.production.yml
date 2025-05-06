@@ -28,9 +28,14 @@ services:
     image: mariadb:11.7.2
     restart: always
     environment:
+      MARIADB_ROOT_PASSWORD: mariadb
+      MARIADB_PASSWORD: mariadb
+      MARIADB_USER: mariadb
       MARIADB_DATABASE: quarm
       MYSQL_TCP_PORT: 3307:3307
       MYSQL_UNIX_PORT: 3307:3307
+    volumes:
+      - ./mariadb:/var/lib/mysql
     ports:
       - "3307:3307"
   nginx-proxy-manager:

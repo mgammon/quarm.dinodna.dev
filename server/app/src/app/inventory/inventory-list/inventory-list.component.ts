@@ -62,12 +62,15 @@ export class InventoryListComponent implements OnInit {
           return;
         }
 
-        const characterName = character.name || 'No name';
+        const characterName = inv.slot?.startsWith('SharedBank')
+          ? 'Shared Bank'
+          : character.name || 'No name';
         const slotName = (inv.slot as string)
           .replace('-', ', ')
           .replace('Slot', 'Slot ')
           .replace('Bank', 'Bank Bag ')
-          .replace('General', 'Inventory Bag ');
+          .replace('General', 'Inventory Bag ')
+          .replace('SharedBank', 'Shared Bank Bag ');
 
         const existing = itemMap.get(inv.item.id);
         if (existing) {

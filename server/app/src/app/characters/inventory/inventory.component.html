@@ -5,7 +5,9 @@
 >
   <div
     class="equipped"
-    *ngIf="character && character.slots && character.slots.length && !hideEquipped"
+    *ngIf="
+      character && character.slots && character.slots.length && !hideEquipped
+    "
   >
     <h3 style="display: inline-block">Equipped</h3>
     <!-- Slots -->
@@ -54,7 +56,7 @@
           </div>
         </div>
       </div>
-      <div class="bottom" style="margin-top:-20px;">
+      <div class="bottom" style="margin-top: -20px">
         <div *ngFor="let slotId of [18, 19]">
           <app-character-slot
             [character]="character"
@@ -157,6 +159,35 @@
       [price]="inventory.bank.coins"
     />
     <div class="bag-container" *ngFor="let bagSlot of inventory.bank.bagSlots">
+      <app-inventory-slot
+        [character]="character"
+        [slot]="bagSlot"
+        [hideText]="hideText"
+        [filterText]="filterText"
+      ></app-inventory-slot>
+      <div class="bag-slots">
+        <div *ngFor="let slot of bagSlot.slots">
+          <app-inventory-slot
+            [character]="character"
+            [slot]="slot"
+            [hideText]="hideText"
+            [filterText]="filterText"
+          ></app-inventory-slot>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="bank-inventory"
+    *ngIf="inventory && inventory.shared && inventory.shared.bagSlots.length"
+  >
+    <h3 style="display: inline-block">Shared Bank</h3>
+    <app-price *ngIf="inventory.shared.coins > 0" 
+      style="margin-left: 1em"
+      [noZeroes]="true"
+      [price]="inventory.shared.coins"
+    />
+    <div class="bag-container" *ngFor="let bagSlot of inventory.shared.bagSlots">
       <app-inventory-slot
         [character]="character"
         [slot]="bagSlot"

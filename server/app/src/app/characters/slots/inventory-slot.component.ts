@@ -32,7 +32,8 @@ export class InventorySlotComponent implements OnInit {
         .replace('-', ', ')
         .replace('Slot', 'Slot ')
         .replace('Bank', 'Bank Bag ')
-        .replace('General', 'Inventory Bag ');
+        .replace('General', 'Inventory Bag ')
+        .replace('SharedBank', 'Shared Bank Bag ');
       this.subtitle = `${characterName}, ${slotName}`;
     }
   }
