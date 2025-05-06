@@ -133,7 +133,6 @@ nginx-proxy-manager/
 data/
 postgres/
 mysql/
-mariadb/
 nginx/
 !nginx/app.conf
 letsencrypt/

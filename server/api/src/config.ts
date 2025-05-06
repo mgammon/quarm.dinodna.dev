@@ -1,12 +1,12 @@
 export const config = {
   httpPort: parseInt(process.env.HTTP_PORT || '3000'),
   apiKey: process.env.API_KEY || 'super-secret-api-key',
-  mariadb: {
-    host: process.env.MARIADB_HOST || 'mariadb',
-    port: parseInt(process.env.MARIADB_PORT || '3307'),
-    database: process.env.MARIADB_DATABASE || 'quarm',
-    username: process.env.MARIADB_USERNAME || 'mariadb',
-    password: process.env.MARIADB_PASSWORD || 'mariadb',
+  mysql: {
+    host: process.env.MYSQL_HOST || 'mysql',
+    port: parseInt(process.env.MYSQL_PORT || '3306'),
+    database: process.env.MYSQL_DATABASE || 'quarm_data',
+    username: process.env.MYSQL_USER || 'mysql',
+    password: process.env.MYSQL_PASSWORD || 'mysql',
   },
   discord: {
     feedbackWebhook: process.env.DISCORD_FEEDBACK_WEBHOOK,
@@ -16,4 +16,5 @@ export const config = {
   quarmDatabaseDumpUrl:
     process.env.QUARM_DATABASE_DUMP_URL ||
     'https://github.com/SecretsOTheP/EQMacEmu/raw/refs/heads/main/utils/sql/database_full/quarm_2025-03-30-17_08.tar.gz',
+  isProd: process.env.NODE_ENV === 'production',
 };

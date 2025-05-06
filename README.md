@@ -10,16 +10,16 @@ docker compose up
 
 UI @ localhost:4200
 API @ localhost:3000
-MariaDB @ localhost:3307
+MySQL @ localhost:3306
 
 ## How to run on server (no hot reloading, uses reverse proxy)
-- Configure ENV vars in a docker-compose.override.yml (mariadb connection, apiKey, discord webhooks, etc; see docker-compose.override.EXAMPLE.yml) or .env
+- Configure ENV vars in a docker-compose.override.yml (mysql connection, apiKey, discord webhooks, etc; see docker-compose.override.EXAMPLE.yml) or .env
 - Run `./deploy.sh`
 - Set up proxy hosts using nginx-proxy-manager on <server ip address>:81.  Be sure to include websocket support.
 
 API @ <server ip address>:3000
 UI @ <server ip address>:3000/public
-MariaDB @ <server ip address>:3307
+MySQL @ <server ip address>:3306
 nginx-proxy-manager @ <server ip address>:81
 
 ## Log Reader
@@ -37,7 +37,7 @@ If you need to re-run the DB dump or update to a new DB dump:
 - Everything is TypeScript
 - UI is Angular
 - API is NestJS + TypeORM
-- DB is MariaDB
+- DB is MySQL
 - In prod, nginx-proxy-manager handles certs and proxies
-- docker compose will run UI, API, MariaDB, nginx-proxy-manager
+- docker compose will run UI, API, MySQL, nginx-proxy-manager
 - log-reader is a nodeJS app packaged as an .exe, which also launches an AutoHotKey script to auto log in

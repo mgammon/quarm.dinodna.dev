@@ -43,7 +43,13 @@ import { ItemTrackerModule } from './item-trackers/item-tracker.module';
 import { DatabaseUpdater } from './admin/database-updater';
 
 // Fixes a dumb encoding issue trying to run a DB dump for an old-ass game
-const encodingCharset = require('../node_modules/mysql2/lib/constants/encoding_charset');
+const nodeModulesFolder = config.isProd
+  ? '/dist/node_modules/'
+  : '../node_modules';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const encodingCharset = require(
+  `${nodeModulesFolder}/mysql2/lib/constants/encoding_charset`,
+);
 encodingCharset.utf8mb3 = 192;
 
 @Module({
@@ -72,12 +78,12 @@ encodingCharset.utf8mb3 = 192;
       useFactory: async () => {
         await new DatabaseUpdater().initializeQuarmData();
         return {
-          type: 'mariadb',
-          host: config.mariadb.host,
-          port: config.mariadb.port,
-          username: config.mariadb.username,
-          password: config.mariadb.password,
-          database: config.mariadb.database,
+          type: 'mysql',
+          host: config.mysql.host,
+          port: config.mysql.port,
+          username: config.mysql.username,
+          password: config.mysql.password,
+          database: config.mysql.database,
           entities: [
             // API Entities
             Log,

@@ -26,12 +26,12 @@ export class DatabaseUpdater {
   public async initializeQuarmData(forceUpdate: boolean = false) {
     // Create our data source and query runner
     const appDataSource = await new DataSource({
-      type: 'mariadb',
-      host: config.mariadb.host,
-      port: config.mariadb.port,
-      username: config.mariadb.username,
-      password: config.mariadb.password,
-      database: config.mariadb.database,
+      type: 'mysql',
+      host: config.mysql.host,
+      port: config.mysql.port,
+      username: config.mysql.username,
+      password: config.mysql.password,
+      database: config.mysql.database,
       entities: [],
       migrationsRun: false,
       logging: ['error', 'warn'],
@@ -161,6 +161,7 @@ export class DatabaseUpdater {
 
     return new Promise<string>((resolve) => {
       console.log('Extracting SQL files...');
+      const setSqlMode = "SET sql_mode = '';\n";
       const extract = tar.extract();
       extract.on('entry', async (header, stream, next) => {
         stream.on('end', () => next());
@@ -177,7 +178,7 @@ export class DatabaseUpdater {
         }
         if (dropTables && dataTables && quarmData && !resolved) {
           resolved = true;
-          const sql = dropTables + dataTables + quarmData;
+          const sql = setSqlMode + dropTables + dataTables + quarmData;
           resolve(sql + postInitializationSql(sql));
         }
       });
