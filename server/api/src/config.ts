@@ -13,8 +13,5 @@ export const config = {
     ecChatWebhook: process.env.DISCORD_EC_CHAT_WEBHOOK,
     generalWebhook: process.env.DISCORD_GENERAL_WEBHOOK,
   },
-  quarmDatabaseDumpUrl:
-    process.env.QUARM_DATABASE_DUMP_URL ||
-    'https://github.com/SecretsOTheP/EQMacEmu/raw/refs/heads/main/utils/sql/database_full/quarm_2025-03-30-17_08.tar.gz',
   isProd: process.env.NODE_ENV === 'production',
 };

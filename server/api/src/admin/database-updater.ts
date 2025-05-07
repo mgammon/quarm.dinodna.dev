@@ -4,10 +4,13 @@ import { config } from '../config';
 import { writeFileSync, rmSync } from 'fs';
 import * as path from 'path';
 import { DataSource } from 'typeorm';
+// import { KeyValueService } from '../key-value/key-value.service';
 const tar = require('tar-stream');
 const gunzip = require('gunzip-maybe');
 
 export class DatabaseUpdater {
+  constructor() {}
+
   // might have it auto-update later, since the naming scheme always has the most recent db at the end of the list
   static getMostRecentQuarmDump = async () => {
     const response = await axios.get<{ download_url: string; name: string }[]>(
@@ -20,8 +23,8 @@ export class DatabaseUpdater {
     return null;
   };
 
-  public async writeDbUpdateFile() {
-    const sql = await this.getSqlForUpdate();
+  public async writeDbUpdateFile(dumpUrl: string) {
+    const sql = await this.getSqlForUpdate(dumpUrl);
 
     console.log('Writing db-update.sql...');
     rmSync('db-update.sql', { force: true });
@@ -37,7 +40,7 @@ export class DatabaseUpdater {
   // Creates a TypeOrm datasource outside the app's typeorm module to do this beeefore we initialize our entities
   public async initializeQuarmData(
     forceUpdate: boolean = false,
-    dumpUrl?: string,
+      dumpUrl?: string,
   ) {
     // Create our data source and query runner
     const appDataSource = await new DataSource({
@@ -70,6 +73,7 @@ export class DatabaseUpdater {
       await queryRunner.manager.query(sqlStatement);
       await queryRunner.commitTransaction();
     }
+
     console.log('Finish running SQL dump!');
 
     // Make sure we close everything out when we're done
@@ -81,12 +85,9 @@ export class DatabaseUpdater {
   // Download the DB dump, extract the files
   private async getSqlForUpdate(dumpUrl?: string) {
     console.log('Downloading DB dump...');
-    const response = await axios.get<Stream>(
-      dumpUrl || config.quarmDatabaseDumpUrl,
-      {
-        responseType: 'stream',
-      },
-    );
+    const url =
+      dumpUrl || (await DatabaseUpdater.getMostRecentQuarmDump()).download_url;
+    const response = await axios.get<Stream>(url, { responseType: 'stream' });
 
     console.log('Extracting SQL...');
     return this.extract(response.data);

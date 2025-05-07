@@ -19,6 +19,7 @@ export class KeyValueService {
   ) {}
 
   // Check if there's a new DB dump every hour
+  // dumb that it's here, buut whatever.
   @Cron('0 * * * *')
   async autoUpdate() {
     if (this.isUpdaterRunning) {

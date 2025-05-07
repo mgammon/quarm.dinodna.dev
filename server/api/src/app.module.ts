@@ -40,9 +40,9 @@ import { Character, InventorySlot } from './characters/character.entity';
 import { CharacterModule } from './characters/character.module';
 import { ItemTracker } from './item-trackers/item-tracker.entity';
 import { ItemTrackerModule } from './item-trackers/item-tracker.module';
-import { DatabaseUpdater } from './admin/database-updater';
 import { KeyValueModule } from './key-value/key-value-module';
 import { KeyValue } from './key-value/key-value';
+import { DatabaseUpdater } from './admin/database-updater';
 
 // Fixes a dumb encoding issue trying to run a DB dump for an old-ass game
 const nodeModulesFolder = config.isProd

@@ -1,19 +1,19 @@
 import { Controller, Param, Post, Headers } from '@nestjs/common';
-import { DatabaseUpdater } from './database-updater';
 import { AuctionService } from '../auctions/auction.service';
 import { validateIsAdmin } from '../utils';
+import { KeyValueService } from '../key-value/key-value.service';
 
 @Controller('api/admin')
 export class AdminController {
-  private databaseUpdater: DatabaseUpdater;
-  constructor(private auctionService: AuctionService) {
-    this.databaseUpdater = new DatabaseUpdater();
-  }
+  constructor(
+    private auctionService: AuctionService,
+    private keyValueService: KeyValueService,
+  ) {}
 
   @Post(`/update-database`)
   public async updateDatabase(@Headers('Authorization') auth: string) {
     validateIsAdmin(auth);
-    this.databaseUpdater.initializeQuarmData(true);
+    this.keyValueService.autoUpdate();
     return 'Updating';
   }
 

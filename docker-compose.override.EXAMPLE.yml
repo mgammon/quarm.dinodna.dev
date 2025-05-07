@@ -2,7 +2,6 @@ version: "3.8"
 
 # On your prod server, copy this as docker-compose.override.yml, then fill it out for prod with actual secrets.  Safest is to just randomly generate a UUID for:
 # MYSQL_USER, MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, API_KEY
-# Then update the QUARM_DATABASE_DUMP_URL as needed
 # Also set up your discord webhooks for EC Chat and Feedback from the website
 # Make sure that same API_KEY is used in your log-reader's config.json.
 # Don't keep this in your local, though, or you'll probably start double writing to the prod DB
@@ -16,8 +15,6 @@ services:
       # MYSQL_USER: mysql
       # MYSQL_PASSWORD: mysql
       # API_KEY: super-secret-api-key
-      # QUARM_DATABASE_DUMP_URL: https://github.com/SecretsOTheP/EQMacEmu/raw/refs/heads/main/utils/sql/database_full/quarm_2025-03-30-17_08.tar.gz
-  
   mysql:
     environment:
       # MYSQL_USER: mysql
