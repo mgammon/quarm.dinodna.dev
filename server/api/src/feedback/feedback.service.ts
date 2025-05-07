@@ -24,6 +24,10 @@ export class FeedbackService {
   private ecChatIsUp = true;
   private lastEcChatMessageAt = Date.now();
 
+  sendGeneral(content: string) {
+    this.webhookGeneralClient.send({ content });
+  }
+
   sendEcChat(rawLog: string) {
     if (config.apiKey === 'super-secret-api-key') {
       return;

@@ -41,6 +41,8 @@ import { CharacterModule } from './characters/character.module';
 import { ItemTracker } from './item-trackers/item-tracker.entity';
 import { ItemTrackerModule } from './item-trackers/item-tracker.module';
 import { DatabaseUpdater } from './admin/database-updater';
+import { KeyValueModule } from './key-value/key-value-module';
+import { KeyValue } from './key-value/key-value';
 
 // Fixes a dumb encoding issue trying to run a DB dump for an old-ass game
 const nodeModulesFolder = config.isProd
@@ -66,6 +68,7 @@ encodingCharset.utf8mb3 = 192;
     FeedbackModule,
     CharacterModule,
     ItemTrackerModule,
+    KeyValueModule,
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     ServeStaticModule.forRoot({
@@ -92,6 +95,7 @@ encodingCharset.utf8mb3 = 192;
             Character,
             InventorySlot,
             ItemTracker,
+            KeyValue,
             // Quarm Entities
             Item,
             SpellNew,

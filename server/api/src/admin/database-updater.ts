@@ -9,7 +9,7 @@ const gunzip = require('gunzip-maybe');
 
 export class DatabaseUpdater {
   // might have it auto-update later, since the naming scheme always has the most recent db at the end of the list
-  getMostRecentQuarmDump = async () => {
+  static getMostRecentQuarmDump = async () => {
     const response = await axios.get<{ download_url: string; name: string }[]>(
       'https://api.github.com/repos/SecretsOTheP/EQMacEmu/contents/utils/sql/database_full',
     );
@@ -35,7 +35,10 @@ export class DatabaseUpdater {
 
   // Checks if we have quarm data.  If not, downloads the DB dump and runs it, with some changes
   // Creates a TypeOrm datasource outside the app's typeorm module to do this beeefore we initialize our entities
-  public async initializeQuarmData(forceUpdate: boolean = false) {
+  public async initializeQuarmData(
+    forceUpdate: boolean = false,
+    dumpUrl?: string,
+  ) {
     // Create our data source and query runner
     const appDataSource = await new DataSource({
       type: 'mysql',
@@ -60,7 +63,7 @@ export class DatabaseUpdater {
 
     // Get the DB update SQL, split it up into each statement, and run them one at a time.
     console.log('Quarm data initializing...');
-    const sqlStatements = (await this.getSqlForUpdate()).split(';\n');
+    const sqlStatements = (await this.getSqlForUpdate(dumpUrl)).split(';\n');
     console.log('Running SQL dump...');
     for (const sqlStatement of sqlStatements) {
       await queryRunner.startTransaction();
@@ -76,11 +79,14 @@ export class DatabaseUpdater {
   }
 
   // Download the DB dump, extract the files
-  private async getSqlForUpdate() {
+  private async getSqlForUpdate(dumpUrl?: string) {
     console.log('Downloading DB dump...');
-    const response = await axios.get<Stream>(config.quarmDatabaseDumpUrl, {
-      responseType: 'stream',
-    });
+    const response = await axios.get<Stream>(
+      dumpUrl || config.quarmDatabaseDumpUrl,
+      {
+        responseType: 'stream',
+      },
+    );
 
     console.log('Extracting SQL...');
     return this.extract(response.data);

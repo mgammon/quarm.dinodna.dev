@@ -11,10 +11,11 @@ docker compose up
 UI @ localhost:4200
 API @ localhost:3000
 MySQL @ localhost:3306
+Quarm data will auto-update
 
 ## How to run on server (no hot reloading, uses reverse proxy)
 - Configure ENV vars in a docker-compose.override.yml (mysql connection, apiKey, discord webhooks, etc; see docker-compose.override.EXAMPLE.yml) or .env
-- Run `./deploy.sh`
+- Run `./deploy-all.sh`
 - Set up proxy hosts using nginx-proxy-manager on <server ip address>:81.  Be sure to include websocket support.
 
 API @ <server ip address>:3000
@@ -26,12 +27,7 @@ nginx-proxy-manager @ <server ip address>:81
 Use log-reader/log-reader.exe to read your mule's logs and send messages to the API.  Be sure to read log-reader/README.md.  Requires AutoHotKey if you want to automatically re-log in to your mule if the game freezes, server crashes, or you get disconnected
 
 ## Workflow for making changes
-Configure the log-reader's config.json to send to both prod and localhost:3000.  Run the server with `docker-compose up`.  Test on localhost:4200 as you make changes.  Commit your changes, SSH to the server and run `./deploy.sh`.
-
-## Updating the database
-If you need to re-run the DB dump or update to a new DB dump:
- - Change the `QUARM_DATABASE_DUMP_URL` in docker-compose.yml
- - POST localhost:3000/api/admin/update-database, with header `{ Authorization: "Bearer super-secret-api-key" }`
+Configure the log-reader's config.json to send to both prod and localhost:3000.  Run the server with `docker-compose up`.  Test on localhost:4200 as you make changes.  Commit your changes, SSH to the server and run `./deploy-server.sh`.
 
 ## Stack:
 - Everything is TypeScript
