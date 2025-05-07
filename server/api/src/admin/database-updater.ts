@@ -8,6 +8,18 @@ const tar = require('tar-stream');
 const gunzip = require('gunzip-maybe');
 
 export class DatabaseUpdater {
+  // might have it auto-update later, since the naming scheme always has the most recent db at the end of the list
+  getMostRecentQuarmDump = async () => {
+    const response = await axios.get<{ download_url: string; name: string }[]>(
+      'https://api.github.com/repos/SecretsOTheP/EQMacEmu/contents/utils/sql/database_full',
+    );
+    if (response && response.data) {
+      const allQuarmDbDumps = response.data;
+      return allQuarmDbDumps[allQuarmDbDumps.length - 1];
+    }
+    return null;
+  };
+
   public async writeDbUpdateFile() {
     const sql = await this.getSqlForUpdate();
 
