@@ -9,7 +9,7 @@ import {
   Unique,
   OneToMany,
 } from 'typeorm';
-import { Auction, AuctionDto } from '../auctions/auction.entity';
+import { Auction, AuctionDto, DailyAuction } from '../auctions/auction.entity';
 
 export interface LogDto {
   id?: number;
@@ -69,7 +69,12 @@ export class Log {
   @UpdateDateColumn()
   updatedAt?: Date;
 
+  // Needed for the auction page (not item-details)
   @OneToMany(() => Auction, (auction) => auction.log)
   @JoinColumn({ name: 'id', referencedColumnName: 'logId' })
   auctions?: Auction[];
+
+  @OneToMany(() => DailyAuction, (auction) => auction.log)
+  @JoinColumn({ name: 'id', referencedColumnName: 'logId' })
+  dailyAuctions?: DailyAuction[];
 }

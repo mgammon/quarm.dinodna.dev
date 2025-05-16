@@ -32,6 +32,7 @@ export class AuctionService {
   ) {}
 
   // Delete auctions older than 3 days old every night at 4am
+  // This is only used to match up logs to items on the auction page (not on the item details page)
   @Cron('0 4 * * *')
   async deleteOldAuctions() {
     console.log('Deleting old auctions');
@@ -89,13 +90,13 @@ export class AuctionService {
     return this.dailyAuctionRepository.find({
       where: {
         itemId,
-        createdAt: And(
+        sentAt: And(
           MoreThanOrEqual(startDate),
           LessThanOrEqual(endDate || new Date()),
         ),
-        log: { auctions: { itemId: MoreThanOrEqual(0) } },
+        log: { dailyAuctions: { itemId: MoreThanOrEqual(0) } },
       },
-      relations: { log: { auctions: true } },
+      relations: { log: { dailyAuctions: true } },
       select: {
         id: true,
         sentAt: true,
@@ -108,7 +109,7 @@ export class AuctionService {
           channel: true,
           sentAt: true,
           player: true,
-          auctions: { itemText: true, itemId: true, id: true },
+          dailyAuctions: { itemText: true, itemId: true, id: true },
         },
       },
       order: { sentAt: 'DESC' },
@@ -141,34 +142,32 @@ export class AuctionService {
     return results;
   }
 
-  async getAverages(itemId: number) {
+  async getAverage(itemId: number, days: number) {
     // Maybe improved.  Grouping by player so if someone is trying to sell
     // at an unrealistic price for multiple days, it won't skew the average too much
     const dailyAuctions: DailyAuction[] =
       await this.dailyAuctionRepository.query(
         `
-      SELECT MIN(price) as price, player, MAX(sentAt) as sentAt 
+      SELECT MIN(price) as price 
       FROM daily_auctions
       WHERE itemId = ?
         AND price > 0
-        AND sentAt > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 30 DAY )
+        AND sentAt > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL ? DAY )
       GROUP BY player, itemId
       `,
-        [itemId],
+        [itemId, days],
       );
 
-    const sevenDaysAgo = moment().subtract(7, 'days').toDate().getTime();
-    const thirtyDaysAgo = moment().subtract(30, 'days').toDate().getTime();
-    const last7Days = dailyAuctions
-      .filter((auction) => auction.sentAt.getTime() > sevenDaysAgo)
-      .map((auction) => auction.price);
-    const last30Days = dailyAuctions
-      .filter((auction) => auction.sentAt.getTime() > thirtyDaysAgo)
-      .map((auction) => auction.price);
+    return (
+      this.getAverageFromPrices(dailyAuctions.map((auction) => auction.price)) *
+        1000 || 0
+    );
+  }
 
+  async getAverages(itemId: number) {
     return {
-      average7d: this.getAverageFromPrices(last7Days) * 1000 || 0,
-      average30d: this.getAverageFromPrices(last30Days) * 1000 || 0,
+      average7d: await this.getAverage(itemId, 7),
+      average30d: await this.getAverage(itemId, 30),
     };
   }
 
@@ -180,7 +179,9 @@ export class AuctionService {
     );
 
     // Round the number
-    if (average > 25 && average < 100) {
+    if (average > 0 && average <= 25) {
+      return Math.round(average);
+    } else if (average > 25 && average < 100) {
       // 25 - 100 = round to nearest 5
       return Math.ceil(average / 5) * 5;
     } else if (average > 100 && average < 1000) {
@@ -199,7 +200,7 @@ export class AuctionService {
     // at an unrealistic price for multiple days, it won't skew the average too much
     const auctions = await this.dailyAuctionRepository.query(
       `
-      SELECT MIN(price) as price, player, MAX(sentAt) as sentAt 
+      SELECT MIN(price) as price 
       FROM daily_auctions
       WHERE itemId = ?
         AND price > 0

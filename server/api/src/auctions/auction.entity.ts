@@ -9,6 +9,7 @@ import {
   ManyToOne,
   JoinColumn,
   Unique,
+  Index,
 } from 'typeorm';
 
 abstract class AuctionItem {
@@ -33,7 +34,9 @@ abstract class AuctionItem {
 
 @Entity({ synchronize: true, name: 'auctions' })
 export class Auction extends AuctionItem {
-  @Column() logId: number;
+  @Column()
+  @Index()
+  logId: number;
 
   @ManyToOne(() => Log, {
     onDelete: 'CASCADE',
@@ -57,8 +60,12 @@ export class Auction extends AuctionItem {
 // don't wanna turn sentAt into a date everytime, so I'll precompute the key
 @Entity({ synchronize: true, name: 'daily_auctions' })
 @Unique('unique-by-key', ['key'])
+@Index(['itemId', 'price', 'sentAt'])
+@Index(['player', 'itemId'])
+@Index(['itemId', 'sentAt'])
 export class DailyAuction extends Auction {
   @Column()
+  @Index()
   key: string;
 }
 

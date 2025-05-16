@@ -100,7 +100,7 @@ export class TrackerService {
     sendAlerts: boolean = true
   ) {
     logs.forEach((log) => {
-      log.auctions.forEach((auction) => {
+      (log.auctions as Auction[]).forEach((auction) => {
         if (
           tracker.item &&
           auction.itemId === tracker.item.id &&
@@ -110,7 +110,7 @@ export class TrackerService {
           const existingLog = tracker.matchingLogs.find(
             (existing) =>
               existing.player === log.player &&
-              existing.auctions.find(
+              (existing.auctions as Auction[]).find(
                 (existingAuction) => existingAuction.itemId === auction.itemId
               )
           );

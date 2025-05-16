@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Log } from '../../logs/log.entity';
+import { Auction, Log } from '../../logs/log.entity';
 import { PanelModule } from 'primeng/panel';
 import { TabViewModule } from 'primeng/tabview';
 import { ComparableNumberInputComponent } from '../../items/comparable-number-input.component/comparable-number-input.component';
@@ -135,7 +135,7 @@ export class TrackerComponent {
   }
 
   getMatchingAuctionPriceString(matchingLog: Log, tracker: ItemTracker) {
-    const matchingAuction = matchingLog.auctions.find(
+    const matchingAuction = (matchingLog.auctions as Auction[]).find(
       (auction) => auction.itemId === tracker.item?.id
     );
 
@@ -148,7 +148,7 @@ export class TrackerComponent {
 
   getMatchingAuctionStatusString(matchingLog: Log, tracker: ItemTracker) {
     tracker.wts === true ? 'selling' : tracker.wts === false ? 'buying' : '???';
-    const matchingAuction = matchingLog.auctions.find(
+    const matchingAuction = (matchingLog.auctions as Auction[]).find(
       (auction) => auction.itemId === tracker.item?.id
     );
 

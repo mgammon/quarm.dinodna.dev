@@ -31,7 +31,11 @@ export class SearchComponent {
   placeholder: string = 'Search';
 
   @Input({ required: false })
-  itemSearchOptions?: { slots?: number[]; classes?: number[]; races?: number[] };
+  itemSearchOptions?: {
+    slots?: number[];
+    classes?: number[];
+    races?: number[];
+  };
 
   @Output()
   onItemSelected = new EventEmitter<Item>();
@@ -47,18 +51,15 @@ export class SearchComponent {
   async search(event: AutoCompleteCompleteEvent) {
     const { query } = event;
 
-    let npcs: Npc[] = [];
-    let items: Item[] = [];
-    let zones: Zone[] = [];
-    if (this.types.includes('items')) {
-      items = await this.apiService.searchItems(query, this.itemSearchOptions);
-    }
-    if (this.types.includes('npcs')) {
-      npcs = await this.apiService.searchNpcs(query);
-    }
-    if (this.types.includes('zones')) {
-      zones = await this.apiService.searchZones(query);
-    }
+    const [items, npcs, zones] = await Promise.all([
+      this.types.includes('items')
+        ? this.apiService.searchItems(query, this.itemSearchOptions)
+        : [],
+      this.types.includes('npcs')
+        ? await this.apiService.searchNpcs(query)
+        : [],
+      this.types.includes('zones') ? this.apiService.searchZones(query) : [],
+    ]);
 
     // lazy but idk
     zones.forEach((zone) => ((zone as any).name = zone.long_name));

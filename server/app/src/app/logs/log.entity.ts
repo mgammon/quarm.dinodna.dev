@@ -17,7 +17,8 @@ export interface Log {
     | 'global-Lfg'
     | 'global-Port'
     | null;
-  auctions: Auction[];
+  auctions?: Auction[];
+  dailyAuctions?: Auction[];
 }
 
 export interface Auction {

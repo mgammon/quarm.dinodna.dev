@@ -60,8 +60,9 @@ export class ChatLogComponent implements OnInit {
       if (!item) {
         return;
       }
+      const auctions = this.log.auctions || this.log.dailyAuctions || [];
       chunk.highlight =
-        this.log.auctions.some(
+        auctions.some(
           (auction) =>
             auction.itemId === item.itemId &&
             item.itemId === this.highlightItemId
@@ -70,7 +71,7 @@ export class ChatLogComponent implements OnInit {
           tracker.matchingLogs.some(
             (log) =>
               log.id === this.log.id &&
-              this.log.auctions.some(
+              auctions.some(
                 (auction) =>
                   auction.itemId === item.itemId &&
                   tracker.item &&
@@ -86,6 +87,8 @@ export class ChatLogComponent implements OnInit {
       this.timeFormat === 'relative'
         ? this.log.sentAt.fromNow()
         : this.log.sentAt.format('LTS');
+
+    const auctions = this.log.auctions || this.log.dailyAuctions || [];
 
     // Start with /*time*/ and player chunks
     this.logChunks.push({ type: 'player' });
@@ -114,8 +117,8 @@ export class ChatLogComponent implements OnInit {
     this.logChunks.push({ type: 'text', displayText: channelText });
 
     let unparsedText = this.log.text + '';
-    this.log.auctions.sort((a, b) => a.id - b.id);
-    for (const auction of this.log.auctions) {
+    auctions.sort((a, b) => a.id - b.id);
+    for (const auction of auctions) {
       // Find the start and end of the item text
       const itemStartIndex = unparsedText
         .toLowerCase()

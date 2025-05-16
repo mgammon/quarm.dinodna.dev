@@ -3,6 +3,8 @@ interface CachedItem<T = any> {
   cachedAt: number;
 }
 
+const CACHE_ENABLED = true;
+
 class InMemoryLruCache {
   private CACHE_DURATION = 60_000 * 60; // 1 hour
   private cache = new Map<any, CachedItem>();
@@ -59,7 +61,7 @@ class InMemoryLruCache {
 
   async cached<T>(key: any, retrieve: () => Promise<T>, duration?: number) {
     let item = this.get<T>(key, duration);
-    if (item) {
+    if (CACHE_ENABLED && item) {
       return item;
     }
 
