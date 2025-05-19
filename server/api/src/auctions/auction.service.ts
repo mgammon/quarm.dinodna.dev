@@ -153,7 +153,6 @@ export class AuctionService {
       WHERE itemId = ?
         AND price > 0
         AND sentAt > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL ? DAY )
-        AND wts = true
       GROUP BY player, itemId
       `,
         [itemId, days],
