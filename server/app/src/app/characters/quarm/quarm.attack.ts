@@ -436,7 +436,6 @@ export const isEquippable = (item: Item, character: Character) => {
 
   // Not high enough level
   if (item.reqlevel && item.reqlevel > level) {
-    console.log('not high enough level');
     return false;
   }
 

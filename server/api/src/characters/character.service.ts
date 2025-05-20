@@ -38,7 +38,7 @@ export class CharacterService {
     // Check if inventory is too long, slots names are too long, or if IDs are set (except item IDs)
     if (
       inventory &&
-      (inventory.length > 250 ||
+      (inventory.length > 2500 ||
         inventory.some(
           (i) => (i.slot && i.slot.length > 100) || !!i.characterId || !!i.id,
         ))
