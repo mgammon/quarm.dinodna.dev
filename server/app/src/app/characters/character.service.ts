@@ -200,7 +200,7 @@ export class CharacterService {
     const filePromises: Promise<void>[] = [];
     for (let i = 0; i < fileInput.files.length; i++) {
       const file: File = fileInput.files[i];
-      if (file.size > 15_000 || !file.name.includes('Inventory.txt')) {
+      if (file.size > 150_000 || !file.name.includes('Inventory.txt')) {
         continue;
       }
       filePromises.push(
