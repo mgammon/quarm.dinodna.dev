@@ -6,6 +6,17 @@ import { LogService } from '../../logs/log.service';
 import { SpeechService } from './speech.service';
 import * as moment from 'moment';
 import { ApiService } from '../../api/api.service';
+import { ExpiringSet } from '../../utils/expiring-set';
+
+const HOUR = 1000 * 60 * 60;
+
+export interface SnoozeEntry {
+  player: string;
+  itemId: number;
+  duration: number;
+  createdAt: number;
+  color: string;
+}
 
 export interface ItemTrackerDto {
   id?: number;
@@ -68,8 +79,18 @@ export class TrackerService {
   public volume: number;
 
   public itemTrackers: ItemTracker[] = [];
+  public snoozeList = new ExpiringSet<SnoozeEntry>(
+    (entry) => {
+      const expiresAt = entry.createdAt + entry.duration;
+      return expiresAt - Date.now();
+    },
+    () => this.saveSnoozeList(),
+    (entry1, entry2) =>
+      entry1.player === entry2.player && entry1.itemId === entry2.itemId
+  );
 
   public trackersChanged = new EventEmitter<void>();
+  public snoozeListChanged = new EventEmitter<void>();
 
   constructor(
     private logService: LogService,
@@ -79,9 +100,60 @@ export class TrackerService {
     this.volume = this.loadVolume();
     this.alertType =
       (localStorage.getItem('trackerAlertType') as any) || 'none';
+    const snoozeListArray: SnoozeEntry[] = JSON.parse(
+      localStorage.getItem('snoozeList') || '[]'
+    );
+    this.snoozeList.add(...snoozeListArray);
     this.loadTrackers();
     this.logService.logEvents.subscribe((logs) =>
       this.checkForMatchingLogs(logs)
+    );
+  }
+
+  private saveSnoozeList() {
+    this.snoozeListChanged.emit();
+    localStorage.setItem('snoozeList', JSON.stringify(this.snoozeList.values));
+  }
+
+  snooze(player: string, itemId: number) {
+    // See if we already snoozed it
+    const snoozeEntry = this.getSnoozeEntry(player, itemId);
+    // If we haven't, snooze it for an hour
+    if (!snoozeEntry) {
+      this.snoozeList.add({
+        player,
+        itemId,
+        createdAt: Date.now(),
+        duration: HOUR * 1,
+        color: 'white',
+      });
+    } else {
+      // If we have, cycle through 4, 12, 24, 72 hours, and off
+      const { duration } = snoozeEntry;
+      if (duration === HOUR) {
+        snoozeEntry.duration = HOUR * 4;
+        snoozeEntry.color = 'yellow';
+      } else if (duration === HOUR * 4) {
+        snoozeEntry.duration = HOUR * 12;
+        snoozeEntry.color = 'orange';
+      } else if (duration === HOUR * 12) {
+        snoozeEntry.duration = HOUR * 24;
+        snoozeEntry.color = 'salmon';
+      } else if (duration === HOUR * 24) {
+        snoozeEntry.duration = HOUR * 72;
+        snoozeEntry.color = 'red';
+      } else if (duration === HOUR * 72) {
+        this.snoozeList.delete(snoozeEntry);
+      }
+    }
+    // Save it
+    this.saveSnoozeList();
+  }
+
+  private getSnoozeEntry(player: string, itemId?: number) {
+    return this.snoozeList.values.find(
+      (snoozeEntry) =>
+        snoozeEntry.player === player && snoozeEntry.itemId === itemId
     );
   }
 
@@ -299,7 +371,10 @@ export class TrackerService {
   }
 
   playAlert(log: Log, auction?: Auction) {
-    if (this.alertType === 'none') {
+    if (
+      this.getSnoozeEntry(log.player, auction?.itemId) ||
+      this.alertType === 'none'
+    ) {
       return;
     } else if (this.alertType === 'sound') {
       this.alertAudio.volume = this.volume;

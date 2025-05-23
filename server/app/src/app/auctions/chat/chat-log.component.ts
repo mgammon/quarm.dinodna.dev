@@ -82,7 +82,7 @@ export class ChatLogComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.timestamp =
       this.timeFormat === 'relative'
         ? this.log.sentAt.fromNow()
@@ -148,11 +148,12 @@ export class ChatLogComponent implements OnInit {
     this.logChunks.push({ type: 'text', displayText: unparsedText + "'" });
 
     this.updateHighlights();
+
+    // Specifying the item ID to highlight, so not dependent on trackers, no need to update when they change
+    if (this.highlightItemId) {
+      return;
+    }
     this.trackerService.trackersChanged.subscribe(() => {
-      // Specifying the item ID to highlight, so not dependent on trackers, no need to update when they change
-      if (this.highlightItemId) {
-        return;
-      }
       // Orrr update highlights based on trackers when using them
       this.updateHighlights();
     });

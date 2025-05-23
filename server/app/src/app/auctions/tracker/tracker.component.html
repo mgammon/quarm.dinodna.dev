@@ -225,7 +225,8 @@
                         ? 'Auctions must have a price set to trigger an alert'
                         : 'Auctions without a price set will also trigger an alert'
                     "
-                  >{{tracker.requirePrice ? '$' : '*'}}</p-button>
+                    >{{ tracker.requirePrice ? "$" : "*" }}</p-button
+                  >
                   <p-button
                     *ngIf="!tracker.saved"
                     type="button"
@@ -283,6 +284,44 @@
                           [date]="log.sentAt"
                           style="font-size: 0.85rem"
                         ></app-date-from-now>
+                        <p-button
+                          *ngIf="tracker.saved && tracker.item"
+                          type="button"
+                          class="p-panel-header-icon p-link mr-2"
+                          size="small"
+                          (click)="
+                            trackerService.snooze(log.player, tracker.item.id)
+                          "
+                          [outlined]="true"
+                          [style]="{ 'margin-left': '5px' }"
+                          [pTooltip]="snoozeTooltip"
+                          tooltipPosition="left"
+                          (mouseenter)="
+                            setSnoozeTooltip(log.player, tracker.item.id)
+                          "
+                        >
+                          <span
+                            *ngIf="
+                              !snoozeEntries[log.player] ||
+                              !snoozeEntries[log.player][tracker.item.id]
+                            "
+                            tooltipPosition="left"
+                            class="pi pi-bell"
+                            style="color: var(--primary-color)"
+                          ></span>
+                          <span
+                            *ngIf="
+                              snoozeEntries[log.player] &&
+                              snoozeEntries[log.player][tracker.item.id]
+                            "
+                            tooltipPosition="left"
+                            class="pi pi-ban"
+                            [style]="
+                              'color: ' +
+                              snoozeEntries[log.player][tracker.item.id].color
+                            "
+                          ></span>
+                        </p-button>
                         <p-button
                           *ngIf="tracker.saved"
                           type="button"

@@ -148,3 +148,84 @@ export enum Duration {
   Hour = 60_000 * 60,
   Day = 60_000 * 60 * 24,
 }
+
+export const getClassesAsStrings = (classesBitmask: number) => {
+  if (!classesBitmask) {
+    return null;
+  }
+  if (classesBitmask === 32767) {
+    return ['ALL']; // All
+  }
+  const bits = Object.keys(classBits).map((key) => parseInt(key));
+  return bits.reduce((strings, bit) => {
+    return bitmaskIncludesBit(classesBitmask, bit)
+      ? [...strings, classBits[bit]]
+      : strings;
+  }, [] as string[]);
+};
+
+export const getPlayableRacesAsStrings = (racesBitmask: number) => {
+  if (!racesBitmask) {
+    return null;
+  }
+  if (racesBitmask === 16383) {
+    return ['ALL']; // All bitmask
+  }
+  const raceBits = Object.keys(playableRaceBits).map((key) => parseInt(key));
+  return raceBits.reduce((strings, bit) => {
+    return bitmaskIncludesBit(racesBitmask, bit)
+      ? [...strings, playableRaceBits[bit]]
+      : strings;
+  }, [] as string[]);
+};
+
+export const playableRaceIds: { [id: number]: string } = {
+  0: 'HUM',
+  1: 'BAR',
+  2: 'ERU',
+  3: 'ELF',
+  4: 'HIE',
+  5: 'DEF',
+  6: 'HEF',
+  7: 'DWF',
+  8: 'TRL',
+  9: 'OGR',
+  10: 'HLF',
+  11: 'GNM',
+  12: 'IKS',
+  13: 'VAH',
+  // 16383: 'ALL', // this changes if froglok or drakkin are added
+  // 16384: 'FRG',
+  // 32768: 'DRK',
+};
+export const playableRaceBits = idsToBits(playableRaceIds);
+
+export function idsToBits(object: { [id: number]: string }, offsetBit = 0) {
+  const bitmaskObject: { [bitmask: number]: string } = {};
+  const ids = Object.keys(object).map((key) => parseInt(key));
+  ids.forEach((id) => {
+    const bitmask = idToBitmask(id + offsetBit);
+    bitmaskObject[bitmask] = object[id];
+  });
+  return bitmaskObject;
+}
+
+export const classIds: { [classNumber: number]: string } = {
+  1: 'WAR',
+  2: 'CLR',
+  3: 'PAL',
+  4: 'RNG',
+  5: 'SHD',
+  6: 'DRU',
+  7: 'MNK',
+  8: 'BRD',
+  9: 'ROG',
+  10: 'SHM',
+  11: 'NEC',
+  12: 'WIZ',
+  13: 'MAG',
+  14: 'ENC',
+  15: 'BST',
+  16: 'BER',
+};
+export const classBits = idsToBits(classIds, -1);

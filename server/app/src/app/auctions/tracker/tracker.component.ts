@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Auction, Log } from '../../logs/log.entity';
 import { PanelModule } from 'primeng/panel';
@@ -15,7 +15,7 @@ import { DataViewModule } from 'primeng/dataview';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { Clipboard } from '@angular/cdk/clipboard';
-import { ItemTracker, TrackerService } from './tracker.service';
+import { ItemTracker, SnoozeEntry, TrackerService } from './tracker.service';
 import * as moment from 'moment';
 import { DateFromNowComponent } from './date-from-now.component';
 import { UsageService } from '../../usage.service';
@@ -24,6 +24,7 @@ import { FormsModule } from '@angular/forms';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { InputGroupModule } from 'primeng/inputgroup';
+import { Subscription } from 'rxjs';
 
 moment.updateLocale('en', {
   relativeTime: {
@@ -63,8 +64,14 @@ moment.updateLocale('en', {
     InputGroupModule,
   ],
 })
-export class TrackerComponent {
-  public showVolume = false;
+export class TrackerComponent implements OnInit, OnDestroy {
+  private snoozeListSubscription!: Subscription;
+
+  public snoozeEntries: {
+    [player: string]: { [itemId: number]: SnoozeEntry };
+  } = {};
+
+  public snoozeTooltip?: string;
 
   onTrackersReordered() {
     throw new Error('Method not implemented.');
@@ -76,6 +83,16 @@ export class TrackerComponent {
     private clipboard: Clipboard,
     private usageService: UsageService
   ) {}
+
+  ngOnInit(): void {
+    this.snoozeListSubscription =
+      this.trackerService.snoozeListChanged.subscribe(this.onSnoozeListChanged);
+    this.onSnoozeListChanged();
+  }
+
+  ngOnDestroy(): void {
+    this.snoozeListSubscription.unsubscribe();
+  }
 
   // convenience getter
   get itemTrackers() {
@@ -160,6 +177,29 @@ export class TrackerComponent {
         : '???';
     } else {
       return '???';
+    }
+  }
+
+  onSnoozeListChanged = () => {
+    this.snoozeTooltip = undefined;
+    this.snoozeEntries = {};
+    this.trackerService.snoozeList.values.forEach((snoozeEntry) => {
+      const { player, itemId } = snoozeEntry;
+      this.snoozeEntries[player] = this.snoozeEntries[player] || {};
+      this.snoozeEntries[player][itemId] = snoozeEntry;
+    });
+  };
+
+  setSnoozeTooltip(player: string, itemId: number) {
+    const snoozeEntry =
+      this.snoozeEntries[player] && this.snoozeEntries[player][itemId];
+    if (!snoozeEntry) {
+      this.snoozeTooltip = `Snooze this auction`;
+    } else {
+      const snoozedFor = moment(
+        snoozeEntry.createdAt + snoozeEntry.duration
+      ).fromNow(true);
+      this.snoozeTooltip = `Snoozed for ${snoozedFor}`;
     }
   }
 

@@ -27,16 +27,6 @@ export class LogService {
     localStorage.setItem('ignoreList', JSON.stringify(this.ignoreList));
   }
 
-  // removeFromIgnoreList(name: string) {
-  //   this.ignoreList = this.ignoreList.filter((ignore) => ignore !== name);
-  //   localStorage.setItem('ignoreList', JSON.stringify(this.ignoreList));
-  // }
-
-  // addToIgnoreList(name: string) {
-  //   this.ignoreList.push(name);
-  //   localStorage.setItem('ignoreList', JSON.stringify(this.ignoreList));
-  // }
-
   async loadLogs() {
     const oldestLog = this.logs[0];
     const fetchedLogs = await this.apiService.getLogs(oldestLog);
@@ -44,8 +34,12 @@ export class LogService {
   }
 
   public onLogs = (logs: Log[]) => {
-    const ignoredName = this.ignoreList.map(name => name.toLowerCase().trim());
-    logs = logs.filter(log => !ignoredName.includes(log.player.toLowerCase()));
+    const ignoredName = this.ignoreList.map((name) =>
+      name.toLowerCase().trim()
+    );
+    logs = logs.filter(
+      (log) => !ignoredName.includes(log.player.toLowerCase())
+    );
     logs.forEach((log) => {
       log.sentAt = moment(log.sentAt);
     });

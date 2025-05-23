@@ -2,13 +2,21 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   NotFoundException,
   Param,
   Post,
   Query,
 } from '@nestjs/common';
 import { ItemService } from './item.service';
-import { ComparableNumber } from '../utils';
+import {
+  ComparableNumber,
+  getClassesAsStrings,
+  getPlayableRacesAsStrings,
+} from '../utils';
+import * as _ from 'lodash';
+import * as Papa from 'papaparse';
+import { Item } from './item.entity';
 
 export interface EffectFilter {
   id: number;
@@ -63,6 +71,39 @@ export interface ItemSearchOptions {
 @Controller('api/items')
 export class ItemController {
   constructor(private itemService: ItemService) {}
+
+  @Get('/csv')
+  @Header('content-type', 'text/csv')
+  async getItemsCsv(
+    @Query('itemIds') ids: string[],
+    @Query('properties') properties: (keyof Item)[],
+  ) {
+    if (!ids || ids.length === 0 || !properties || properties.length === 0) {
+      return [];
+    }
+    if (typeof ids === 'string') {
+      ids = (ids as string).split(',');
+    }
+    if (typeof properties === 'string') {
+      properties = (properties as string).split(',') as (keyof Item)[];
+    }
+    const items = await this.itemService.getAllByIds(
+      ids.map((id) => parseInt(id)).filter((id) => !isNaN(id)),
+    );
+
+    const data = items.map((item) => _.pick(item, properties));
+    if (properties.includes('classes')) {
+      data.forEach((item) => {
+        item.classes = getClassesAsStrings(item.classes).join(', ') as any;
+      });
+    }
+    if (properties.includes('races')) {
+      data.forEach((item) => {
+        item.races = getPlayableRacesAsStrings(item.races).join(', ') as any;
+      });
+    }
+    return Papa.unparse(data, { delimiter: ';' });
+  }
 
   @Get('/:id')
   getById(
