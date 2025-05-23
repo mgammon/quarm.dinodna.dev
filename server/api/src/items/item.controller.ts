@@ -78,28 +78,39 @@ export class ItemController {
     @Query('itemIds') ids: string[],
     @Query('properties') properties: (keyof Item)[],
   ) {
+    // Parse query params
     if (!ids || ids.length === 0 || !properties || properties.length === 0) {
       return [];
     }
     if (typeof ids === 'string') {
       ids = (ids as string).split(',');
     }
+    const itemIds = ids.map((id) => parseInt(id)).filter((id) => !isNaN(id));
     if (typeof properties === 'string') {
       properties = (properties as string).split(',') as (keyof Item)[];
     }
-    const items = await this.itemService.getAllByIds(
-      ids.map((id) => parseInt(id)).filter((id) => !isNaN(id)),
-    );
 
-    const data = items.map((item) => _.pick(item, properties));
+    // Get items
+    const items = await this.itemService.getAllByIds(itemIds);
+
+    // Map to CSV results
+    const data = itemIds.map((id) => {
+      const item = items.find((item) => item.id === id);
+      if (!item) {
+        return { name: 'Item not found!' } as any;
+      }
+      return _.pick(item, properties);
+    });
     if (properties.includes('classes')) {
       data.forEach((item) => {
-        item.classes = getClassesAsStrings(item.classes).join(', ') as any;
+        const classes = getClassesAsStrings(item.classes);
+        item.classes = classes ? classes.join(', ') : null;
       });
     }
     if (properties.includes('races')) {
       data.forEach((item) => {
-        item.races = getPlayableRacesAsStrings(item.races).join(', ') as any;
+        const races = getPlayableRacesAsStrings(item.races);
+        item.races = races ? races.join(', ') : null;
       });
     }
     return Papa.unparse(data, { delimiter: ';' });
