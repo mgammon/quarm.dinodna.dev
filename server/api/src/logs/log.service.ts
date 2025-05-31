@@ -1,13 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import {
-  And,
-  In,
-  LessThan,
-  LessThanOrEqual,
-  MoreThan,
-  MoreThanOrEqual,
-  Repository,
-} from 'typeorm';
+import { And, In, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Log, LogDto } from './log.entity';
 // import * as moment from 'moment';
@@ -19,6 +11,8 @@ import { FeedbackService } from '../feedback/feedback.service';
 @Injectable()
 export class LogService {
   private recentLogs: LogDto[] = [];
+
+  private recentRawLogs: string[] = [];
 
   constructor(
     @InjectRepository(Log) private logRepository: Repository<Log>,
@@ -72,18 +66,24 @@ export class LogService {
     });
   }
 
+  // Keep the last 50 logs so we can de-duplicate incoming logs
+  // This is mostly important for when one admin takes over reading for another admin
+  removeDuplicateRawLogs(rawLogs: string[]) {
+    const deduped = rawLogs.filter((rawLog) => !this.recentRawLogs.includes(rawLog));
+    rawLogs.push(...deduped);
+    while (rawLogs.length > 50) {
+      rawLogs.shift();
+    }
+    return deduped;
+  }
+
   async onLogs(rawLogs: string[]) {
-    const logsToAdd = rawLogs.map((rawText) => this.parseLog(rawText));
+    const logsToAdd = this.removeDuplicateRawLogs(rawLogs).map((rawText) => this.parseLog(rawText));
 
     const logs: Log[] = [];
     while (logsToAdd.length > 0) {
       const batch = logsToAdd.splice(0, 500);
-      const results = await this.logRepository
-        .createQueryBuilder()
-        .insert()
-        .values(batch)
-        .orIgnore()
-        .execute();
+      const results = await this.logRepository.createQueryBuilder().insert().values(batch).orIgnore().execute();
 
       const addedLogIds = results.identifiers.map((ids) => ids.id);
       const addedLogs = await this.logRepository.find({
@@ -139,18 +139,12 @@ export class LogService {
                         : null;
 
     // Get the player
-    const player =
-      channel === 'system' ? '[SYSTEM]' : rawText.split('] ')[1].split(' ')[0];
+    const player = channel === 'system' ? '[SYSTEM]' : rawText.split('] ')[1].split(' ')[0];
 
     // Get the text
-    const startOfText =
-      channel === 'system'
-        ? rawText.indexOf('[SYSTEM]') + '[SYSTEM]'.length
-        : rawText.indexOf(', ');
+    const startOfText = channel === 'system' ? rawText.indexOf('[SYSTEM]') + '[SYSTEM]'.length : rawText.indexOf(', ');
 
-    const text = rawText
-      .slice(startOfText + 1, rawText.length - 1)
-      .replace('`', "'");
+    const text = rawText.slice(startOfText + 1, rawText.length - 1).replace('`', "'");
 
     return { raw: rawText, player, text, channel, sentAt };
   }
@@ -163,9 +157,7 @@ export class LogService {
       text,
       sentAt,
       channel,
-      auctions: auctions
-        ? auctions.map((auction) => this.mapToAuctionDto(auction))
-        : [],
+      auctions: auctions ? auctions.map((auction) => this.mapToAuctionDto(auction)) : [],
     };
   }
 

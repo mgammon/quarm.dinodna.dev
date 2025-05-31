@@ -1,11 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { Character, InventorySlot } from './character.entity';
+import { IsNull, Not, Repository } from 'typeorm';
+import { Character, InventorySlot, Verification } from './character.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class CharacterService {
   constructor(
+    @InjectRepository(Verification)
+    private verificationRepository: Repository<Verification>,
     @InjectRepository(Character)
     private characterRepository: Repository<Character>,
     @InjectRepository(InventorySlot)
@@ -25,11 +27,7 @@ export class CharacterService {
     const inventory = character.inventory;
     character.inventory = undefined;
     const createdCharacter = await this.characterRepository.save(character);
-    const createdInventory = await this.createInventory(
-      createdCharacter.id,
-      apiKey,
-      inventory,
-    );
+    const createdInventory = await this.createInventory(createdCharacter.id, apiKey, inventory);
     createdCharacter.inventory = createdInventory;
     return this.mapToDto(createdCharacter, apiKey);
   }
@@ -38,20 +36,13 @@ export class CharacterService {
     // Check if inventory is too long, slots names are too long, or if IDs are set (except item IDs)
     if (
       inventory &&
-      (inventory.length > 2500 ||
-        inventory.some(
-          (i) => (i.slot && i.slot.length > 100) || !!i.characterId || !!i.id,
-        ))
+      (inventory.length > 2500 || inventory.some((i) => (i.slot && i.slot.length > 100) || !!i.characterId || !!i.id))
     ) {
       throw new BadRequestException();
     }
   }
 
-  async createInventory(
-    characterId: number,
-    apiKey: string,
-    inventory: InventorySlot[],
-  ) {
+  async createInventory(characterId: number, apiKey: string, inventory: InventorySlot[]) {
     const existsAndOwnedByApiKey = await this.characterRepository.exists({
       where: { id: characterId, apiKey },
     });
@@ -86,12 +77,7 @@ export class CharacterService {
     this.validateInventory(updates.inventory);
 
     // Never update id or apiKey or inventory
-    const {
-      id: _id,
-      apiKey: _apiKey,
-      inventory,
-      ...sanitizedUpdates
-    } = updates;
+    const { id: _id, apiKey: _apiKey, inventory, ...sanitizedUpdates } = updates;
     await this.characterRepository.update({ id }, { ...sanitizedUpdates });
     await this.createInventory(id, apiKey, inventory);
     const updated = await this.characterRepository.findOne({
@@ -115,6 +101,79 @@ export class CharacterService {
       relations: { inventory: true },
     });
     return characters.map((character) => this.mapToDto(character, apiKey));
+  }
+
+  async getVerificationCode(apiKey: string, isMuleRequest: boolean) {
+    const existingUnused = await this.verificationRepository.findOne({
+      where: { apiKey, name: IsNull() },
+    });
+    // Already have an existing unused verification code: return if it's good, or delete it if it's bad
+    if (existingUnused) {
+      const isExpired = existingUnused.createdAt.getTime() < Date.now() - 15 * 60_000;
+      if (isExpired) {
+        await this.verificationRepository.delete({ id: existingUnused.id });
+      } else {
+        return existingUnused.code;
+      }
+    }
+
+    // Create a new verification
+    const verification = await this.verificationRepository.save({
+      apiKey,
+      code: this.generateKey(),
+      isMule: isMuleRequest ? false : null,
+    });
+    console.log(verification);
+
+    return verification.code;
+  }
+
+  async verifyCharacter(code: string, name: string): Promise<Verification | undefined> {
+    // Check if the an unused code exists
+    const existingUnused = await this.verificationRepository.findOne({
+      where: { code, name: IsNull() },
+    });
+    if (!existingUnused) {
+      return;
+    }
+    // And check if it's expired
+    const isExpired = existingUnused.createdAt.getTime() < Date.now() - 15 * 60_000;
+    if (isExpired) {
+      return;
+    }
+
+    // Otherwise, verify it
+    existingUnused.name = name;
+    const verified = await this.verificationRepository.save(existingUnused);
+
+    return verified;
+  }
+
+  async getVerifiedCharacters(apiKey: string) {
+    const verifiedCharacters = await this.verificationRepository.find({
+      where: {
+        apiKey,
+        name: Not(IsNull()),
+      },
+    });
+
+    return verifiedCharacters.map((verifiedCharacter) => ({
+      name: verifiedCharacter.name,
+      isMule: verifiedCharacter.isMule,
+      updatedAt: verifiedCharacter.updatedAt,
+    }));
+  }
+
+  private generateKey(length = 8) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < length) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      counter += 1;
+    }
+    return result;
   }
 
   async deleteById(id: number, apiKey: string) {

@@ -4,20 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Auction, DailyAuction } from './auctions/auction.entity';
 import { ItemModule } from './items/item.module';
-import {
-  Item,
-  LootDrop,
-  LootDropEntry,
-  LootTable,
-  LootTableEntry,
-} from './items/item.entity';
-import {
-  MerchantEntry,
-  Npc,
-  Spawn,
-  SpawnEntry,
-  SpawnGroup,
-} from './npcs/npc.entity';
+import { Item, LootDrop, LootDropEntry, LootTable, LootTableEntry } from './items/item.entity';
+import { MerchantEntry, Npc, Spawn, SpawnEntry, SpawnGroup } from './npcs/npc.entity';
 import { NpcModule } from './npcs/npc.module';
 import { SpellNew } from './spells/spell-new.entity';
 import { SpellModule } from './spells/spell.module';
@@ -36,22 +24,19 @@ import { PlayerModule } from './player/player.module';
 import { SkillCap } from './player/skill-cap.entity';
 import { FeedbackModule } from './feedback/feedback.module';
 import { NpcSpellsEntry, NpcSpells } from './spells/npc-spells.entity';
-import { Character, InventorySlot } from './characters/character.entity';
+import { Character, InventorySlot, Verification } from './characters/character.entity';
 import { CharacterModule } from './characters/character.module';
 import { ItemTracker } from './item-trackers/item-tracker.entity';
 import { ItemTrackerModule } from './item-trackers/item-tracker.module';
 import { KeyValueModule } from './key-value/key-value-module';
 import { KeyValue } from './key-value/key-value';
 import { DatabaseUpdater } from './admin/database-updater';
+import { Admin } from './admin/admin.entity';
 
 // Fixes a dumb encoding issue trying to run a DB dump for an old-ass game
-const nodeModulesFolder = config.isProd
-  ? '/dist/node_modules/'
-  : '../node_modules';
+const nodeModulesFolder = config.isProd ? '/dist/node_modules/' : '../node_modules';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const encodingCharset = require(
-  `${nodeModulesFolder}/mysql2/lib/constants/encoding_charset`,
-);
+const encodingCharset = require(`${nodeModulesFolder}/mysql2/lib/constants/encoding_charset`);
 encodingCharset.utf8mb3 = 192;
 
 @Module({
@@ -89,9 +74,11 @@ encodingCharset.utf8mb3 = 192;
           database: config.mysql.database,
           entities: [
             // API Entities
+            Admin,
             Log,
             Auction,
             DailyAuction,
+            Verification,
             Character,
             InventorySlot,
             ItemTracker,

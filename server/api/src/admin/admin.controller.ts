@@ -1,25 +1,29 @@
-import { Controller, Param, Post, Headers } from '@nestjs/common';
+import { Controller, Param, Post, Headers, Get } from '@nestjs/common';
 import { AuctionService } from '../auctions/auction.service';
-import { validateIsAdmin } from '../utils';
+import { getApiKey } from '../utils';
 import { KeyValueService } from '../key-value/key-value.service';
+import { AdminService } from './admin.service';
 
 @Controller('api/admin')
 export class AdminController {
   constructor(
     private auctionService: AuctionService,
     private keyValueService: KeyValueService,
+    private adminService: AdminService,
   ) {}
 
   @Post(`/update-database`)
   public async updateDatabase(@Headers('Authorization') auth: string) {
-    validateIsAdmin(auth);
+    const apiKey = getApiKey(auth);
+    this.adminService.validateIsAdmin(apiKey);
     this.keyValueService.autoUpdate();
     return 'Updating';
   }
 
   @Post(`/update-auction-prices`)
   public async updateAuctionPrices(@Headers('Authorization') auth: string) {
-    validateIsAdmin(auth);
+    const apiKey = getApiKey(auth);
+    this.adminService.validateIsAdmin(apiKey);
     console.log('Updating item averages');
     await this.auctionService.updateAllAverages();
     console.log('Item averages updated');
@@ -32,7 +36,14 @@ export class AdminController {
     @Param('days') days: string,
     @Headers('Authorization') auth: string,
   ) {
-    validateIsAdmin(auth);
+    const apiKey = getApiKey(auth);
+    this.adminService.validateIsAdmin(apiKey);
     this.auctionService.rerunAuctionParsing(parseInt(days), matchingText);
+  }
+
+  @Get(`/permissions`)
+  public async getPermissions(@Headers('Authorization') auth: string) {
+    const apiKey = getApiKey(auth);
+    return this.adminService.getPermissions(apiKey);
   }
 }

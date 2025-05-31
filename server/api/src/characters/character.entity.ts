@@ -9,6 +9,30 @@ import {
   ManyToOne,
 } from 'typeorm';
 
+@Entity({ synchronize: true, name: 'verification' })
+export class Verification {
+  @PrimaryGeneratedColumn()
+  id?: number;
+
+  @Column({ length: 100 })
+  apiKey: string;
+
+  @Column()
+  code: string;
+
+  @Column({ length: 100, nullable: true })
+  name?: string;
+
+  @Column({ nullable: true })
+  isMule?: boolean;
+
+  @CreateDateColumn()
+  createdAt?: Date;
+
+  @UpdateDateColumn()
+  updatedAt?: Date;
+}
+
 @Entity({ synchronize: true, name: 'characters' })
 export class Character {
   @PrimaryGeneratedColumn()
