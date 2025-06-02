@@ -105,7 +105,7 @@ export class CharacterService {
 
   async getVerificationCode(apiKey: string, isMuleRequest: boolean) {
     const existingUnused = await this.verificationRepository.findOne({
-      where: { apiKey, name: IsNull() },
+      where: { apiKey, name: IsNull(), isMule: isMuleRequest ? false : null },
     });
     // Already have an existing unused verification code: return if it's good, or delete it if it's bad
     if (existingUnused) {
@@ -120,10 +120,9 @@ export class CharacterService {
     // Create a new verification
     const verification = await this.verificationRepository.save({
       apiKey,
-      code: this.generateKey(),
+      code: this.generateVerificationCode(),
       isMule: isMuleRequest ? false : null,
     });
-    console.log(verification);
 
     return verification.code;
   }
@@ -146,6 +145,12 @@ export class CharacterService {
     existingUnused.name = name;
     const verified = await this.verificationRepository.save(existingUnused);
 
+    // If we already verified this name, delete the other verifications.
+    await this.verificationRepository.delete({
+      name,
+      id: Not(verified.id),
+    });
+
     return verified;
   }
 
@@ -164,9 +169,13 @@ export class CharacterService {
     }));
   }
 
-  private generateKey(length = 8) {
+  private generateVerificationCode() {
+    return `${this.generateAlphaOnlyKey()} ${this.generateAlphaOnlyKey()} ${this.generateAlphaOnlyKey()} ${this.generateAlphaOnlyKey()}`;
+  }
+
+  private generateAlphaOnlyKey(length = 4) {
     let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const charactersLength = characters.length;
     let counter = 0;
     while (counter < length) {

@@ -91,7 +91,8 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
     // Try to verify the character
     const log = this.logService.parseLog(rawTell);
-    const verification = await this.characterService.verifyCharacter(log.text.trim().toUpperCase(), log.player);
+    const code = (log.text.includes("'") ? log.text.split("'")[1] : log.text).trim().toUpperCase(); // this is dumb, but log text has " '" at the start usually.
+    const verification = await this.characterService.verifyCharacter(code, log.player);
 
     // If it was verified, let them know
     if (verification) {
