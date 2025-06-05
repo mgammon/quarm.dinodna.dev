@@ -2,17 +2,17 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { And, In, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Log, LogDto } from './log.entity';
-// import * as moment from 'moment';
 import * as moment from 'moment-timezone';
 import { AuctionService } from '../auctions/auction.service';
 import { Auction, AuctionDto } from '../auctions/auction.entity';
 import { FeedbackService } from '../feedback/feedback.service';
+import { JobQueue, UniqueArray } from '../utils';
 
 @Injectable()
 export class LogService {
-  private recentLogs: LogDto[] = [];
-
-  private recentRawLogs: string[] = [];
+  private recentLogDtos = new UniqueArray<LogDto>(); // Used to cache requests for recent logs
+  private recentLogsProcessed = new UniqueArray<string>(); // Used to make sure we only process each line log once when it's sent from multiple log readers
+  public logQueue = new JobQueue();
 
   constructor(
     @InjectRepository(Log) private logRepository: Repository<Log>,
@@ -24,20 +24,18 @@ export class LogService {
   }
 
   async loadRecentLogs() {
-    while (this.recentLogs.length) {
-      this.recentLogs.shift();
-    }
+    this.recentLogDtos.splice(0);
     const logs = await this.logRepository.find({
       relations: { auctions: true },
       order: { sentAt: 'DESC' },
       take: 300,
     });
     const logDtos = logs.map((log) => this.mapToLogDto(log));
-    this.recentLogs.push(...logDtos);
+    this.recentLogDtos.push(...logDtos);
   }
 
   getLogs() {
-    return this.recentLogs;
+    return this.recentLogDtos;
   }
 
   getLogsBefore(before: number, size = 10) {
@@ -66,45 +64,40 @@ export class LogService {
     });
   }
 
-  // Keep the last 50 logs so we can de-duplicate incoming logs
-  // This is mostly important for when one admin takes over reading for another admin
-  removeDuplicateRawLogs(rawLogs: string[]) {
-    const deduped = rawLogs.filter((rawLog) => !this.recentRawLogs.includes(rawLog));
-    rawLogs.push(...deduped);
-    while (rawLogs.length > 50) {
-      rawLogs.shift();
-    }
-    return deduped;
+  // If this ever goes multi-threaded/multi-process I'll have to do a for real queue
+  async onLogs(receivedLogs: string[]) {
+    return new Promise<LogDto[]>((resolve) => {
+      this.logQueue.add(() => this.processLogs(receivedLogs), resolve);
+    });
   }
 
-  async onLogs(rawLogs: string[]) {
-    const logsToAdd = this.removeDuplicateRawLogs(rawLogs).map((rawText) => this.parseLog(rawText));
+  private async processLogs(receivedLogs: string[]) {
+    // Only try to process logs that we haven't already processed since we receive logs from lots of people
+    const logsNotYetProcessed = receivedLogs.filter((receivedLog) => !this.recentLogsProcessed.includes(receivedLog));
+    this.recentLogsProcessed.push(...logsNotYetProcessed);
 
-    const logs: Log[] = [];
-    while (logsToAdd.length > 0) {
-      const batch = logsToAdd.splice(0, 500);
+    const addedLogs: Log[] = [];
+    while (logsNotYetProcessed.length > 0) {
+      const batch = logsNotYetProcessed.splice(0, 500).map((log) => this.parseLog(log));
       const results = await this.logRepository.createQueryBuilder().insert().values(batch).orIgnore().execute();
 
       const addedLogIds = results.identifiers.map((ids) => ids.id);
-      const addedLogs = await this.logRepository.find({
+      const batchOfaddedLogs = await this.logRepository.find({
         where: { id: In(addedLogIds) },
       });
 
-      for (const log of addedLogs) {
+      for (const log of batchOfaddedLogs) {
         const auctions = await this.auctionService.addAuctions(log);
         log.auctions = auctions;
         this.feedbackService.sendEcChat(log.raw);
       }
-      logs.push(...addedLogs);
+      addedLogs.push(...batchOfaddedLogs);
     }
 
-    const logDtos = logs.map((log) => this.mapToLogDto(log));
-    this.recentLogs.push(...logDtos);
-    while (this.recentLogs.length > 300) {
-      this.recentLogs.shift();
-    }
+    const logDtos = addedLogs.map((log) => this.mapToLogDto(log));
+    this.recentLogDtos.push(...logDtos);
 
-    return logs.map((log) => this.mapToLogDto(log));
+    return logDtos;
   }
 
   // [Tue Jul 09 12:35:58 2024] Yaface auctions, 'WTB ur mom - PST'

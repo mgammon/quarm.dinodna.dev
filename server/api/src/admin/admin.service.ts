@@ -16,6 +16,11 @@ export class AdminService {
   public admins: Admin[] = [];
 
   async getAdmins() {
+    if (this.admins) {
+      for (const admin of this.admins) {
+        await this.adminRepository.save(admin); // save them before reloading (currently just for saving sentLogCount)
+      }
+    }
     this.admins = await this.adminRepository.find();
   }
 
@@ -35,4 +40,9 @@ export class AdminService {
       sendPublicLogs: this.canSendPublicLogs(apiKey),
     };
   };
+
+  addToSentLogCount(admin: Admin, increment: number) {
+    const sentLogCount = BigInt(admin.sentLogCount) + BigInt(increment);
+    admin.sentLogCount = sentLogCount.toString();
+  }
 }

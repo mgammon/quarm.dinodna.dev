@@ -12,7 +12,6 @@ import { Server, Socket } from 'socket.io';
 import { LogService } from '../logs/log.service';
 import { LocationService } from '../location/location.service';
 import { AdminService } from '../admin/admin.service';
-import { Admin } from '../admin/admin.entity';
 import { CharacterService } from '../characters/character.service';
 
 @WebSocketGateway({
@@ -27,9 +26,6 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   public usage: { [event: string]: number } = {};
   private apiKeys = new Set<string>();
-
-  private activeAdminSendingLogs?: Admin;
-  private lastLogAt = 0;
 
   public connectedSockets = 0;
   constructor(
@@ -91,7 +87,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
     // Try to verify the character
     const log = this.logService.parseLog(rawTell);
-    const code = (log.text.includes("'") ? log.text.split("'")[1] : log.text).trim().toUpperCase(); // this is dumb, but log text has " '" at the start usually.
+    const code = (log.text.includes("'") ? log.text.split("'")[1] : log.text).trim().toUpperCase(); // this is dumb, but log text has " '" at the start.
     const verification = await this.characterService.verifyCharacter(code, log.player);
 
     // If it was verified, let them know
@@ -109,37 +105,21 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       return;
     }
 
-    // If this person can't even send logs, we're done
+    // Check if they can send us logs
     const adminSendingLogs = this.adminService.admins.find((admin) => admin.apiKey === apiKey && admin.sendPublicLogs);
     if (!adminSendingLogs) {
       return;
     }
 
-    // Haven't received logs from an admin yet, so let this admin take over sending logs
-    if (!this.activeAdminSendingLogs) {
-      this.activeAdminSendingLogs = adminSendingLogs;
-    }
-
-    // Active admin hasn't sent any logs for one minute,
-    // Or this admin is a full admin the active admin isn't
-    // So let this admin take over sending logs
-    const activeAdminHasntSentLogsRecently = Date.now() - this.lastLogAt > 60_000;
-    const fullAdminWantsToSendLogsOverBasicAdmin = !this.activeAdminSendingLogs.isAdmin && adminSendingLogs.isAdmin;
-    if (activeAdminHasntSentLogsRecently || fullAdminWantsToSendLogsOverBasicAdmin) {
-      this.activeAdminSendingLogs = adminSendingLogs;
-    }
-
-    // If this admin is the active admin, let them send the logs
-    if (this.activeAdminSendingLogs.apiKey === adminSendingLogs.apiKey) {
-      this.lastLogAt = Date.now();
-      try {
-        const logs = await this.logService.onLogs([rawLog]);
-        if (logs.length) {
-          this.server.to('public').emit('logs', logs);
-        }
-      } catch (ex) {
-        console.log('Caught error trying to process logs', ex);
+    // Send the logs to be parsed and saved, then broadcast them to everyone on the public channel
+    try {
+      const logs = await this.logService.onLogs([rawLog]);
+      if (logs.length) {
+        this.server.to('public').emit('logs', logs);
       }
+      this.adminService.addToSentLogCount(adminSendingLogs, 1);
+    } catch (ex) {
+      console.log('Caught error trying to process logs', ex);
     }
   }
 

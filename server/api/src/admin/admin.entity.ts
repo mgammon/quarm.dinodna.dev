@@ -13,4 +13,7 @@ export class Admin {
 
   @Column()
   isAdmin: boolean;
+
+  @Column({ type: 'bigint' })
+  sentLogCount: string;
 }

@@ -7,11 +7,7 @@ import { LogController } from './log.controller';
 import { FeedbackModule } from '../feedback/feedback.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Log]),
-    forwardRef(() => AuctionModule),
-    FeedbackModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Log]), forwardRef(() => AuctionModule), FeedbackModule],
   controllers: [LogController],
   providers: [LogService],
   exports: [LogService],
