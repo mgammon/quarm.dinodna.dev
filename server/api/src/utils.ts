@@ -1,6 +1,22 @@
 import { And, Equal, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Not } from 'typeorm';
-import { config } from './config';
-import { ForbiddenException } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { User } from './user/user.entity';
+
+export const ApiUser = createParamDecorator((data: unknown, context: ExecutionContext) => {
+  return context.switchToHttp().getRequest().user;
+});
+
+export function requireUser(user: User) {
+  if (!user) {
+    throw new UnauthorizedException();
+  }
+}
+
+export function requireAdmin(user: User) {
+  if (!user || !user.isAdmin) {
+    throw new UnauthorizedException();
+  }
+}
 
 export function sanitizeSearch(search: string) {
   if (!search) {
@@ -95,23 +111,6 @@ export function compareNumber(comparableNumber: ComparableNumber, notZero = true
     return comparison;
   }
 }
-
-export const getApiKey = (authHeader: string) => {
-  if (!authHeader) {
-    return null;
-  }
-
-  const tokens = authHeader.split(/\s+/);
-  return tokens[1] || null;
-};
-
-export const validateIsAdmin = (authHeader: string) => {
-  const isAdmin = getApiKey(authHeader) === config.apiKey;
-  if (!isAdmin) {
-    console.log(getApiKey(authHeader));
-    throw new ForbiddenException();
-  }
-};
 
 export enum Duration {
   Minute = 60_000,

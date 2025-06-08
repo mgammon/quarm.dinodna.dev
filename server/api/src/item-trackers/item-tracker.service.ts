@@ -11,9 +11,9 @@ export class ItemTrackerService {
     private itemTrackerRepository: Repository<ItemTracker>,
   ) {}
 
-  async create(itemTrackerDto: ItemTrackerDto, apiKey: string) {
+  async create(itemTrackerDto: ItemTrackerDto, userId: number) {
     // Check if they have too many itemTrackers
-    const count = await this.itemTrackerRepository.countBy({ apiKey });
+    const count = await this.itemTrackerRepository.countBy({ userId });
     if (count > 500) {
       throw new BadRequestException();
     }
@@ -21,7 +21,7 @@ export class ItemTrackerService {
     // Create it
     const { itemId, wts, price, requirePrice } = itemTrackerDto;
     const { id } = await this.itemTrackerRepository.save({
-      apiKey,
+      userId,
       itemId,
       wts,
       requirePrice,
@@ -38,12 +38,12 @@ export class ItemTrackerService {
     return this.mapToDto(createdItemTracker);
   }
 
-  async update(id: number, apiKey: string, itemTrackerDto: ItemTrackerDto) {
+  async update(id: number, userId: number, itemTrackerDto: ItemTrackerDto) {
     // Make sure we can update it
-    const existsAndOwnedByApiKey = await this.itemTrackerRepository.exists({
-      where: { id, apiKey },
+    const existsAndOwnedByUser = await this.itemTrackerRepository.exists({
+      where: { id, userId },
     });
-    if (!existsAndOwnedByApiKey) {
+    if (!existsAndOwnedByUser) {
       throw new BadRequestException('Not found');
     }
 
@@ -52,7 +52,7 @@ export class ItemTrackerService {
     await this.itemTrackerRepository.update(
       { id },
       {
-        apiKey,
+        userId,
         itemId,
         wts,
         requirePrice,
@@ -69,22 +69,22 @@ export class ItemTrackerService {
     return this.mapToDto(updated);
   }
 
-  async getByApiKey(apiKey: string) {
+  async getByUserId(userId: number) {
     const itemTrackers = await this.itemTrackerRepository.find({
-      where: { apiKey },
+      where: { userId },
       relations: { item: true },
     });
     return itemTrackers.map((itemTracker) => this.mapToDto(itemTracker));
   }
 
-  async deleteById(id: number, apiKey: string) {
-    const existsAndOwnedByApiKey = await this.itemTrackerRepository.exists({
-      where: { id, apiKey },
+  async deleteById(id: number, userId: number) {
+    const existsAndOwnedByUser = await this.itemTrackerRepository.exists({
+      where: { id, userId },
     });
-    if (!existsAndOwnedByApiKey) {
+    if (!existsAndOwnedByUser) {
       throw new BadRequestException('Not found');
     }
-    await this.itemTrackerRepository.delete({ id, apiKey });
+    await this.itemTrackerRepository.delete({ id, userId });
   }
 
   mapToDto(itemTracker: ItemTracker): ItemTrackerDto {

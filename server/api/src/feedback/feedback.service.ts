@@ -18,7 +18,7 @@ export class FeedbackService {
     url: config.discord.generalWebhook,
   });
 
-  private lastSendAtMap = new Map<string, number>();
+  private lastSendAtMap = new Map<number, number>();
 
   private noRecentEcChatTimeout?: NodeJS.Timeout;
   private ecChatIsUp = true;
@@ -44,37 +44,28 @@ export class FeedbackService {
     clearTimeout(this.noRecentEcChatTimeout);
     this.noRecentEcChatTimeout = setTimeout(() => {
       this.webhookGeneralClient.send({
-        content:
-          'Mule is DOWN: No chat messages received in the last 15 minutes',
+        content: 'Mule is DOWN: No chat messages received in the last 15 minutes',
       });
       this.ecChatIsUp = false;
     }, 60_000 * 15);
   }
 
-  sendFeedback(apiKey: string, feedback: Feedback) {
+  sendFeedback(userId: number, feedback: Feedback) {
     // Check if they already sent a message recently
-    const lastSentAt = this.lastSendAtMap.get(apiKey);
-    const recentlySent =
-      lastSentAt &&
-      lastSentAt > moment().subtract(15, 'seconds').toDate().getTime();
+    const lastSentAt = this.lastSendAtMap.get(userId);
+    const recentlySent = lastSentAt && lastSentAt > moment().subtract(15, 'seconds').toDate().getTime();
     if (recentlySent) {
       return;
     }
-    this.lastSendAtMap.set(apiKey, Date.now());
+    this.lastSendAtMap.set(userId, Date.now());
 
-    // Trim the inputs down if they're ridiculously long
-    if (apiKey.length > 100) {
-      apiKey = apiKey.slice(0, 100);
-    }
     if (feedback.message.length > 10_000) {
       feedback.message = feedback.message.slice(0, 10_000);
     }
     if (feedback.name.length > 100) {
       feedback.name = feedback.name.slice(0, 100);
     }
-    const content = `**From**: ${
-      feedback.name || 'Blank'
-    } (${apiKey})\n**Message**: ${feedback.message}
+    const content = `**From**: ${feedback.name || 'Blank'} (${userId})\n**Message**: ${feedback.message}
     `;
 
     // Send

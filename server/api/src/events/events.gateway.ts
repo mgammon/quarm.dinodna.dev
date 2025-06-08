@@ -11,8 +11,8 @@ import {
 import { Server, Socket } from 'socket.io';
 import { LogService } from '../logs/log.service';
 import { LocationService } from '../location/location.service';
-import { AdminService } from '../admin/admin.service';
 import { CharacterService } from '../characters/character.service';
+import { UserService } from '../user/user.service';
 
 @WebSocketGateway({
   cors: {
@@ -26,12 +26,13 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   public usage: { [event: string]: number } = {};
   private apiKeys = new Set<string>();
+  private sentLogCounts = new Map<string, number>();
 
   public connectedSockets = 0;
   constructor(
     private logService: LogService,
     private locationService: LocationService,
-    private adminService: AdminService,
+    private userService: UserService,
     private characterService: CharacterService,
   ) {
     setInterval(() => {
@@ -41,6 +42,15 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         } unique API keys`,
       );
       console.log(JSON.stringify(this.usage, null, 2));
+      console.log(
+        JSON.stringify(
+          Array.from(this.sentLogCounts.entries()).map(
+            ([user, sentLogCount]) => `$User ${user} - ${sentLogCount} sent logs`,
+          ),
+          null,
+          2,
+        ),
+      );
     }, 60_000 * 10);
   }
 
@@ -70,8 +80,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     }
   }
 
-  // Handles incoming logs from the auction log reader
-  // Adds the logs/auctions to DB, then sends them out to the public room
+  // Handles incoming /tells to admins
   @SubscribeMessage('tells')
   async handleReceivedTellEvents(@MessageBody() rawTell: any, @ConnectedSocket() socket: any) {
     const apiKey = socket.handshake?.auth?.key;
@@ -79,9 +88,9 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       return;
     }
 
-    // If this person can't receive tells, we're done
-    const adminSendingLogs = this.adminService.admins.find((admin) => admin.apiKey === apiKey && admin.isAdmin);
-    if (!adminSendingLogs) {
+    // If this person isn't an admin, we're done
+    const isAdmin = await this.userService.isAdmin(apiKey);
+    if (!isAdmin) {
       return;
     }
 
@@ -106,8 +115,8 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     }
 
     // Check if they can send us logs
-    const adminSendingLogs = this.adminService.admins.find((admin) => admin.apiKey === apiKey && admin.sendPublicLogs);
-    if (!adminSendingLogs) {
+    const canSendPublicLogs = await this.userService.canSendPublicLogs(apiKey);
+    if (!canSendPublicLogs) {
       return;
     }
 
@@ -117,7 +126,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       if (logs.length) {
         this.server.to('public').emit('logs', logs);
       }
-      this.adminService.addToSentLogCount(adminSendingLogs, 1);
+      this.sentLogCounts.set(apiKey, (this.sentLogCounts.get(apiKey) || 0) + 1);
     } catch (ex) {
       console.log('Caught error trying to process logs', ex);
     }
@@ -140,6 +149,23 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     }
     const location = this.locationService.onLocation(message.logs, message.character, apiKey);
     this.server.to(apiKey).emit('location', location);
+  }
+
+  // Handles incoming location logs from the log reader
+  // Adds the logs/auctions to DB, then sends them out to the public room
+  @SubscribeMessage('online')
+  async handleOnlinePing(@MessageBody() characterName: string, @ConnectedSocket() socket: any) {
+    const apiKey = socket.handshake?.auth?.app;
+    if (!apiKey) {
+      return;
+    }
+
+    const user = await this.userService.getUserFromApiKey(apiKey);
+    const changedOnlineStatus = await this.characterService.setLastOnlineAt(user.id, characterName);
+
+    if (changedOnlineStatus) {
+      // idk, maybe we broadcast this at some point, like if someone is selling something and they wanna know when they go back online
+    }
   }
 
   @SubscribeMessage('logReaderStart')

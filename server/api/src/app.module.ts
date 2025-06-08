@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Module, NestInterceptor } from '@nestjs/common';
 import { Log } from './logs/log.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -31,7 +31,10 @@ import { ItemTrackerModule } from './item-trackers/item-tracker.module';
 import { KeyValueModule } from './key-value/key-value-module';
 import { KeyValue } from './key-value/key-value';
 import { DatabaseUpdater } from './admin/database-updater';
-import { Admin } from './admin/admin.entity';
+import { UserModule } from './user/user.module';
+import { User } from './user/user.entity';
+import { UserService } from './user/user.service';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 // Fixes a dumb encoding issue trying to run a DB dump for an old-ass game
 const nodeModulesFolder = config.isProd ? '/dist/node_modules/' : '../node_modules';
@@ -39,7 +42,44 @@ const nodeModulesFolder = config.isProd ? '/dist/node_modules/' : '../node_modul
 const encodingCharset = require(`${nodeModulesFolder}/mysql2/lib/constants/encoding_charset`);
 encodingCharset.utf8mb3 = 192;
 
+//TODO: Migrate apiKey to userId!!!!
+//TODO: Migrate apiKey to userId!!!!
+//TODO: Migrate apiKey to userId!!!!
+//TODO: Migrate apiKey to userId!!!!
+//TODO: Migrate apiKey to userId!!!!
+//TODO: Migrate apiKey to userId!!!!
+//TODO: Migrate apiKey to userId!!!!
+
+@Injectable()
+export class GetUserInterceptor implements NestInterceptor {
+  constructor(private readonly userService: UserService) {}
+
+  async intercept(context: ExecutionContext, handler: CallHandler) {
+    try {
+      const apiKey: string | null = context.getArgs()[0]?.headers?.authorization?.split(' ')[1];
+      if (!apiKey) {
+        return handler.handle();
+      }
+      const user = this.userService.getUserFromApiKey(apiKey);
+      if (!user) {
+        return handler.handle();
+      }
+      const request = context.switchToHttp().getRequest();
+      request.user = user;
+    } catch (error) {
+      console.log('Error', error);
+    }
+    return handler.handle();
+  }
+}
+
 @Module({
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: GetUserInterceptor,
+    },
+  ],
   imports: [
     LocationModule,
     LogModule,
@@ -49,6 +89,7 @@ encodingCharset.utf8mb3 = 192;
     ZoneModule,
     EventsModule,
     AdminModule,
+    UserModule,
     PlayerModule,
     FeedbackModule,
     CharacterModule,
@@ -74,7 +115,6 @@ encodingCharset.utf8mb3 = 192;
           database: config.mysql.database,
           entities: [
             // API Entities
-            Admin,
             Log,
             Auction,
             DailyAuction,
@@ -83,6 +123,7 @@ encodingCharset.utf8mb3 = 192;
             InventorySlot,
             ItemTracker,
             KeyValue,
+            User,
             // Quarm Entities
             Item,
             SpellNew,

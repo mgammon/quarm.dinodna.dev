@@ -1,80 +1,92 @@
-import { Body, Controller, Get, Param, Post, Patch, Headers, BadRequestException, Delete, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Patch, BadRequestException, Delete, Query, Request } from '@nestjs/common';
+import * as rawbody from 'raw-body';
 import { CharacterService } from './character.service';
-import { getApiKey } from '../utils';
+import { ApiUser, requireUser } from '../utils';
 import { Character } from './character.entity';
+import { User } from '../user/user.entity';
+import { parseZealInventoryFile } from './zeal-inventory-file-parser';
+import { Readable } from 'stream';
 
 @Controller('api/characters')
 export class CharacterController {
   constructor(private characterService: CharacterService) {}
 
-  @Get('/verification-code')
-  getVerificationCode(@Query('isMule') isMuleRequest: string, @Headers('Authorization') auth: string) {
-    const apiKey = getApiKey(auth);
-    if (!apiKey) {
+  @Post('/inventory/:characterName')
+  async uploadInventoryFile(
+    @Request() req: Readable,
+    @Param('characterName') characterName: string,
+    @ApiUser() user: User,
+  ) {
+    requireUser(user);
+
+    if (!req.readable) {
       throw new BadRequestException();
     }
-    return this.characterService.getVerificationCode(apiKey, isMuleRequest === 'true');
+
+    const fileText = (await rawbody(req)).toString().trim();
+    const parsed = parseZealInventoryFile(fileText);
+    if (!parsed) {
+      return null;
+    }
+
+    const firstLetter = characterName.slice(0, 1).toUpperCase();
+    const rest = characterName.slice(1).toLowerCase();
+
+    const { inventory, slots } = parsed;
+    return this.characterService.createOrUpdate(user.id, { name: firstLetter + rest, inventory, slots });
+  }
+
+  @Get('/verification-code')
+  getVerificationCode(@Query('isMule') isMuleRequest: string, @ApiUser() user: User) {
+    requireUser(user);
+    return this.characterService.getVerificationCode(user.id, isMuleRequest === 'true');
   }
 
   @Get('/verified')
-  getVerifiedCharacters(@Headers('Authorization') auth: string) {
-    const apiKey = getApiKey(auth);
-    if (!apiKey) {
-      throw new BadRequestException();
-    }
-    return this.characterService.getVerifiedCharacters(apiKey);
+  getVerifiedCharacters(@ApiUser() user: User) {
+    requireUser(user);
+    return this.characterService.getVerifiedCharacters(user.id);
   }
 
   @Get('/:id')
-  getById(@Param('id') id: string, @Headers('Authorization') auth: string) {
-    const apiKey = getApiKey(auth);
+  getById(@Param('id') id: string, @ApiUser() user: User) {
+    requireUser(user);
     const characterId = Number.parseInt(id);
-    if (Number.isNaN(characterId) || !apiKey) {
+    if (Number.isNaN(characterId)) {
       throw new BadRequestException();
     }
-    return this.characterService.getById(characterId, apiKey);
+    return this.characterService.getById(characterId, user.id);
   }
 
   @Get('/')
-  getByApiKey(@Headers('Authorization') auth: string) {
-    const apiKey = getApiKey(auth);
-    if (!apiKey) {
-      throw new BadRequestException();
-    }
-    return this.characterService.getByApiKey(apiKey);
+  getByApiKey(@ApiUser() user: User) {
+    requireUser(user);
+    return this.characterService.getByUserId(user.id);
   }
 
   @Post('/')
-  createCharacter(@Body() character: Character, @Headers('Authorization') auth: string) {
-    const apiKey = getApiKey(auth);
-    if (!apiKey) {
-      throw new BadRequestException();
-    }
-    return this.characterService.create(character, apiKey);
+  createCharacter(@Body() character: Partial<Character>, @ApiUser() user: User) {
+    requireUser(user);
+    return this.characterService.createOrUpdate(user.id, character);
   }
 
   @Patch('/:id')
-  updateCharacter(
-    @Param('id') id: string,
-    @Body() character: Partial<Character>,
-    @Headers('Authorization') auth: string,
-  ) {
-    const apiKey = getApiKey(auth);
-    const characterId = Number.parseInt(id);
-    if (Number.isNaN(characterId) || !apiKey) {
+  updateCharacter(@Param('id') id: string, @Body() character: Partial<Character>, @ApiUser() user: User) {
+    requireUser(user);
+    if (Number.isNaN(character.id)) {
       throw new BadRequestException();
     }
 
-    return this.characterService.update(characterId, apiKey, character);
+    return this.characterService.createOrUpdate(user.id, character);
   }
 
   @Delete('/:id')
-  deleteById(@Param('id') id: string, @Headers('Authorization') auth: string) {
-    const apiKey = getApiKey(auth);
+  deleteById(@Param('id') id: string, @ApiUser() user: User) {
+    requireUser(user);
     const characterId = Number.parseInt(id);
-    if (Number.isNaN(characterId) || !apiKey) {
+    if (Number.isNaN(characterId)) {
       throw new BadRequestException();
     }
-    return this.characterService.deleteById(characterId, apiKey);
+    return this.characterService.deleteById(characterId, user.id);
   }
 }

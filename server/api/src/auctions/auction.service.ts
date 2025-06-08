@@ -1,14 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import {
-  And,
-  ILike,
-  In,
-  LessThan,
-  LessThanOrEqual,
-  MoreThan,
-  MoreThanOrEqual,
-  Repository,
-} from 'typeorm';
+import { And, ILike, In, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import { Auction, AuctionSummary, DailyAuction } from './auction.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuctionParser } from './auction-parser.service';
@@ -58,42 +49,27 @@ export class AuctionService {
     });
 
     // If there's an existing auction and it's the same price, no changes.
-    if (
-      existingDailyAuction &&
-      existingDailyAuction.price === dailyAuction.price
-    ) {
+    if (existingDailyAuction && existingDailyAuction.price === dailyAuction.price) {
       return;
     }
 
-    if (
-      existingDailyAuction &&
-      dailyAuction.price !== existingDailyAuction.price
-    ) {
+    if (existingDailyAuction && dailyAuction.price !== existingDailyAuction.price) {
       // If a daily auction for this key exists, update it
-      await this.dailyAuctionRepository.update(
-        { id: existingDailyAuction.id },
-        dailyAuction,
-      );
+      await this.dailyAuctionRepository.update({ id: existingDailyAuction.id }, dailyAuction);
     } else if (!existingDailyAuction) {
       // Otherwise, insert it
       await this.dailyAuctionRepository.insert(dailyAuction);
     }
 
     // Update the averages for the item, too
-    await this.itemRepository.update(
-      { id: dailyAuction.itemId },
-      await this.getAverages(dailyAuction.itemId),
-    );
+    await this.itemRepository.update({ id: dailyAuction.itemId }, await this.getAverages(dailyAuction.itemId));
   }
 
   getDailyAuctions(itemId: number, startDate: Date, endDate?: Date) {
     return this.dailyAuctionRepository.find({
       where: {
         itemId,
-        sentAt: And(
-          MoreThanOrEqual(startDate),
-          LessThanOrEqual(endDate || new Date()),
-        ),
+        sentAt: And(MoreThanOrEqual(startDate), LessThanOrEqual(endDate || new Date())),
         log: { dailyAuctions: { itemId: MoreThanOrEqual(0) } },
       },
       relations: { log: { dailyAuctions: true } },
@@ -123,10 +99,7 @@ export class AuctionService {
     const stats = await this.getStats(itemId, days);
     const maxPrice = stats.average * 7 || 0;
     const minPrice = stats.average / 7 || 0;
-    const priceFilter =
-      maxPrice && minPrice
-        ? ` AND price >= ${minPrice} AND price <= ${maxPrice} `
-        : '';
+    const priceFilter = maxPrice && minPrice ? ` AND price >= ${minPrice} AND price <= ${maxPrice} ` : '';
     const results: AuctionSummary[] = await this.dailyAuctionRepository.query(
       `
     SELECT DATE(sentAt) as date, MIN(price) as min, MAX(price) as max, AVG(price) as average, COUNT(*) as count, wts
@@ -145,9 +118,8 @@ export class AuctionService {
   async getAverage(itemId: number, days: number) {
     // Maybe improved.  Grouping by player so if someone is trying to sell
     // at an unrealistic price for multiple days, it won't skew the average too much
-    const dailyAuctions: DailyAuction[] =
-      await this.dailyAuctionRepository.query(
-        `
+    const dailyAuctions: DailyAuction[] = await this.dailyAuctionRepository.query(
+      `
       SELECT MIN(price) as price 
       FROM daily_auctions
       WHERE itemId = ?
@@ -155,13 +127,10 @@ export class AuctionService {
         AND sentAt > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL ? DAY )
       GROUP BY player, itemId
       `,
-        [itemId, days],
-      );
-
-    return (
-      this.getAverageFromPrices(dailyAuctions.map((auction) => auction.price)) *
-        1000 || 0
+      [itemId, days],
     );
+
+    return this.getAverageFromPrices(dailyAuctions.map((auction) => auction.price)) * 1000 || 0;
   }
 
   async getAverages(itemId: number) {
@@ -174,8 +143,7 @@ export class AuctionService {
   getAverageFromPrices(prices: number[]) {
     const pricesExcludingOutliers = this.removeOutliersByFactor(prices);
     const average = Math.round(
-      pricesExcludingOutliers.reduce((sum, price) => price + sum, 0) /
-        pricesExcludingOutliers.length,
+      pricesExcludingOutliers.reduce((sum, price) => price + sum, 0) / pricesExcludingOutliers.length,
     );
 
     // Round the number
@@ -214,8 +182,7 @@ export class AuctionService {
     const prices = auctions.map((auction) => auction.price);
     const pricesExcludingOutliers = this.removeOutliersByFactor(prices);
     let average = Math.round(
-      pricesExcludingOutliers.reduce((sum, price) => price + sum, 0) /
-        pricesExcludingOutliers.length,
+      pricesExcludingOutliers.reduce((sum, price) => price + sum, 0) / pricesExcludingOutliers.length,
     );
 
     // Round the number
@@ -240,10 +207,7 @@ export class AuctionService {
       return numbers;
     }
     numbers.sort((a, b) => a - b);
-    const median =
-      (numbers[Math.floor(numbers.length / 2)] +
-        numbers[Math.ceil(numbers.length / 2)]) /
-      2;
+    const median = (numbers[Math.floor(numbers.length / 2)] + numbers[Math.ceil(numbers.length / 2)]) / 2;
     const maxValue = median * factor;
     const minValue = median / factor;
 
@@ -277,22 +241,15 @@ export class AuctionService {
 
   async updateAllAverages() {
     const itemIds: number[] = (
-      await this.dailyAuctionRepository.query(
-        `SELECT itemId FROM daily_auctions GROUP BY itemId`,
-      )
+      await this.dailyAuctionRepository.query(`SELECT itemId FROM daily_auctions GROUP BY itemId`)
     ).map((result) => result.itemId);
     for (const itemId of itemIds) {
-      this.itemRepository.update(
-        { id: itemId },
-        await this.getAverages(itemId),
-      );
+      this.itemRepository.update({ id: itemId }, await this.getAverages(itemId));
     }
   }
 
   mapToDailyAuction(auction: Auction): DailyAuction {
-    const key = `${auction.player}.${auction.itemId}.${moment(
-      auction.sentAt,
-    ).format('YYYY-MM-DD')}`;
+    const key = `${auction.player}.${auction.itemId}.${moment(auction.sentAt).format('YYYY-MM-DD')}`;
 
     const { logId, itemText, itemId, player, price, wts, sentAt } = auction;
 
@@ -337,11 +294,7 @@ export class AuctionService {
       // Keep track of what log page we're on
       logsRerun += logs.length;
       hasMoreLogs = logs.length === PAGE_SIZE;
-      console.log(
-        `Reran auction parsing for ${logsRerun} logs so far (${Math.round(
-          (logsRerun / logCount) * 100,
-        )}%)`,
-      );
+      console.log(`Reran auction parsing for ${logsRerun} logs so far (${Math.round((logsRerun / logCount) * 100)}%)`);
     }
 
     // Reset recent logs, clear auction logs

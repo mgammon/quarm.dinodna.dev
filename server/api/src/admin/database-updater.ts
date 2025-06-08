@@ -30,18 +30,12 @@ export class DatabaseUpdater {
     rmSync('db-update.sql', { force: true });
     writeFileSync('db-update.sql', sql);
     const fullFilePath = path.resolve('db-update.sql');
-    console.log(
-      'db-update.sql is available in the API base folder:',
-      fullFilePath,
-    );
+    console.log('db-update.sql is available in the API base folder:', fullFilePath);
   }
 
   // Checks if we have quarm data.  If not, downloads the DB dump and runs it, with some changes
   // Creates a TypeOrm datasource outside the app's typeorm module to do this beeefore we initialize our entities
-  public async initializeQuarmData(
-    forceUpdate: boolean = false,
-      dumpUrl?: string,
-  ) {
+  public async initializeQuarmData(forceUpdate: boolean = false, dumpUrl?: string) {
     // Create our data source and query runner
     const appDataSource = await new DataSource({
       type: 'mysql',
@@ -85,8 +79,7 @@ export class DatabaseUpdater {
   // Download the DB dump, extract the files
   private async getSqlForUpdate(dumpUrl?: string) {
     console.log('Downloading DB dump...');
-    const url =
-      dumpUrl || (await DatabaseUpdater.getMostRecentQuarmDump()).download_url;
+    const url = dumpUrl || (await DatabaseUpdater.getMostRecentQuarmDump()).download_url;
     const response = await axios.get<Stream>(url, { responseType: 'stream' });
 
     console.log('Extracting SQL...');
@@ -239,9 +232,7 @@ const changeEngineToInnoDB = (sql: string) => {
     .match(/CREATE TABLE `\w+`*/g)
     .map((match) => match.replace('CREATE TABLE ', '').replaceAll('`', ''));
   console.log(JSON.stringify(tables, null, 2));
-  return tables
-    .map((table) => `ALTER TABLE ${table} ENGINE=InnoDB;`)
-    .join('\n');
+  return tables.map((table) => `ALTER TABLE ${table} ENGINE=InnoDB;`).join('\n');
 };
 
 // should this be made using a migration or at least orm functions?  yeee.  did i?  nah.

@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Item } from '../items/item.entity';
 import { ComparableNumber } from '../utils';
+import { User } from '../user/user.entity';
 
 export interface ItemTrackerDto {
   id?: number;
@@ -25,7 +26,10 @@ export class ItemTracker {
   id?: number;
 
   @Column()
-  apiKey: string;
+  userId: number;
+
+  @Column()
+  apiKey: string; // deprecated for userId TODO: get rid of apiKey once everyone is moved over to users
 
   @Column({ nullable: true })
   itemId: number;
@@ -53,4 +57,8 @@ export class ItemTracker {
   })
   @JoinColumn({ name: 'itemId', referencedColumnName: 'id' })
   item?: Item;
+
+  @ManyToOne(() => User, (user) => user.itemTrackers)
+  @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+  user: User;
 }

@@ -4,62 +4,50 @@ import {
   Get,
   Param,
   Post,
-  Headers,
   BadRequestException,
   Delete,
   Put,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { getApiKey } from '../utils';
 import { ItemTrackerDto } from './item-tracker.entity';
 import { ItemTrackerService } from './item-tracker.service';
+import { User } from '../user/user.entity';
+import { ApiUser, requireUser } from '../utils';
 
 @Controller('api/item-trackers')
 export class ItemTrackerController {
   constructor(private itemTrackerService: ItemTrackerService) {}
 
   @Get('/')
-  getByApiKey(@Headers('Authorization') auth: string) {
-    const apiKey = getApiKey(auth);
-    if (!apiKey) {
-      throw new BadRequestException();
-    }
-    return this.itemTrackerService.getByApiKey(apiKey);
+  getAll(@ApiUser() user: User) {
+    requireUser(user);
+    return this.itemTrackerService.getByUserId(user.id);
   }
 
   @Post('/')
-  create(
-    @Body() itemTracker: ItemTrackerDto,
-    @Headers('Authorization') auth: string,
-  ) {
-    const apiKey = getApiKey(auth);
-    if (!apiKey) {
-      throw new BadRequestException();
-    }
-    return this.itemTrackerService.create(itemTracker, apiKey);
+  async create(@Body() itemTracker: ItemTrackerDto, @ApiUser() user: User) {
+    requireUser(user);
+    return this.itemTrackerService.create(itemTracker, user.id);
   }
 
   @Put('/:id')
-  update(
-    @Param('id') id: string,
-    @Body() itemTracker: ItemTrackerDto,
-    @Headers('Authorization') auth: string,
-  ) {
-    const apiKey = getApiKey(auth);
+  update(@Param('id') id: string, @Body() itemTracker: ItemTrackerDto, @ApiUser() user: User) {
+    requireUser(user);
     const itemTrackerId = Number.parseInt(id);
-    if (Number.isNaN(itemTrackerId) || !apiKey) {
+    if (Number.isNaN(itemTrackerId)) {
       throw new BadRequestException();
     }
 
-    return this.itemTrackerService.update(itemTrackerId, apiKey, itemTracker);
+    return this.itemTrackerService.update(itemTrackerId, user.id, itemTracker);
   }
 
   @Delete('/:id')
-  deleteById(@Param('id') id: string, @Headers('Authorization') auth: string) {
-    const apiKey = getApiKey(auth);
+  deleteById(@Param('id') id: string, @ApiUser() user: User) {
+    requireUser(user);
     const itemTrackerId = Number.parseInt(id);
-    if (Number.isNaN(itemTrackerId) || !apiKey) {
+    if (Number.isNaN(itemTrackerId)) {
       throw new BadRequestException();
     }
-    return this.itemTrackerService.deleteById(itemTrackerId, apiKey);
+    return this.itemTrackerService.deleteById(itemTrackerId, user.id);
   }
 }

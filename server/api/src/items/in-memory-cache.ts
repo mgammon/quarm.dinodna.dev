@@ -11,17 +11,10 @@ class InMemoryLruCache {
 
   private stats = { hits: 0, misses: 0, expired: 0, evicted: 0, cleared: 0 };
 
-  constructor(private maxSize: number = 10_000) {
-    console.log(
-      'Cache stats;',
-      JSON.stringify({ ...this.stats, size: this.cache.size }, null, 2),
-    );
+  constructor(private maxSize: number = 20_000) {
+    console.log('Cache stats;', JSON.stringify({ ...this.stats, size: this.cache.size }, null, 2));
     setInterval(
-      () =>
-        console.log(
-          'Cache stats;',
-          JSON.stringify({ ...this.stats, size: this.cache.size }, null, 2),
-        ),
+      () => console.log('Cache stats;', JSON.stringify({ ...this.stats, size: this.cache.size }, null, 2)),
       60_000 * 30,
     );
   }
@@ -29,8 +22,7 @@ class InMemoryLruCache {
   private get<T>(key: any, duration?: number): T | undefined {
     const DURATION = duration || this.CACHE_DURATION;
     const cachedItem = this.cache.get(key);
-    const hasExpired =
-      cachedItem && cachedItem.cachedAt < Date.now() - DURATION;
+    const hasExpired = cachedItem && cachedItem.cachedAt < Date.now() - DURATION;
 
     // Cache hit, and it's not expired
     if (cachedItem && !hasExpired) {
@@ -71,9 +63,7 @@ class InMemoryLruCache {
   }
 
   clear(partialKey: string) {
-    const keysToDelete = Array.from(this.cache.keys()).filter((key) =>
-      (key.toString() as string).includes(partialKey),
-    );
+    const keysToDelete = Array.from(this.cache.keys()).filter((key) => (key.toString() as string).includes(partialKey));
     keysToDelete.forEach((key) => this.cache.delete(key));
     this.stats.cleared += keysToDelete.length;
   }
@@ -81,12 +71,7 @@ class InMemoryLruCache {
 
 // not nestified, but whatever, for now.
 const inMemoryCache = new InMemoryLruCache();
-export function cache<T>(
-  topic: string,
-  key: any,
-  retrieve: () => Promise<T>,
-  duration?: number,
-) {
+export function cache<T>(topic: string, key: any, retrieve: () => Promise<T>, duration?: number) {
   return inMemoryCache.cached<T>(topic + key, retrieve, duration);
 }
 

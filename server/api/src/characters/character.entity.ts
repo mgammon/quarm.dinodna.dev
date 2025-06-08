@@ -8,14 +8,18 @@ import {
   JoinColumn,
   ManyToOne,
 } from 'typeorm';
+import { User } from '../user/user.entity';
 
-@Entity({ synchronize: true, name: 'verification' })
+@Entity({ synchronize: true, name: 'verification_codes' })
 export class Verification {
   @PrimaryGeneratedColumn()
   id?: number;
 
-  @Column({ length: 100 })
-  apiKey: string;
+  @Column()
+  userId: number;
+
+  @Column({ length: 100, nullable: true })
+  apiKey?: string; // deprecated for userId TODO: get rid of apiKey once everyone is moved over to users
 
   @Column()
   code: string;
@@ -31,6 +35,10 @@ export class Verification {
 
   @UpdateDateColumn()
   updatedAt?: Date;
+
+  @ManyToOne(() => User, (user) => user.verifications)
+  @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+  user: User;
 }
 
 @Entity({ synchronize: true, name: 'characters' })
@@ -38,8 +46,11 @@ export class Character {
   @PrimaryGeneratedColumn()
   id?: number;
 
-  @Column({ length: 100 })
-  apiKey?: string;
+  @Column()
+  userId: number;
+
+  @Column({ length: 100, nullable: true })
+  apiKey?: string; // deprecated for userId TODO: get rid of apiKey once everyone is moved over to users
 
   @Column({ length: 100, nullable: true })
   name?: string;
@@ -47,21 +58,21 @@ export class Character {
   @Column({ length: 100, nullable: true })
   guild?: string;
 
-  @Column()
+  @Column({ default: 1 })
   level: number;
 
-  @Column()
+  @Column({ default: 1 })
   class: number;
 
-  @Column()
+  @Column({ default: 1 })
   race: number;
 
   // array of stats in order: str,sta,agi,dex,wis,int,cha
-  @Column({ length: 30 })
+  @Column({ length: 30, default: '0,0,0,0,0,0,0' })
   stats: string;
 
   // array of items by slotId, ex: 123,0,2345,66789896,0...
-  @Column({ length: 150 })
+  @Column({ length: 150, default: ',,,,,,,,,,,,,,,,,,,,,,' })
   slots: string;
 
   @CreateDateColumn()
@@ -73,6 +84,13 @@ export class Character {
   @OneToMany(() => InventorySlot, (inventorySlot) => inventorySlot.character)
   @JoinColumn({ name: 'id', referencedColumnName: 'characterId' })
   inventory?: InventorySlot[];
+
+  @ManyToOne(() => User, (user) => user.characters)
+  @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+  user: User;
+
+  @Column({ nullable: true })
+  accountLabel?: string; // Multiple characters share the same shared bank if this matches between them
 }
 
 @Entity({ synchronize: true, name: 'inventory_slot' })
@@ -81,7 +99,13 @@ export class InventorySlot {
   id?: number;
 
   @Column()
+  userId: number;
+
+  @Column({ nullable: true })
   characterId: number;
+
+  @Column({ nullable: true })
+  accountLabel?: string; // Multiple characters share the same shared bank if this matches between them
 
   @Column({ length: 100, nullable: true })
   slot?: string;
@@ -101,4 +125,8 @@ export class InventorySlot {
   @ManyToOne(() => Character, (character) => character.inventory)
   @JoinColumn({ name: 'characterId', referencedColumnName: 'id' })
   character: Character;
+
+  @ManyToOne(() => User, (user) => user.inventory)
+  @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+  user: User;
 }

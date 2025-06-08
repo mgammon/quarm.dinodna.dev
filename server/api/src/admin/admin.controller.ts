@@ -1,29 +1,26 @@
-import { Controller, Param, Post, Headers, Get } from '@nestjs/common';
+import { Controller, Param, Post } from '@nestjs/common';
 import { AuctionService } from '../auctions/auction.service';
-import { getApiKey } from '../utils';
+import { ApiUser, requireAdmin } from '../utils';
 import { KeyValueService } from '../key-value/key-value.service';
-import { AdminService } from './admin.service';
+import { User } from '../user/user.entity';
 
 @Controller('api/admin')
 export class AdminController {
   constructor(
     private auctionService: AuctionService,
     private keyValueService: KeyValueService,
-    private adminService: AdminService,
   ) {}
 
   @Post(`/update-database`)
-  public async updateDatabase(@Headers('Authorization') auth: string) {
-    const apiKey = getApiKey(auth);
-    this.adminService.validateIsAdmin(apiKey);
+  public async updateDatabase(@ApiUser() user: User) {
+    requireAdmin(user);
     this.keyValueService.autoUpdate();
     return 'Updating';
   }
 
   @Post(`/update-auction-prices`)
-  public async updateAuctionPrices(@Headers('Authorization') auth: string) {
-    const apiKey = getApiKey(auth);
-    this.adminService.validateIsAdmin(apiKey);
+  public async updateAuctionPrices(@ApiUser() user: User) {
+    requireAdmin(user);
     console.log('Updating item averages');
     await this.auctionService.updateAllAverages();
     console.log('Item averages updated');
@@ -34,16 +31,9 @@ export class AdminController {
   public async rerunAuctionParsing(
     @Param('matchingText') matchingText: string,
     @Param('days') days: string,
-    @Headers('Authorization') auth: string,
+    @ApiUser() user: User,
   ) {
-    const apiKey = getApiKey(auth);
-    this.adminService.validateIsAdmin(apiKey);
+    requireAdmin(user);
     this.auctionService.rerunAuctionParsing(parseInt(days), matchingText);
-  }
-
-  @Get(`/permissions`)
-  public async getPermissions(@Headers('Authorization') auth: string) {
-    const apiKey = getApiKey(auth);
-    return this.adminService.getPermissions(apiKey);
   }
 }

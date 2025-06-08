@@ -10,10 +10,7 @@ export class PlayerService {
     private skillCapRepository: Repository<SkillCap>,
   ) {}
 
-  async getMaxSkills(
-    classId: number,
-    level: number,
-  ): Promise<{ skillId: number; value: number }[]> {
+  async getMaxSkills(classId: number, level: number): Promise<{ skillId: number; value: number }[]> {
     return this.skillCapRepository.query(
       `SELECT skill_id as skillId, MAX(cap) as value
       FROM skill_caps
