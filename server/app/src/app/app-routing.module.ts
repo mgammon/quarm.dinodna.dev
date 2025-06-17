@@ -11,6 +11,7 @@ import { ZoneDetailsPage } from './zones/zone-details.page/zone-details.page';
 import { AuctionsPage } from './auctions/auctions.page';
 import { CharacterComponent } from './characters/character.component';
 import { InventoryPage } from './inventory/inventory.page';
+import { BazaarPage } from './bazaar/bazaar.page';
 
 const routes: Routes = [
   { path: 'items', component: ItemSearchPage },
@@ -27,6 +28,10 @@ const routes: Routes = [
   { path: 'characters', component: CharacterComponent },
   { path: 'characters/:id', component: CharacterComponent },
   { path: 'inventory', component: InventoryPage },
+  { path: 'bazaar', component: BazaarPage },
+  { path: 'bazaar/search', component: BazaarPage }, // TODO
+  { path: 'bazaar/manage', component: BazaarPage }, // TODO
+  { path: 'bazaar/feed', component: BazaarPage }, // TODO
 ];
 
 @NgModule({

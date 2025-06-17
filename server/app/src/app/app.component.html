@@ -5,7 +5,7 @@
     [style]="{
       'background-image':
         'linear-gradient(to right, var(--bluegray-500), var(--bluegray-800))',
-        'padding': '1em 0'
+      padding: '1em 0'
     }"
   >
     <div class="p-toolbar-group-start">
@@ -30,6 +30,9 @@
           styleClass="white"
         ></p-button>
         <a class="header-link" [routerLink]="'auctions'">Auctions</a>
+        <!-- <a class="header-link" [routerLink]="'bazaar'"
+          >Bazaar <p-tag severity="info" value="Beta"
+        /></a> -->
         <a class="header-link" [routerLink]="'items'">Items</a>
         <a class="header-link" [routerLink]="'npcs'">NPCs</a>
         <a class="header-link" [routerLink]="'zones'">Zones</a>
@@ -155,9 +158,7 @@
             <div style="text-align: center; margin-top: 0.5em">
               <p-button
                 [disabled]="
-                  apiKey === apiService.apiKey ||
-                  !apiKey ||
-                  apiKey.length < 15
+                  apiKey === apiService.apiKey || !apiKey || apiKey.length < 15
                 "
                 label="Change API key"
                 (onClick)="changeApiKey()"
