@@ -3,11 +3,13 @@ import { AuctionService } from '../auctions/auction.service';
 import { ApiUser, requireAdmin } from '../utils';
 import { KeyValueService } from '../key-value/key-value.service';
 import { User } from '../user/user.entity';
+import { LogService } from '../logs/log.service';
 
 @Controller('api/admin')
 export class AdminController {
   constructor(
     private auctionService: AuctionService,
+    private logService: LogService,
     private keyValueService: KeyValueService,
   ) {}
 
@@ -35,5 +37,12 @@ export class AdminController {
   ) {
     requireAdmin(user);
     this.auctionService.rerunAuctionParsing(parseInt(days), matchingText);
+  }
+
+  @Post(`/reparse-logs`)
+  public async reparseLogsFromRaw(@ApiUser() user: User) {
+    console.log('reparse logs');
+    requireAdmin(user);
+    this.logService.reparseLogsFromRaw();
   }
 }

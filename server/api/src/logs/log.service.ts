@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { And, In, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
+import { And, In, IsNull, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Log, LogDto } from './log.entity';
 import * as moment from 'moment-timezone';
@@ -98,6 +98,36 @@ export class LogService {
     this.recentLogDtos.push(...logDtos);
 
     return logDtos;
+  }
+
+  async reparseLogsFromRaw(count = 0, total?: number, startedAt?: number): Promise<void> {
+    if (!startedAt) {
+      startedAt = Date.now();
+    }
+    if (total === undefined) {
+      total = await this.logRepository.countBy({ text: '' });
+    }
+    const logs = await this.logRepository.find({ where: { text: '' }, take: 2000, order: { createdAt: 'DESC' } });
+    if (logs.length === 0) {
+      return;
+    }
+    logs.forEach((log) => {
+      const reparsedLog = this.parseLog(log.raw);
+      log.text = reparsedLog.text;
+    });
+    await this.logRepository.save(logs);
+
+    count += logs.length;
+    const percentComplete = count / total;
+    const ellapsedMs = Date.now() - startedAt;
+    const estimatedTotalMs = (1 / percentComplete) * ellapsedMs;
+    const estimatedTimeLeft = moment(Date.now() + estimatedTotalMs - ellapsedMs).fromNow(true);
+
+    console.log(
+      `Reparsed ${count} logs of ${total} (${Math.round(10000 * percentComplete) / 100}%) - ${estimatedTimeLeft}`,
+    );
+
+    return this.reparseLogsFromRaw(count, total, startedAt);
   }
 
   // [Tue Jul 09 12:35:58 2024] Yaface auctions, 'WTB ur mom - PST'
