@@ -32,7 +32,6 @@ export interface LogDto {
 }
 
 @Entity({ synchronize: true, name: 'logs' })
-@Unique(['player', 'text', 'sentAt'])
 export class Log {
   @PrimaryGeneratedColumn()
   id?: number;
@@ -40,7 +39,7 @@ export class Log {
   @Column()
   player: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 1000 })
   text: string;
 
   @Column()
