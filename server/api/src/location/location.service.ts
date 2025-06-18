@@ -34,9 +34,7 @@ export class LocationService {
   }
 
   getOrCreateLocation(apiKey: string) {
-    return (
-      this.locations.get(apiKey) || this.locations.set(apiKey, {}).get(apiKey)
-    );
+    return this.locations.get(apiKey) || this.locations.set(apiKey, {}).get(apiKey);
   }
 
   processLocationLog(locationLog: string, character: string, apiKey: string) {
@@ -71,13 +69,8 @@ export class LocationService {
   // [Sun Jul 21 21:26:12 2024] You have entered Oggok.
   processZoneLog(zoneLog: string, character, apiKey) {
     // Find the zone shortName
-    const zoneString = zoneLog
-      .split('] You have entered ')[1]
-      .replace('.', '')
-      .replace('\r', '');
-    const zone = this.zoneService.zones.find(
-      (zone) => zone.long_name === zoneString,
-    );
+    const zoneString = zoneLog.split('] You have entered ')[1].replace('.', '').replace('\r', '');
+    const zone = this.zoneService.zones.find((zone) => zone.long_name === zoneString);
 
     // Update zone
     const currentLocation = this.getOrCreateLocation(apiKey);

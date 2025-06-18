@@ -101,7 +101,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
     // If it was verified, let them know
     if (verification) {
-      this.server.to(verification.apiKey).emit('verified', verification.name);
+      this.server.to(apiKey).emit('verified', verification.name);
     }
   }
 

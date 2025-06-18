@@ -18,9 +18,6 @@ export class Verification {
   @Column()
   userId: number;
 
-  @Column({ length: 100, nullable: true })
-  apiKey?: string; // deprecated for userId TODO: get rid of apiKey once everyone is moved over to users
-
   @Column()
   code: string;
 
@@ -48,9 +45,6 @@ export class Character {
 
   @Column()
   userId: number;
-
-  @Column({ length: 100, nullable: true })
-  apiKey?: string; // deprecated for userId TODO: get rid of apiKey once everyone is moved over to users
 
   @Column({ length: 100, nullable: true })
   name?: string;

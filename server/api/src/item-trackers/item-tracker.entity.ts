@@ -28,9 +28,6 @@ export class ItemTracker {
   @Column()
   userId: number;
 
-  @Column()
-  apiKey: string; // deprecated for userId TODO: get rid of apiKey once everyone is moved over to users
-
   @Column({ nullable: true })
   itemId: number;
 
