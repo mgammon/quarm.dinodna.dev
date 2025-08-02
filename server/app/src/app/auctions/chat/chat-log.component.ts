@@ -104,7 +104,7 @@ export class ChatLogComponent implements OnInit {
         : this.log.channel === 'global-Lfg'
         ? ' tells Lfg,'
         : this.log.channel === 'global-Auction'
-        ? ' tells Auction,'
+        ? ' tells Auctions,'
         : this.log.channel === 'global-Port'
         ? ' tells Port,'
         : this.log.channel === 'auction'
