@@ -147,9 +147,9 @@ export class LogService {
           ? 'global-General'
           : channelChunk.includes('Lfg:')
             ? 'global-Lfg'
-            : channelChunk.includes('Auction:')
+            : channelChunk.includes('Auction:') || channelChunk.includes('Auctions:')
               ? 'global-Auction'
-              : channelChunk.includes('Port:')
+              : channelChunk.includes('Port:') || channelChunk.includes('Ports:')
                 ? 'global-Port'
                 : channelChunk.includes('auctions')
                   ? 'auction'
