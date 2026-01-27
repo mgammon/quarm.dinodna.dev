@@ -28,13 +28,24 @@ export class ZoneService {
     });
   }
 
-  async getByShortName(shortName: string) {
-    const zone = await this.zoneRepository.findOne({
-      where: { short_name: shortName },
-    });
-    if (!zone) {
-      throw new NotFoundException(`Zone ${shortName} not found`);
+  async getByShortNameOrId(shortNameOrId: string) {
+    const isId = !isNaN(parseInt(shortNameOrId));
+    let zone: Zone;
+    if (isId) {
+      zone = await this.zoneRepository.findOne({
+        where: { id: parseInt(shortNameOrId) },
+      });
+    } else {
+      zone = await this.zoneRepository.findOne({
+        where: { short_name: shortNameOrId },
+      });
     }
+
+    if (!zone) {
+      throw new NotFoundException(`Zone ${shortNameOrId} not found`);
+    }
+
+    const shortName = zone.short_name;
 
     const npcs = await this.npcService.complexSearch(
       {

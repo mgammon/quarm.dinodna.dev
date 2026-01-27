@@ -12,15 +12,11 @@ export class ZoneController {
 
   @Get('/:zoneName')
   getZone(@Param('zoneName') zoneName: string) {
-    return this.zoneService.getByShortName(zoneName);
+    return this.zoneService.getByShortNameOrId(zoneName);
   }
 
   @Get('/search/:search')
-  search(
-    @Param('search') search: string,
-    @Query('page') page = '0',
-    @Query('size') size = '100',
-  ) {
+  search(@Param('search') search: string, @Query('page') page = '0', @Query('size') size = '100') {
     return this.zoneService.search(search, parseInt(page), parseInt(size));
   }
 }
