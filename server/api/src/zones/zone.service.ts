@@ -33,7 +33,7 @@ export class ZoneService {
     let zone: Zone;
     if (isId) {
       zone = await this.zoneRepository.findOne({
-        where: { id: parseInt(shortNameOrId) },
+        where: { zoneidnumber: parseInt(shortNameOrId) },
       });
     } else {
       zone = await this.zoneRepository.findOne({
