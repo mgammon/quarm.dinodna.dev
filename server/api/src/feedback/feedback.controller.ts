@@ -1,6 +1,6 @@
-import { Body, Controller, Param, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { FeedbackService } from './feedback.service';
-import { ApiUser } from '../utils';
+import { ApiUser, requireUser } from '../utils';
 import { User } from '../user/user.entity';
 
 export interface Feedback {
@@ -12,8 +12,9 @@ export interface Feedback {
 export class FeedbackController {
   constructor(private feedbackService: FeedbackService) {}
 
-  @Post(`/:apiKey`)
+  @Post()
   public async sendFeedback(@ApiUser() user: User, @Body() feedback: Feedback) {
+    requireUser(user);
     this.feedbackService.sendFeedback(user.id, feedback);
   }
 }

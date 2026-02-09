@@ -35,7 +35,7 @@ class Cache<T> {
     if (LOCAL_STORAGE_CACHE_ENABLED) {
       localStorage.setItem(
         this.localStorageKey,
-        JSON.stringify([...this.map.entries()])
+        JSON.stringify([...this.map.entries()]),
       );
     }
   }
@@ -107,7 +107,7 @@ export class ApiService {
     const item = await this.toPromise(
       this.http.get<Item>(`${this.apiUrl}/items/${itemId}`, {
         params: { includeAuctions },
-      })
+      }),
     );
     this.cache.items.set(item.id, item);
     return item;
@@ -118,7 +118,7 @@ export class ApiService {
     return this.toPromise(
       this.http.get<Item[]>(`${this.apiUrl}/items`, {
         params: { ids: itemIds },
-      })
+      }),
     );
   }
 
@@ -131,7 +131,7 @@ export class ApiService {
 
     // Or get it from the API and cache it
     const item = await this.toPromise(
-      this.http.get<Item>(`${this.apiUrl}/items/${itemId}/snippet`)
+      this.http.get<Item>(`${this.apiUrl}/items/${itemId}/snippet`),
     );
     this.cache.itemSnippets.set(item.id, item);
     return item;
@@ -146,7 +146,7 @@ export class ApiService {
 
     // Or get it from the API and cache it
     const zone = await this.toPromise(
-      this.http.get<Zone>(`${this.apiUrl}/zones/${shortName}`)
+      this.http.get<Zone>(`${this.apiUrl}/zones/${shortName}`),
     );
     this.cache.zones.set(zone.short_name, zone);
     return zone;
@@ -163,12 +163,12 @@ export class ApiService {
     let mapfile = await this.toPromise(
       this.http.get<string>(`/assets/mapfiles/${fileName}.txt`, {
         responseType: 'text' as any,
-      })
+      }),
     );
     const mapfileDetails = await this.toPromise(
       this.http.get<string>(`/assets/mapfiles/${fileName}_1.txt`, {
         responseType: 'text' as any,
-      })
+      }),
     );
     mapfile = [mapfile, mapfileDetails].join('\n');
 
@@ -182,24 +182,24 @@ export class ApiService {
       | { slots?: number[]; classes?: number[]; races?: number[] }
       | undefined,
     page = 0,
-    size = 10
+    size = 10,
   ) {
     return this.toPromise(
       this.http.get<Item[]>(`${this.apiUrl}/items/search/${search}`, {
         params: { page, size, ...options },
-      })
+      }),
     );
   }
 
   async complexItemSearch(options: ItemSearchOptions) {
     return this.toPromise(
-      this.http.post<Item[]>(`${this.apiUrl}/items/search/`, options)
+      this.http.post<Item[]>(`${this.apiUrl}/items/search/`, options),
     );
   }
 
   complexNpcSearch(options: NpcSearchOptions) {
     return this.toPromise(
-      this.http.post<Npc[]>(`${this.apiUrl}/npcs/search/`, options)
+      this.http.post<Npc[]>(`${this.apiUrl}/npcs/search/`, options),
     );
   }
 
@@ -212,7 +212,7 @@ export class ApiService {
 
     // Or get it from the API and cache it
     const npc = await this.toPromise(
-      this.http.get<Npc>(`${this.apiUrl}/npcs/${npcId}`)
+      this.http.get<Npc>(`${this.apiUrl}/npcs/${npcId}`),
     );
     this.cache.npcs.set(npc.id, npc);
     return npc;
@@ -222,7 +222,7 @@ export class ApiService {
     return this.toPromise(
       this.http.get<Npc[]>(`${this.apiUrl}/npcs/search/${search}`, {
         params: { page, size },
-      })
+      }),
     );
   }
 
@@ -237,7 +237,7 @@ export class ApiService {
     const spawnEntries = await this.toPromise(
       this.http.get<SpawnEntry[]>(`${this.apiUrl}/npcs/spawn-entries`, {
         params: { spawnGroupIds: spawnGroupIds.join(',') },
-      })
+      }),
     );
     // this.cache.zones.set(zone.short_name, zone);
     return spawnEntries;
@@ -252,7 +252,7 @@ export class ApiService {
 
     // Or get it from the API and cache it
     const spell = await this.toPromise(
-      this.http.get<SpellNew>(`${this.apiUrl}/spells/${spellId}`)
+      this.http.get<SpellNew>(`${this.apiUrl}/spells/${spellId}`),
     );
     this.cache.spells.set(spell.id, spell);
     return spell;
@@ -270,7 +270,7 @@ export class ApiService {
     return this.toPromise(
       this.http.get<Zone[]>(`${this.apiUrl}/zones/search/${search}`, {
         params: { page, size },
-      })
+      }),
     );
   }
 
@@ -278,21 +278,23 @@ export class ApiService {
   getLogs(beforeLog?: Log) {
     const before = beforeLog ? beforeLog.sentAt.valueOf : Date.now();
     return this.toPromise(
-      this.http.get<Log[]>(`${this.apiUrl}/logs/${before}`)
+      this.http.get<Log[]>(`${this.apiUrl}/logs/${before}`),
     );
   }
 
   async getMaxSkills(classId: number, level: number) {
     return this.toPromise(
       this.http.get<{ skillId: number; value: number }[]>(
-        `${this.apiUrl}/player/max-skills/${classId}/${level}`
-      )
+        `${this.apiUrl}/player/max-skills/${classId}/${level}`,
+      ),
     );
   }
 
   async sendFeedback(feedback: { name: string; message: string }) {
     return this.toPromise(
-      this.http.post<void>(`${this.apiUrl}/feedback/${this.apiKey}`, feedback)
+      this.http.post<void>(`${this.apiUrl}/feedback`, feedback, {
+        headers: { Authorization: `Bearer ${this.apiKey}` },
+      }),
     );
   }
 
@@ -303,7 +305,7 @@ export class ApiService {
     return this.toPromise(
       this.http.post<CharacterDto>(`${this.apiUrl}/characters/`, character, {
         headers: { Authorization: `Bearer ${this.apiKey}` },
-      })
+      }),
     );
   }
 
@@ -314,8 +316,8 @@ export class ApiService {
         character,
         {
           headers: { Authorization: `Bearer ${this.apiKey}` },
-        }
-      )
+        },
+      ),
     );
   }
 
@@ -323,7 +325,7 @@ export class ApiService {
     return this.toPromise(
       this.http.delete<CharacterDto>(`${this.apiUrl}/characters/${id}`, {
         headers: { Authorization: `Bearer ${this.apiKey}` },
-      })
+      }),
     );
   }
 
@@ -331,7 +333,7 @@ export class ApiService {
     return this.toPromise(
       this.http.get<CharacterDto[]>(`${this.apiUrl}/characters/`, {
         headers: { Authorization: `Bearer ${this.apiKey}` },
-      })
+      }),
     );
   }
 
@@ -339,7 +341,7 @@ export class ApiService {
     return this.toPromise(
       this.http.get<CharacterDto>(`${this.apiUrl}/characters/${id}`, {
         headers: { Authorization: `Bearer ${this.apiKey}` },
-      })
+      }),
     );
   }
 
@@ -347,7 +349,7 @@ export class ApiService {
     return this.toPromise(
       this.http.get<ItemTrackerDto[]>(`${this.apiUrl}/item-trackers/`, {
         headers: { Authorization: `Bearer ${this.apiKey}` },
-      })
+      }),
     );
   }
 
@@ -358,8 +360,8 @@ export class ApiService {
         itemTrackerDto,
         {
           headers: { Authorization: `Bearer ${this.apiKey}` },
-        }
-      )
+        },
+      ),
     );
   }
 
@@ -367,7 +369,7 @@ export class ApiService {
     return this.toPromise(
       this.http.delete<void>(`${this.apiUrl}/item-trackers/${id}`, {
         headers: { Authorization: `Bearer ${this.apiKey}` },
-      })
+      }),
     );
   }
 
@@ -378,8 +380,8 @@ export class ApiService {
         itemTrackerDto,
         {
           headers: { Authorization: `Bearer ${this.apiKey}` },
-        }
-      )
+        },
+      ),
     );
   }
 }
