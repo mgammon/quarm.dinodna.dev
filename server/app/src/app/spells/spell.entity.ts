@@ -1,4 +1,4 @@
-import { Item } from "../items/item.entity";
+import { Item } from '../items/item.entity';
 
 export interface SpellNew {
   id: number;
@@ -195,14 +195,21 @@ export interface SpellNew {
   procItems: Item[];
   scrollItems: Item[];
   wornItems: Item[];
+  focusItems: Item[];
 
-  summonedItems: Item[];
+  effectSpells?: EntitySummary[];
+  effectItems?: EntitySummary[];
   components: SpellComponent[];
 }
 
-interface SpellComponent {
-  itemId?: string;
-  item?: Item;
+interface SpellComponent extends EntitySummary {
   counts: number;
   isExpended: boolean;
+}
+
+export interface EntitySummary {
+  id: number;
+  index?: number;
+  name: string;
+  icon?: number;
 }

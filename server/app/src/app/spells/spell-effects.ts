@@ -1,11 +1,31 @@
 import { formatPercent } from '@angular/common';
-import { SpellNew } from './spell.entity';
+import { EntitySummary, SpellNew } from './spell.entity';
+import { formatTime } from '../utils';
+
+// TODO:  REAGENTS NOT WORKING
 
 export interface EffectDescription {
   text: string | null;
   location?: { zone: string; x: number; y: number; z: number };
-  item?: { id: number; name: string };
+  item?: EntitySummary;
+  spell?: EntitySummary;
 }
+
+const getBaseValue = (spell: SpellNew, effectIndex: number) =>
+  (spell as any)[`effect_base_value${effectIndex}`];
+const getLimitValue = (spell: SpellNew, effectIndex: number) =>
+  (spell as any)[`effect_limit_value${effectIndex}`];
+const getMaxValue = (spell: SpellNew, effectIndex: number) =>
+  (spell as any)[`max${effectIndex}`];
+
+export const getEffectSpell = (spell: SpellNew, effectIndex: number) =>
+  spell.effectSpells?.find(
+    (effectSpell) => effectSpell.index === effectIndex,
+  );
+export const getEffectItem = (spell: SpellNew, effectIndex: number) =>
+  spell.effectItems?.find(
+    (effectSpell) => effectSpell.index === effectIndex,
+  );
 
 interface SpellEffect {
   id: number;
@@ -19,7 +39,7 @@ interface SpellEffect {
   buildEffectDescription?: (
     spell: SpellNew,
     effectIndex: number,
-    itemEffectLevel?: number
+    itemEffectLevel?: number,
   ) => EffectDescription | null;
 }
 
@@ -41,7 +61,7 @@ function getMinClassLevel(spell: SpellNew) {
       spell.classes13,
       spell.classes14,
       spell.classes15,
-    ]
+    ],
   );
   return minClassLevel === 255 ? 0 : minClassLevel;
 }
@@ -53,7 +73,7 @@ export function getSpellDurations(spell: SpellNew) {
   const minDuration = duration(
     spell.buffdurationformula,
     spell.buffduration,
-    minLevel
+    minLevel,
   );
 
   // Find the lowest level that still has the same maximum duration
@@ -62,7 +82,7 @@ export function getSpellDurations(spell: SpellNew) {
     const dur = duration(
       spell.buffdurationformula,
       spell.buffduration,
-      maxLevel
+      maxLevel,
     );
     if (dur < maxDuration) {
       maxLevel++; // the last level was the lowest level before the duration decreased
@@ -78,7 +98,7 @@ function getEffectValues(
   spell: SpellNew,
   effectIndex: number,
   spellLevel: number = 0,
-  specificEffectLevel?: number
+  specificEffectLevel?: number,
 ) {
   const spellAsAny = spell as any;
   const formula: number = spellAsAny[`formula${effectIndex}`];
@@ -94,18 +114,17 @@ function getEffectValues(
       specificEffectLevel || MAX_LEVEL,
       Infinity,
       spellLevel,
-      specificEffectLevel
-    ).value
+      specificEffectLevel,
+    ).value,
   );
   // Set max based on calculated + specified max value
   if (max !== 0) {
     max = Math.min(calculatedMax, max);
-  }else { 
+  } else {
     max = calculatedMax;
   }
   // Make max match the base's sign
   max = isBaseNegative && max > 0 ? max * -1 : max;
-
 
   // Figure out the min value
   const minClassLevel = getMinClassLevel(spell);
@@ -116,7 +135,7 @@ function getEffectValues(
     minLevel,
     Math.abs(max),
     spellLevel,
-    specificEffectLevel
+    specificEffectLevel,
   );
   let min = Math.round(effectValue.value * (isBaseNegative ? -1 : 1)); // TODO:  Should this be Math.floor? Ceil? idk.
   if (max !== 0 && Math.abs(min) > Math.abs(max)) {
@@ -127,22 +146,104 @@ function getEffectValues(
   return { min, max, minLevel, maxLevel };
 }
 
+// real lazy attempt to not have to define a buncha effect texts
+// if there's not a buildEffectText function on an effect, it uses this.
+export function buildEffectGeneric(
+  spell: SpellNew,
+  effectIndex: number,
+  itemEffectLevel?: number,
+) {
+  const effectId = (spell as any)[`effectid${effectIndex}`];
+  const effect = spellEffectMap.get(effectId);
+  if (!effect || !effect.effectName) {
+    return null;
+  }
+
+  const maxValue = getMaxValue(spell, effectIndex);
+  const baseValue = getBaseValue(spell, effectIndex);
+  const limitValue = getLimitValue(spell, effectIndex);
+  const effectBaseString = effect.base.toString();
+
+  let maxTargetLevel = '';
+  if (effect.max === 'max target level' && maxValue > 0) {
+    maxTargetLevel = ` (up to level ${maxValue})`;
+  }
+
+  const basePercentTexts = [
+    'percentage',
+    'percent',
+    'percent chance',
+    'percent modifier',
+    'min percent',
+    'percent healing',
+    'percent shrink or grow',
+  ];
+  const maxPercentTexts = ['max percent'];
+  const baseDurationTexts = ['milliseconds', 'duration ms'];
+  const baseAmountTexts = ['amount'];
+
+  let text = effect.effectName;
+  if (basePercentTexts.includes(effectBaseString)) {
+    const fromAmount = [
+      'min percent',
+      'percent modifier',
+      'percent shrink or grow',
+    ].includes(effectBaseString);
+    text =
+      buildEffectTextPercent(
+        effect.effectName,
+        spell,
+        effectIndex,
+        itemEffectLevel,
+        false,
+        fromAmount,
+      ) || effect.effectName;
+  } else if (baseDurationTexts.includes(effectBaseString)) {
+    text = `${effect.effectName} (${formatTime(baseValue) || (baseValue / 1000 + 's')})`;
+  } else if (baseAmountTexts.includes(effectBaseString)) {
+    text =
+      buildEffectText(effect.effectName, spell, effectIndex, itemEffectLevel) ||
+      effect.effectName;
+  }
+
+  return `${text}${maxTargetLevel}`;
+
+  // base: 'percentage exp',
+  // base: 'coordinate(x,y,z,h)',
+  // base: 'percent shrink or grow',
+  // base: 'percent chance',
+  // base: 'resist type',
+  // base: 'percentage',
+  // base: 'milliseconds',
+  // base: 'min percent',
+  // max: 'max percent',
+  // limit: 'rate modifer',
+  // base: 'max target level',
+  // base: 'amount',
+  // base: 'heal amount multiplier',
+  // max: 'max heal amount multipler',
+  // base: 'percent',
+  // base: 'percent healing',
+  // base: 'percent chance',
+  // base: 'percent modifer',
+}
+
 function buildEffectTextPercent(
   effectValueType: string,
   spell: SpellNew,
   effectIndex: number,
   itemEffectLevel?: number,
   perTick: boolean = false,
-  fromAmount: boolean = false
+  fromAmount: boolean = false,
 ) {
   const { min, max, minLevel, maxLevel } = getEffectValues(
     spell,
     effectIndex,
     0,
-    itemEffectLevel
+    itemEffectLevel,
   );
 
-  const {maxDuration } = getSpellDurations(spell);
+  const { maxDuration } = getSpellDurations(spell);
 
   if (min === 0 && max === 0) {
     return null;
@@ -171,16 +272,16 @@ function buildEffectText(
   effectIndex: number,
   itemEffectLevel?: number,
   perTick: boolean = false,
-  flipVerb: boolean = false
+  flipVerb: boolean = false,
 ) {
   const { min, max, minLevel, maxLevel } = getEffectValues(
     spell,
     effectIndex,
     0,
-    itemEffectLevel
+    itemEffectLevel,
   );
 
-  const {maxDuration } = getSpellDurations(spell);
+  const { maxDuration } = getSpellDurations(spell);
 
   if (min === 0 && max === 0) {
     return null;
@@ -195,7 +296,7 @@ function buildEffectText(
   const verb = min < 0 && !flipVerb ? 'Decrease' : 'Increase';
   const perTickText = perTick && maxDuration > 0 ? ' per tick' : '';
   return `${verb} ${effectValueType} by ${Math.abs(
-    min
+    min,
   )}${maxText}${perTickText}`;
 }
 
@@ -205,7 +306,7 @@ function getEffectValue(
   effectLevel: number,
   effectMax: number,
   spellLevel: number = 0, // Player level? nah don't think so. idk what this is.
-  specificLevel?: number
+  specificLevel?: number,
 ) {
   if (formula === 100) {
     return {
@@ -426,14 +527,14 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText(
         'hitpoints',
         spell,
         effectIndex,
         itemEffectLevel,
-        true
+        true,
       ),
     }),
   },
@@ -449,7 +550,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('AC', spell, effectIndex, itemEffectLevel),
     }),
@@ -466,7 +567,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('ATK', spell, effectIndex, itemEffectLevel),
     }),
@@ -483,7 +584,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectTextPercent(
         'movement speed',
@@ -491,7 +592,7 @@ const spellEffects: SpellEffect[] = [
         effectIndex,
         itemEffectLevel,
         false,
-        true
+        true,
       ),
     }),
   },
@@ -507,7 +608,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('STR', spell, effectIndex, itemEffectLevel),
     }),
@@ -524,7 +625,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('DEX', spell, effectIndex, itemEffectLevel),
     }),
@@ -541,7 +642,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('AGI', spell, effectIndex, itemEffectLevel),
     }),
@@ -558,7 +659,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('STA', spell, effectIndex, itemEffectLevel),
     }),
@@ -575,7 +676,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('INT', spell, effectIndex, itemEffectLevel),
     }),
@@ -592,7 +693,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('WIS', spell, effectIndex, itemEffectLevel),
     }),
@@ -609,7 +710,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('CHA', spell, effectIndex, itemEffectLevel),
     }),
@@ -626,13 +727,13 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectTextPercent(
         'attack speed',
         spell,
         effectIndex,
-        itemEffectLevel
+        itemEffectLevel,
       ),
     }),
   },
@@ -680,7 +781,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('mana', spell, effectIndex, itemEffectLevel, true),
     }),
@@ -727,7 +828,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('faction', spell, effectIndex, itemEffectLevel),
     }),
@@ -753,6 +854,24 @@ const spellEffects: SpellEffect[] = [
     limit: 'pvp duration ms',
     max: 'max target level',
     notes: '',
+    // buildEffectDescription: (
+    //   spell: SpellNew,
+    //   effectIndex: number,
+    //   itemEffectLevel?: number,
+    // ) => {
+    //   const baseDuration = formatTime(getBaseValue(spell, effectIndex))
+    //     .replace('(', '')
+    //     .replace(')', '');
+    //   const pvpDuration = formatTime(getLimitValue(spell, effectIndex))
+    //     .replace('(', '')
+    //     .replace(')', '');
+    //   const maxTargetLevel = getMaxValue(spell, effectIndex)
+    //     ? ` (up to level ${getMaxValue(spell, effectIndex)})`
+    //     : '';
+    //   return {
+    //     text: `Stun (${baseDuration})${maxTargetLevel}`,
+    //   };
+    // },
   },
   {
     id: 22,
@@ -763,6 +882,18 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'max target level',
     notes: '',
+    // buildEffectDescription: (
+    //   spell: SpellNew,
+    //   effectIndex: number,
+    //   itemEffectLevel?: number,
+    // ) => {
+    //   const maxTargetLevel = getMaxValue(spell, effectIndex)
+    //     ? ` (up to level ${getMaxValue(spell, effectIndex)})`
+    //     : '';
+    //   return {
+    //     text: `Charm${maxTargetLevel}`,
+    //   };
+    // },
   },
   {
     id: 23,
@@ -787,14 +918,14 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText(
         'endurance',
         spell,
         effectIndex,
         itemEffectLevel,
-        true
+        true,
       ),
     }),
   },
@@ -867,13 +998,13 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText(
         'aggro radius',
         spell,
         effectIndex,
-        itemEffectLevel
+        itemEffectLevel,
       ),
     }),
   },
@@ -900,9 +1031,11 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => {
-      const summonedItem = spell.summonedItems[effectIndex - 1];
+      const summonedItem = spell.effectItems?.find(
+        (effectItem) => effectItem.index === effectIndex,
+      );
       return {
         text: 'Summon Item: ',
         item: {
@@ -947,13 +1080,13 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText(
         'disease counter',
         spell,
         effectIndex,
-        itemEffectLevel
+        itemEffectLevel,
       ),
     }),
   },
@@ -970,13 +1103,13 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText(
         'poison counter',
         spell,
         effectIndex,
-        itemEffectLevel
+        itemEffectLevel,
       ),
     }),
   },
@@ -1088,7 +1221,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('fire resist', spell, effectIndex, itemEffectLevel),
     }),
@@ -1105,7 +1238,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('cold resist', spell, effectIndex, itemEffectLevel),
     }),
@@ -1122,13 +1255,13 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText(
         'poison resist',
         spell,
         effectIndex,
-        itemEffectLevel
+        itemEffectLevel,
       ),
     }),
   },
@@ -1144,13 +1277,13 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText(
         'disease resist',
         spell,
         effectIndex,
-        itemEffectLevel
+        itemEffectLevel,
       ),
     }),
   },
@@ -1166,13 +1299,13 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText(
         'magic resist',
         spell,
         effectIndex,
-        itemEffectLevel
+        itemEffectLevel,
       ),
     }),
   },
@@ -1229,13 +1362,13 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText(
         'absorb melee damage',
         spell,
         effectIndex,
-        itemEffectLevel
+        itemEffectLevel,
       ),
     }),
   },
@@ -1283,7 +1416,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText(
         'damage shield',
@@ -1291,7 +1424,7 @@ const spellEffects: SpellEffect[] = [
         effectIndex,
         itemEffectLevel,
         false,
-        true
+        true,
       ),
     }),
   },
@@ -1404,7 +1537,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('Max HP', spell, effectIndex, itemEffectLevel),
     }),
@@ -1505,13 +1638,13 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText(
         'absorb magic damage',
         spell,
         effectIndex,
-        itemEffectLevel
+        itemEffectLevel,
       ),
     }),
   },
@@ -1528,7 +1661,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('hitpoints', spell, effectIndex, itemEffectLevel),
     }),
@@ -1553,6 +1686,13 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'none',
     notes: '', // TODO rez with percent
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => ({
+      text: `Resurrect (restore ${getBaseValue(spell, effectIndex)}% experience)`,
+    }),
   },
   {
     id: 82,
@@ -1721,7 +1861,7 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectText('max mana', spell, effectIndex, itemEffectLevel),
     }),
@@ -1739,13 +1879,13 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectTextPercent(
         'attack speed (stacks)',
         spell,
         effectIndex,
-        itemEffectLevel
+        itemEffectLevel,
       ),
     }),
   },
@@ -1974,13 +2114,13 @@ const spellEffects: SpellEffect[] = [
     buildEffectDescription: (
       spell: SpellNew,
       effectIndex: number,
-      itemEffectLevel?: number
+      itemEffectLevel?: number,
     ) => ({
       text: buildEffectTextPercent(
         'attack speed (overhaste)',
         spell,
         effectIndex,
-        itemEffectLevel
+        itemEffectLevel,
       ),
     }),
   },
@@ -2036,6 +2176,22 @@ const spellEffects: SpellEffect[] = [
     max: 'max percent',
     notes:
       'Use random effectiveness if base and max value are defined, where base is always lower end and max the higher end of the random range. If random value not wanted, then only set a base value.',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      return {
+        text: buildEffectTextPercent(
+          'Spell Damage',
+          spell,
+          effectIndex,
+          itemEffectLevel,
+          false,
+          true,
+        ),
+      };
+    },
   },
   {
     id: 125,
@@ -2047,6 +2203,22 @@ const spellEffects: SpellEffect[] = [
     max: 'max percent',
     notes:
       'Use random effectiveness if base and max value are defined, where base is always lower end and max the higher end of the random range. If random value not wanted, then only set a base value.',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      return {
+        text: buildEffectTextPercent(
+          'Healing',
+          spell,
+          effectIndex,
+          itemEffectLevel,
+          false,
+          true,
+        ),
+      };
+    },
   },
   {
     id: 126,
@@ -2098,6 +2270,22 @@ const spellEffects: SpellEffect[] = [
     max: 'max percent',
     notes:
       'Use random effectiveness if base and max value are defined, where base is always lower end and max the higher end of the random range. If random value not wanted, then only set a base value.',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      return {
+        text: buildEffectTextPercent(
+          'Spell and Bash Hate',
+          spell,
+          effectIndex,
+          itemEffectLevel,
+          false,
+          true,
+        ),
+      };
+    },
   },
   {
     id: 131,
@@ -2110,6 +2298,22 @@ const spellEffects: SpellEffect[] = [
     max: 'max percent',
     notes:
       'Use random effectiveness if base and max value are defined, where base is always lower end and max the higher end of the random range. If random value not wanted, then only set a base value.',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      return {
+        text: buildEffectTextPercent(
+          'Chance of Using Reagent',
+          spell,
+          effectIndex,
+          itemEffectLevel,
+          false,
+          true,
+        ),
+      };
+    },
   },
   {
     id: 132,
@@ -2121,6 +2325,22 @@ const spellEffects: SpellEffect[] = [
     max: 'max percent',
     notes:
       'Use random effectiveness if base and max value are defined, where base is always lower end and max the higher end of the random range. If random value not wanted, then only set a base value.',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      return {
+        text: buildEffectTextPercent(
+          'Spell Mana Cost',
+          spell,
+          effectIndex,
+          itemEffectLevel,
+          false,
+          true,
+        ),
+      };
+    },
   },
   {
     id: 133,
@@ -2142,6 +2362,15 @@ const spellEffects: SpellEffect[] = [
     limit: 'effectiviness percent',
     max: 'none',
     notes: '',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      return {
+        text: `Limit: Max Spell Level (${getBaseValue(spell, effectIndex)})`,
+      };
+    },
   },
   {
     id: 135,
@@ -2172,6 +2401,20 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'none',
     notes: 'Include set value to positive',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      const limitedEffectId = getBaseValue(spell, effectIndex);
+      const inclusionText = limitedEffectId >= 0 ? 'Require' : 'Exclude';
+      const effectName = spellEffects.find(
+        (effect) => effect.id === Math.abs(limitedEffectId),
+      )?.effectName;
+      return {
+        text: `Limit: ${inclusionText} Effect (${effectName})`,
+      };
+    },
   },
   {
     id: 138,
@@ -2182,6 +2425,17 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'none',
     notes: '',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      const spellType =
+        getBaseValue(spell, effectIndex) === 0 ? 'Detrimental' : 'Beneficial';
+      return {
+        text: `Limit: Spell Type (${spellType}) `,
+      };
+    },
   },
   {
     id: 139,
@@ -2193,6 +2447,13 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'none',
     notes: 'Include set value to positive',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => ({
+      text: `Limit: ${getBaseValue(spell, effectIndex) > 0 ? 'Include' : 'Exclude'} Spell`,
+    }),
   },
   {
     id: 140,
@@ -2203,6 +2464,13 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'none',
     notes: 'Set duration in tics, 1 tick is 6 seconds of game time',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => ({
+      text: `Limit: Min Duration (${formatTime(getBaseValue(spell, effectIndex) * 6 * 1_000, true, true)})`,
+    }),
   },
   {
     id: 141,
@@ -2213,6 +2481,17 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'none',
     notes: '',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      const inclusionText =
+        getBaseValue(spell, effectIndex) === 0 ? 'Exclude' : 'Only';
+      return {
+        text: `Limit: ${inclusionText} Instant Spells`,
+      };
+    },
   },
   {
     id: 142,
@@ -2243,6 +2522,17 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'none',
     notes: '',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      const castTimeMs = getBaseValue(spell, effectIndex);
+      const castTimeSeconds = Math.round(castTimeMs / 10) / 10;
+      return {
+        text: `Limit: Max Cast Time (${castTimeSeconds})`,
+      };
+    },
   },
   {
     id: 145,
@@ -3860,6 +4150,22 @@ const spellEffects: SpellEffect[] = [
     max: 'max percent modifier',
     notes:
       'Use random effectiveness if base and max value are defined, where base is always lower end and max the higher end of the random range. If random value not wanted, then only set a base value.',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      return {
+        text: buildEffectTextPercent(
+          'Spell Damage Taken',
+          spell,
+          effectIndex,
+          itemEffectLevel,
+          false,
+          true,
+        ),
+      };
+    },
   },
   {
     id: 297,
@@ -3922,6 +4228,22 @@ const spellEffects: SpellEffect[] = [
     max: 'max percent modifier',
     notes:
       'Use random effectiveness if base and max value are defined, where base is always lower end and max the higher end of the random range. If random value not wanted, then only set a base value.',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      return {
+        text: buildEffectTextPercent(
+          'Spell Damage Taken (before crit)',
+          spell,
+          effectIndex,
+          itemEffectLevel,
+          false,
+          true,
+        ),
+      };
+    },
   },
   {
     id: 303,
@@ -4857,6 +5179,15 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'none',
     notes: '',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      return {
+        text: `Limit: Max Mana (${getBaseValue(spell, effectIndex)})`,
+      };
+    },
   },
   {
     id: 392,
@@ -5613,6 +5944,22 @@ const spellEffects: SpellEffect[] = [
     max: 'max percent',
     notes:
       'Use random effectiveness if base and max value are defined, where base is always lower end and max the higher end of the random range. If random value not wanted, then only set a base value.',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      return {
+        text: buildEffectTextPercent(
+          'Spell Damage',
+          spell,
+          effectIndex,
+          itemEffectLevel,
+          false,
+          true,
+        ),
+      };
+    },
   },
   {
     id: 462,
@@ -5855,6 +6202,22 @@ const spellEffects: SpellEffect[] = [
     max: 'max percent modifier',
     notes:
       'Use random effectiveness if base and max value are defined, where base is always lower end and max the higher end of the random range. If random value not wanted, then only set a base value.',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      return {
+        text: buildEffectTextPercent(
+          'Spell Damage Taken',
+          spell,
+          effectIndex,
+          itemEffectLevel,
+          false,
+          true,
+        ),
+      };
+    },
   },
   {
     id: 484,
@@ -6318,5 +6681,5 @@ const spellEffects: SpellEffect[] = [
 ];
 
 export const spellEffectMap = new Map<number, SpellEffect>(
-  spellEffects.map((effect) => [effect.id, effect])
+  spellEffects.map((effect) => [effect.id, effect]),
 );

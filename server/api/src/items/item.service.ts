@@ -1,10 +1,5 @@
 import * as _ from 'lodash';
-import {
-  Inject,
-  Injectable,
-  NotFoundException,
-  forwardRef,
-} from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, forwardRef } from '@nestjs/common';
 import {
   Equal,
   FindOptionsWhere,
@@ -18,33 +13,16 @@ import {
   Raw,
   Repository,
 } from 'typeorm';
-import {
-  Item,
-  LootDrop,
-  LootDropEntry,
-  LootTable,
-  LootTableEntry,
-} from './item.entity';
+import { Item, LootDrop, LootDropEntry, LootTable, LootTableEntry } from './item.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  MerchantEntry,
-  Npc,
-  Spawn,
-  SpawnEntry,
-  SpawnGroup,
-} from '../npcs/npc.entity';
-import {
-  compareNumber,
-  Duration,
-  idToBitmask,
-  sanitizeSearch,
-  selectRelevance,
-} from '../utils';
+import { MerchantEntry, Npc, Spawn, SpawnEntry, SpawnGroup } from '../npcs/npc.entity';
+import { compareNumber, Duration, idToBitmask, sanitizeSearch, selectRelevance } from '../utils';
 import { EffectFilter, ItemSearchOptions } from './item.controller';
 import { SpellNew } from '../spells/spell-new.entity';
 import { AuctionService } from '../auctions/auction.service';
 import * as moment from 'moment';
 import { cache } from './in-memory-cache';
+import { EntitySummary } from '../misc/entity-summary';
 
 @Injectable()
 export class ItemService {
@@ -60,14 +38,7 @@ export class ItemService {
       'spawnGroup.id',
       'spawn.spawngroupID',
     ],
-    merchants: [
-      'item.id',
-      'merchantEntry.item',
-      'npc.id',
-      'spawnEntry.npcID',
-      'spawnGroup.id',
-      'spawn.spawngroupID',
-    ],
+    merchants: ['item.id', 'merchantEntry.item', 'npc.id', 'spawnEntry.npcID', 'spawnGroup.id', 'spawn.spawngroupID'],
   };
 
   constructor(
@@ -172,9 +143,7 @@ export class ItemService {
     if (!classIds?.length) {
       return null;
     }
-    const classFilterBitmask = classIds
-      .map((id) => idToBitmask(id - 1))
-      .reduce((sum, bit) => sum + bit, 0);
+    const classFilterBitmask = classIds.map((id) => idToBitmask(id - 1)).reduce((sum, bit) => sum + bit, 0);
     return {
       classes: Raw((alias) => `${alias} & :classFilterBitmask > 0`, {
         classFilterBitmask,
@@ -186,9 +155,7 @@ export class ItemService {
     if (!raceIds?.length) {
       return null;
     }
-    const raceFilterBitmask = raceIds
-      .map((id) => idToBitmask(id))
-      .reduce((sum, bit) => sum + bit, 0);
+    const raceFilterBitmask = raceIds.map((id) => idToBitmask(id)).reduce((sum, bit) => sum + bit, 0);
     return {
       races: Raw((alias) => `${alias} & :raceFilterBitmask > 0`, {
         raceFilterBitmask,
@@ -202,9 +169,7 @@ export class ItemService {
     }
 
     const flattenedSlotIds: number[] = _.flatten(slotIds);
-    const slotFilterBitmask = flattenedSlotIds
-      .map((id) => idToBitmask(id))
-      .reduce((sum, bit) => sum + bit, 0);
+    const slotFilterBitmask = flattenedSlotIds.map((id) => idToBitmask(id)).reduce((sum, bit) => sum + bit, 0);
     return {
       slots: Raw((alias) => `${alias} & :slotFilterBitmask > 0`, {
         slotFilterBitmask,
@@ -261,6 +226,10 @@ export class ItemService {
         ...allFilters,
         scrollEffect: effectFilters,
       },
+      {
+        ...allFilters,
+        focusEffect: effectFilters,
+      },
     ];
   }
 
@@ -301,9 +270,7 @@ export class ItemService {
       { weight: compareNumber(options.stats.weight, false) },
       { average7d: compareNumber(options.stats.average7d) },
       { average30d: compareNumber(options.stats.average30d) },
-    ].filter(
-      (filter) => filter && Object.keys(filter).some((key) => !!filter[key]),
-    );
+    ].filter((filter) => filter && Object.keys(filter).some((key) => !!filter[key]));
     // Combine individual number comparison filters into one
     const allNumberFilters = numberFilters.reduce(
       (all, filter) => ({ ...all, ...filter }),
@@ -324,10 +291,7 @@ export class ItemService {
       ...this.loreFilter(options.lore),
     };
     // Thennn add effects
-    const allFilters = this.addEffectFilter(
-      allNonEffectFilters,
-      options.effect,
-    );
+    const allFilters = this.addEffectFilter(allNonEffectFilters, options.effect);
 
     const order = {
       [options.sort.field]: options.sort.order === 1 ? 'ASC' : 'DESC',
@@ -362,10 +326,24 @@ export class ItemService {
             clickEffect: true,
             procEffect: true,
             scrollEffect: true,
+            focusEffect: true,
           },
         }),
       Duration.Hour * 4,
     );
+  }
+
+  async getItemSummaries(itemIds: number[]): Promise<EntitySummary[]> {
+    if (!itemIds || itemIds.length === 0) {
+      return [];
+    }
+
+    const items = await this.itemRepository.find({ where: { id: In(itemIds) } });
+    return items.map((item) => ({
+      id: item.id,
+      name: item.name,
+      icon: item.icon,
+    }));
   }
 
   async getById(itemId: number, includeAuctions = false) {
@@ -377,40 +355,24 @@ export class ItemService {
     }
 
     // Load all the extras: loot drops, merchants, auctions
-    const getItemLootDrops = cache(
-      'itemLootDrops',
-      itemId,
-      () => this.getLootDrops(itemId),
-      Infinity,
-    );
-    const getItemMerchants = cache(
-      'itemMerchants',
-      itemId,
-      () => this.getMerchants(itemId),
-      Infinity,
-    );
+    const getItemLootDrops = cache('itemLootDrops', itemId, () => this.getLootDrops(itemId), Infinity);
+    const getItemMerchants = cache('itemMerchants', itemId, () => this.getMerchants(itemId), Infinity);
     const getDailyAuctions = includeAuctions
       ? cache('itemDailyAuctions', itemId, () =>
-          this.auctionService.getDailyAuctions(
-            itemId,
-            moment().subtract(30, 'days').toDate(),
-          ),
+          this.auctionService.getDailyAuctions(itemId, moment().subtract(30, 'days').toDate()),
         )
       : undefined;
     const getAuctionSummaries = includeAuctions
-      ? cache('itemAuctionSummaries', itemId, () =>
-          this.auctionService.getAuctionSummaries(itemId, 90),
-        )
+      ? cache('itemAuctionSummaries', itemId, () => this.auctionService.getAuctionSummaries(itemId, 90))
       : undefined;
 
     // But do it in parallel, because it's a lot potentially
-    const [itemLootDrops, itemMerchants, dailyAuctions, auctionSummaries] =
-      await Promise.all([
-        getItemLootDrops,
-        getItemMerchants,
-        getDailyAuctions,
-        getAuctionSummaries,
-      ]);
+    const [itemLootDrops, itemMerchants, dailyAuctions, auctionSummaries] = await Promise.all([
+      getItemLootDrops,
+      getItemMerchants,
+      getDailyAuctions,
+      getAuctionSummaries,
+    ]);
 
     item.lootDropEntries = itemLootDrops?.lootDropEntries;
     item.merchantEntries = itemMerchants?.merchantEntries;
@@ -422,25 +384,15 @@ export class ItemService {
   getAllByIds(ids: number[]) {
     return this.itemRepository.find({
       where: { id: In(ids) },
-      relations: { wornEffect: true },
+      relations: { wornEffect: true, focusEffect: true },
     });
   }
 
   private getLootDrops(itemId: number) {
     return this.itemRepository
       .createQueryBuilder('item')
-      .leftJoinAndMapMany(
-        'item.lootDropEntries',
-        LootDropEntry,
-        'lootDropEntry',
-        'item.id = lootDropEntry.item_id',
-      )
-      .leftJoinAndMapMany(
-        'lootDropEntry.lootDrop',
-        LootDrop,
-        'lootDrop',
-        'lootDropEntry.lootdrop_id = lootDrop.id',
-      )
+      .leftJoinAndMapMany('item.lootDropEntries', LootDropEntry, 'lootDropEntry', 'item.id = lootDropEntry.item_id')
+      .leftJoinAndMapMany('lootDropEntry.lootDrop', LootDrop, 'lootDrop', 'lootDropEntry.lootdrop_id = lootDrop.id')
       .leftJoinAndMapMany(
         'lootDrop.lootTableEntries',
         LootTableEntry,
@@ -453,30 +405,10 @@ export class ItemService {
         'lootTable',
         'lootTableEntry.loottable_id = lootTable.id',
       )
-      .leftJoinAndMapMany(
-        'lootTable.npcs',
-        Npc,
-        'npc',
-        'lootTable.id = npc.loottable_id',
-      )
-      .leftJoinAndMapMany(
-        'npc.spawnEntries',
-        SpawnEntry,
-        'spawnEntry',
-        'npc.id = spawnEntry.npcID',
-      )
-      .leftJoinAndMapMany(
-        'spawnEntry.spawnGroup',
-        SpawnGroup,
-        'spawnGroup',
-        'spawnEntry.spawngroupID = spawnGroup.id',
-      )
-      .leftJoinAndMapMany(
-        'spawnGroup.spawns',
-        Spawn,
-        'spawn',
-        'spawnGroup.id = spawn.spawngroupID',
-      )
+      .leftJoinAndMapMany('lootTable.npcs', Npc, 'npc', 'lootTable.id = npc.loottable_id')
+      .leftJoinAndMapMany('npc.spawnEntries', SpawnEntry, 'spawnEntry', 'npc.id = spawnEntry.npcID')
+      .leftJoinAndMapMany('spawnEntry.spawnGroup', SpawnGroup, 'spawnGroup', 'spawnEntry.spawngroupID = spawnGroup.id')
+      .leftJoinAndMapMany('spawnGroup.spawns', Spawn, 'spawn', 'spawnGroup.id = spawn.spawngroupID')
       .select([
         'npc.name',
         'npc.level',
@@ -502,36 +434,11 @@ export class ItemService {
   private getMerchants(itemId: number) {
     return this.itemRepository
       .createQueryBuilder('item')
-      .leftJoinAndMapMany(
-        'item.merchantEntries',
-        MerchantEntry,
-        'merchantEntry',
-        'item.id = merchantEntry.item',
-      )
-      .leftJoinAndMapMany(
-        'merchantEntry.npcs',
-        Npc,
-        'npc',
-        'merchantEntry.merchantid = npc.merchant_id',
-      )
-      .leftJoinAndMapMany(
-        'npc.spawnEntries',
-        SpawnEntry,
-        'spawnEntry',
-        'npc.id = spawnEntry.npcID',
-      )
-      .leftJoinAndMapMany(
-        'spawnEntry.spawnGroup',
-        SpawnGroup,
-        'spawnGroup',
-        'spawnEntry.spawngroupID = spawnGroup.id',
-      )
-      .leftJoinAndMapMany(
-        'spawnGroup.spawns',
-        Spawn,
-        'spawn',
-        'spawnGroup.id = spawn.spawngroupID',
-      )
+      .leftJoinAndMapMany('item.merchantEntries', MerchantEntry, 'merchantEntry', 'item.id = merchantEntry.item')
+      .leftJoinAndMapMany('merchantEntry.npcs', Npc, 'npc', 'merchantEntry.merchantid = npc.merchant_id')
+      .leftJoinAndMapMany('npc.spawnEntries', SpawnEntry, 'spawnEntry', 'npc.id = spawnEntry.npcID')
+      .leftJoinAndMapMany('spawnEntry.spawnGroup', SpawnGroup, 'spawnGroup', 'spawnEntry.spawngroupID = spawnGroup.id')
+      .leftJoinAndMapMany('spawnGroup.spawns', Spawn, 'spawn', 'spawnGroup.id = spawn.spawngroupID')
       .where('item.id = :itemId', { itemId })
       .select([
         'npc.name',

@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  NotFoundException,
-  Param,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
 import { SpellService } from './spell.service';
 
 @Controller('api/spells')
@@ -21,11 +15,7 @@ export class SpellController {
   }
 
   @Get('/search/:search')
-  search(
-    @Param('search') search: string,
-    @Query('page') page = '0',
-    @Query('size') size = '100',
-  ) {
+  search(@Param('search') search: string, @Query('page') page = '0', @Query('size') size = '100') {
     return this.spellService.search(search, parseInt(page), parseInt(size));
   }
 }

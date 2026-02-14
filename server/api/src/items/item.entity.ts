@@ -1,12 +1,5 @@
 import { MerchantEntry, Npc } from '../npcs/npc.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 import { SpellNew } from '../spells/spell-new.entity';
 import { AuctionSummary, DailyAuction } from '../auctions/auction.entity';
 import { ItemTracker } from '../item-trackers/item-tracker.entity';
@@ -188,6 +181,10 @@ export class Item {
   @ManyToOne(() => SpellNew, (spell) => spell.wornItems)
   @JoinColumn({ name: 'worneffect', referencedColumnName: 'id' })
   wornEffect: SpellNew;
+
+  @ManyToOne(() => SpellNew, (spell) => spell.focusItems)
+  @JoinColumn({ name: 'focuseffect', referencedColumnName: 'id' })
+  focusEffect: SpellNew;
 
   @OneToMany(() => ItemTracker, (itemTracker) => itemTracker.item)
   @JoinColumn({ name: 'id', referencedColumnName: 'itemId' })

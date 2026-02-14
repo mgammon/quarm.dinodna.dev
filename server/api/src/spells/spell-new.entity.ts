@@ -1,6 +1,7 @@
 import { Item } from '../items/item.entity';
 import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from 'typeorm';
 import { NpcSpellsEntry, NpcSpells } from './npc-spells.entity';
+import { EntitySummary } from '../misc/entity-summary';
 
 @Entity({ name: 'spells_new', synchronize: false })
 export class SpellNew {
@@ -211,6 +212,10 @@ export class SpellNew {
   @JoinColumn({ name: 'id', referencedColumnName: 'worneffect' })
   wornItems: Item[];
 
+  @OneToMany(() => Item, (item) => item.focusEffect)
+  @JoinColumn({ name: 'id', referencedColumnName: 'focuseffect' })
+  focusItems: Item[];
+
   @OneToMany(() => NpcSpellsEntry, (npcSpellEntry) => npcSpellEntry.spellNew)
   @JoinColumn({ name: 'id', referencedColumnName: 'spellid' })
   npcSpellEntries: NpcSpellsEntry[];
@@ -219,13 +224,12 @@ export class SpellNew {
   @JoinColumn({ name: 'id', referencedColumnName: 'attack_proc' })
   attackProcs: NpcSpells[];
 
-  summonedItems?: Item[];
+  effectSpells?: EntitySummary[];
+  effectItems?: EntitySummary[];
   components?: SpellComponent[];
 }
 
-export interface SpellComponent {
-  itemId: number;
-  item?: Item;
+export interface SpellComponent extends EntitySummary {
   counts: number;
   isExpended: boolean;
 }

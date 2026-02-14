@@ -65,15 +65,15 @@ export class SpellsPage {
     });
 
     if (this.spell.scrollItems.length > 0) {
-      this.tabIndex = 3;
+      this.tabIndex = 4;
     } else if (this.spell.clickItems.length > 0) {
       this.tabIndex = 0;
     } else if (this.spell.wornItems.length > 0 ) {
       this.tabIndex = 1;
     } else if (this.spell.procItems.length > 0) {
       this.tabIndex = 2;
+    } else if (this.spell.focusItems.length > 0) {
+      this.tabIndex = 3;
     }
-
-    console.log(this.spell);
   };
 }

@@ -6,6 +6,8 @@ import { sanitizeSearch, selectRelevance } from '../utils';
 import { SpellComponent, SpellNew } from './spell-new.entity';
 import { Item } from '../items/item.entity';
 import { NpcSpellsEntry, NpcSpells } from './npc-spells.entity';
+import { EntitySummary } from '../misc/entity-summary';
+import { ItemService } from '../items/item.service';
 
 @Injectable()
 export class SpellService {
@@ -16,6 +18,7 @@ export class SpellService {
     @InjectRepository(NpcSpellsEntry)
     private npcSpellsEntryRepository: Repository<NpcSpellsEntry>,
     @InjectRepository(Item) private itemRepository: Repository<Item>,
+    private itemService: ItemService,
   ) {}
 
   async search(search: string, page: number = 0, size: number = 100) {
@@ -50,24 +53,22 @@ export class SpellService {
         procItems: true,
         scrollItems: true,
         wornItems: true,
+        focusItems: true,
       },
     });
-
-    spell.summonedItems = await this.getSummonedItems(spell);
-    spell.components = await this.getComponents(spell);
 
     if (!spell) {
       throw new NotFoundException(`Spell ${spellId} not found`);
     }
 
+    spell.effectItems = await this.getSpellEffectItems(spell);
+    spell.effectSpells = await this.getSpellEffectSpells(spell);
+    spell.components = await this.getComponents(spell);
+
     return spell;
   }
 
-  private async getNpcSpellsById(
-    npcSpellId: number,
-    minLevel: number,
-    maxLevel: number,
-  ) {
+  private async getNpcSpellsById(npcSpellId: number, minLevel: number, maxLevel: number) {
     const npcSpells = await this.npcSpellsRepository.findOne({
       where: { id: npcSpellId },
     });
@@ -85,18 +86,13 @@ export class SpellService {
   }
 
   async getNpcSpells(npcSpellId: number, minLevel: number, maxLevel: number) {
-    const procs: { procChance: number; spellId: number; spell?: SpellNew }[] =
-      [];
+    const procs: { procChance: number; spellId: number; spell?: SpellNew }[] = [];
     const spellIds = new Set<number>();
 
     // Load all the list and its parents
     let npcSpells: NpcSpells | undefined;
     do {
-      npcSpells = await this.getNpcSpellsById(
-        npcSpells ? npcSpells.parent_list : npcSpellId,
-        minLevel,
-        maxLevel,
-      );
+      npcSpells = await this.getNpcSpellsById(npcSpells ? npcSpells.parent_list : npcSpellId, minLevel, maxLevel);
       if (npcSpells.proc_chance > 0 && npcSpells.attack_proc > 0) {
         procs.push({
           procChance: npcSpells.proc_chance,
@@ -109,61 +105,108 @@ export class SpellService {
 
     // Get all spells, and split them into procs and casts
     const spells = await this.getAllById(Array.from(spellIds.values()));
-    procs.forEach(
-      (proc) =>
-        (proc.spell = spells.find((spell) => spell.id === proc.spellId)),
-    );
-    const casts = spells.filter(
-      (spell) => !procs.map((proc) => proc.spellId).includes(spell.id),
-    );
+    procs.forEach((proc) => (proc.spell = spells.find((spell) => spell.id === proc.spellId)));
+    const casts = spells.filter((spell) => !procs.map((proc) => proc.spellId).includes(spell.id));
 
     return { procs, casts };
   }
 
-  async getSummonedItems(spell: SpellNew) {
-    const summonedItemIds: number[] = [];
-    for (let i = 1; i <= 12; i++) {
-      if (spell[`effectid${i}`] === 32) {
-        summonedItemIds.push(spell[`effect_base_value${i}`]);
-      }
-    }
-    if (!summonedItemIds.length) {
+  async getSpellSummaries(spellIds: number[]): Promise<EntitySummary[]> {
+    if (!spellIds || spellIds.length === 0) {
       return [];
     }
-    return this.itemRepository.find({ where: { id: In(summonedItemIds) } });
+
+    const spells = await this.spellRepository.find({ where: { id: In(spellIds) } });
+    return spells.map((spell) => ({
+      id: spell.id,
+      name: spell.name,
+      icon: spell.new_icon,
+    }));
+  }
+
+  async getSpellEffectItems(spell: SpellNew) {
+    // Get a list of the spell effects that have an Item for its value
+    const effectIdsWithBaseItemId = [32, 109];
+    // const effectIdsWithLimitItemId = []; No effect types with limit value being itemId?
+    const spellEffectItems: Partial<EntitySummary>[] = [];
+    for (let i = 1; i <= 12; i++) {
+      if (effectIdsWithBaseItemId.includes(spell[`effectid${i}`])) {
+        spellEffectItems.push({ index: i, id: Math.abs(spell[`effect_base_value${i}`]) });
+      }
+    }
+
+    // Get the item name and icon
+    const items = await this.itemService.getItemSummaries(spellEffectItems.map((item) => item.id));
+    for (const spellEffectItem of spellEffectItems) {
+      const matchingItem = items.find((item) => item.id === spellEffectItem.id);
+      if (matchingItem) {
+        spellEffectItem.name = matchingItem.name;
+        spellEffectItem.icon = matchingItem.icon;
+      }
+    }
+
+    return spellEffectItems as EntitySummary[];
+  }
+
+  async getSpellEffectSpells(spell: SpellNew) {
+    // Get a list of the spell effects that have a Spell for its value
+    const effectIdsWithBaseSpellId = [
+      139, 85, 201, 289, 323, 333, 377, 386, 387, 406, 407, 419, 427, 429, 442, 443, 453, 454, 476, 481,
+    ]; // like excluding spells from a focus
+    const effectIdsWithLimitSpellId = [139, 232, 339, 340, 360, 361, 365, 373, 374, 383, 475]; // like a proc chance spell
+    const spellEffectSpells: Partial<EntitySummary>[] = [];
+    for (let i = 1; i <= 12; i++) {
+      if (effectIdsWithBaseSpellId.includes(spell[`effectid${i}`])) {
+        spellEffectSpells.push({ index: i, id: Math.abs(spell[`effect_base_value${i}`]) });
+      }
+      if (effectIdsWithLimitSpellId.includes(spell[`effectid${i}`])) {
+        spellEffectSpells.push({ index: i, id: Math.abs(spell[`effect_limit_value${i}`]) });
+      }
+    }
+
+    // Get the spell name and icon
+    const spells = await this.getSpellSummaries(spellEffectSpells.map((spell) => spell.id));
+    for (const spellEffectSpell of spellEffectSpells) {
+      const matchingSpell = spells.find((spell) => spell.id === spellEffectSpell.id);
+      if (matchingSpell) {
+        spellEffectSpell.name = matchingSpell.name;
+        spellEffectSpell.icon = matchingSpell.icon;
+      }
+    }
+
+    return spellEffectSpells as EntitySummary[];
   }
 
   async getComponents(spell: SpellNew) {
     // Build out the components
-    const components: SpellComponent[] = [];
+    const components: Partial<SpellComponent>[] = [];
+
     for (let i = 1; i <= 4; i++) {
       // Expended components
       const componentId = spell[`components${i}`];
       const counts = spell[`component_counts${i}`];
       if (componentId > 0) {
-        components.push({ itemId: componentId, counts, isExpended: true });
+        components.push({ id: componentId, index: i, counts, isExpended: true });
       }
       // Not expended components
       const noExpendReagentId = spell[`NoexpendReagent${i}`];
       if (noExpendReagentId > 0) {
         components.push({
-          itemId: noExpendReagentId,
+          id: noExpendReagentId,
+          index: i,
           counts: 1,
           isExpended: false,
         });
       }
     }
 
-    // Look up the items and match them to the component
-    const items = await this.itemRepository.find({
-      where: { id: In(components.map((component) => component.itemId)) },
-    });
+    const items = await this.itemService.getItemSummaries(components.map((component) => component.id));
     items.forEach((item) => {
-      const matchingComponent = components.find(
-        (component) => component.itemId === item.id,
-      );
-      matchingComponent.item = item;
+      const matchingComponent = components.find((component) => component.id === item.id);
+      matchingComponent.name = item.name;
+      matchingComponent.icon = item.icon;
     });
-    return components;
+
+    return components as SpellComponent[];
   }
 }

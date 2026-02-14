@@ -14,6 +14,7 @@ interface Effect {
   worn?: boolean; // lol lazy but whatever
   proc?: boolean; // lol lazy but whatever
   scroll?: boolean; // lol lazy but whatever
+  focus?: boolean; // lol still lazy but whatever
 }
 
 @Component({
@@ -39,6 +40,8 @@ export class ItemEffects {
       proclevel,
       wornEffect,
       wornlevel,
+      focusEffect,
+      focuslevel,
       scrollEffect,
       scrolllevel,
       clickEffect,
@@ -74,6 +77,15 @@ export class ItemEffects {
         name: wornEffect.name,
         level: wornlevel,
         worn: true,
+      });
+    }
+
+    if (focusEffect) {
+      effects.push({
+        id: focusEffect.id,
+        name: focusEffect.name,
+        level: focuslevel,
+        focus: true,
       });
     }
 

@@ -1,9 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, forwardRef, Input } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { SpellNew } from '../spell.entity';
 import {
+  buildEffectGeneric,
   EffectDescription,
+  getEffectItem,
+  getEffectSpell,
   getSpellDurations,
   spellEffectMap,
 } from '../spell-effects';
@@ -12,13 +15,19 @@ import { formatTime } from '../../utils';
 import { resistTypes, targetTypes } from '../../api/misc';
 import { skills } from '../../api/items';
 import { classIds } from '../../api/classes';
+import { SpellLinkComponent } from '../spell-link.component/spell-link.component';
 
 @Component({
   selector: 'app-spell',
   standalone: true,
   templateUrl: './spell.component.html',
   styleUrl: './spell.component.scss',
-  imports: [CommonModule, RouterModule, ItemLinkComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ItemLinkComponent,
+    forwardRef(() => SpellLinkComponent),
+  ],
 })
 export class SpellComponent {
   @Input()
@@ -30,11 +39,16 @@ export class SpellComponent {
   @Input()
   public levelSource?: string;
 
+  public isFocus?: boolean = false;
+
   public effectDescriptions: EffectDescription[] = [];
 
   ngOnChanges() {
     this.effectDescriptions = this.getEffectDescriptions();
-    console.log(this.spell);
+
+    const spellAsAny = this.spell as any;
+    const firstEffect = spellEffectMap.get(spellAsAny.effectid1);
+    this.isFocus = firstEffect?.effectName?.startsWith('Focus');
   }
 
   getEffectDescriptions() {
@@ -45,9 +59,11 @@ export class SpellComponent {
       if (spellEffect) {
         const effectDescription = spellEffect.buildEffectDescription
           ? spellEffect.buildEffectDescription(this.spell, i, this.level)
-          : { text: spellEffect.effectName };
+          : { text: buildEffectGeneric(this.spell, i) };
         if (effectDescription && effectDescription.text) {
           effectDescriptions.push(effectDescription);
+          effectDescription.spell = getEffectSpell(this.spell, i);
+          effectDescription.item = getEffectItem(this.spell, i);
         }
       }
     }
@@ -76,7 +92,7 @@ export class SpellComponent {
     };
 
     const { minLevel, minDuration, maxLevel, maxDuration } = getSpellDurations(
-      this.spell
+      this.spell,
     );
     const minDurationFormatted = formatDuration(minDuration, minLevel);
     const maxDurationFormatted = formatDuration(maxDuration, maxLevel);

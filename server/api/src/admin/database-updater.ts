@@ -259,6 +259,7 @@ ALTER TABLE items ADD INDEX (clickeffect);
 ALTER TABLE items ADD INDEX (proceffect);
 ALTER TABLE items ADD INDEX (scrolleffect);
 ALTER TABLE items ADD INDEX (worneffect);
+ALTER TABLE items ADD INDEX (focuseffect);
 
 /* NPC: create a searchable name */
 ${createSearchableField('npc_types', 'name')}

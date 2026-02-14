@@ -1,35 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import {
-  And,
-  FindOptionsWhere,
-  In,
-  LessThanOrEqual,
-  Like,
-  MoreThan,
-  Or,
-  Repository,
-} from 'typeorm';
-import {
-  MerchantEntry,
-  Npc,
-  Spawn,
-  SpawnEntry,
-  SpawnGroup,
-} from './npc.entity';
+import { And, FindOptionsWhere, In, LessThanOrEqual, Like, MoreThan, Or, Repository } from 'typeorm';
+import { MerchantEntry, Npc, Spawn, SpawnEntry, SpawnGroup } from './npc.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Item,
-  LootDrop,
-  LootDropEntry,
-  LootTable,
-  LootTableEntry,
-} from '../items/item.entity';
-import {
-  ComparableNumber,
-  compareNumber,
-  sanitizeSearch,
-  selectRelevance,
-} from '../utils';
+import { Item, LootDrop, LootDropEntry, LootTable, LootTableEntry } from '../items/item.entity';
+import { ComparableNumber, compareNumber, sanitizeSearch, selectRelevance } from '../utils';
 import { NpcSearchOptions } from './npc.controller';
 import { isAllowedZone } from '../zones/zones';
 import { RespawnService } from './respawn.service';
@@ -180,9 +154,7 @@ export class NpcService {
       {
         level: MoreThan(0),
       },
-    ].filter(
-      (filter) => filter && Object.keys(filter).some((key) => !!filter[key]),
-    );
+    ].filter((filter) => filter && Object.keys(filter).some((key) => !!filter[key]));
     // Combine individual number comparison filters into one
     const allNumberFilters = numberFilters.reduce(
       (all, filter) => ({ ...all, ...filter }),
@@ -204,24 +176,9 @@ export class NpcService {
 
     let query = this.npcRepository
       .createQueryBuilder('npc')
-      .leftJoinAndMapMany(
-        'npc.spawnEntries',
-        SpawnEntry,
-        'spawnEntry',
-        'npc.id = spawnEntry.npcID',
-      )
-      .leftJoinAndMapMany(
-        'spawnEntry.spawnGroup',
-        SpawnGroup,
-        'spawnGroup',
-        'spawnEntry.spawngroupID = spawnGroup.id',
-      )
-      .leftJoinAndMapMany(
-        'spawnGroup.spawns',
-        Spawn,
-        'spawn',
-        'spawnGroup.id = spawn.spawngroupID',
-      )
+      .leftJoinAndMapMany('npc.spawnEntries', SpawnEntry, 'spawnEntry', 'npc.id = spawnEntry.npcID')
+      .leftJoinAndMapMany('spawnEntry.spawnGroup', SpawnGroup, 'spawnGroup', 'spawnEntry.spawngroupID = spawnGroup.id')
+      .leftJoinAndMapMany('spawnGroup.spawns', Spawn, 'spawn', 'spawnGroup.id = spawn.spawngroupID')
       .select([
         'npc.name',
         'npc.searchable_name',
@@ -291,11 +248,7 @@ export class NpcService {
                 group.spawns &&
                 group.spawns.forEach(
                   (spawn) =>
-                    (spawn.respawntime = this.respawnService.getRespawnTime(
-                      spawn.zone,
-                      spawn.respawntime,
-                      r.level,
-                    )),
+                    (spawn.respawntime = this.respawnService.getRespawnTime(spawn.zone, spawn.respawntime, r.level)),
                 ),
             ),
         ),
@@ -317,13 +270,7 @@ export class NpcService {
       await this.getSpawns(npcId),
       await this.getLoot(npcId),
       await this.getMerchantItems(npcId),
-      npc.npc_spells_id
-        ? await this.spellService.getNpcSpells(
-            npc.npc_spells_id,
-            npc.level,
-            npc.maxlevel,
-          )
-        : null,
+      npc.npc_spells_id ? await this.spellService.getNpcSpells(npc.npc_spells_id, npc.level, npc.maxlevel) : null,
     ]);
     // Mash it all together
     npc.spawnEntries = npcSpawns?.spawnEntries || [];
@@ -374,24 +321,9 @@ export class NpcService {
   private async getSpawns(npcId: number) {
     const result = await this.npcRepository
       .createQueryBuilder('npc')
-      .leftJoinAndMapMany(
-        'npc.spawnEntries',
-        SpawnEntry,
-        'spawnEntry',
-        'npc.id = spawnEntry.npcID',
-      )
-      .leftJoinAndMapMany(
-        'spawnEntry.spawnGroup',
-        SpawnGroup,
-        'spawnGroup',
-        'spawnEntry.spawngroupID = spawnGroup.id',
-      )
-      .leftJoinAndMapMany(
-        'spawnGroup.spawns',
-        Spawn,
-        'spawn',
-        'spawnGroup.id = spawn.spawngroupID',
-      )
+      .leftJoinAndMapMany('npc.spawnEntries', SpawnEntry, 'spawnEntry', 'npc.id = spawnEntry.npcID')
+      .leftJoinAndMapMany('spawnEntry.spawnGroup', SpawnGroup, 'spawnGroup', 'spawnEntry.spawngroupID = spawnGroup.id')
+      .leftJoinAndMapMany('spawnGroup.spawns', Spawn, 'spawn', 'spawnGroup.id = spawn.spawngroupID')
       .where('npc.id = :npcId', { npcId })
       .andWhere('spawn.min_expansion <= 1')
       .select([
@@ -419,11 +351,7 @@ export class NpcService {
               group.spawns &&
               group.spawns.forEach(
                 (spawn) =>
-                  (spawn.respawntime = this.respawnService.getRespawnTime(
-                    spawn.zone,
-                    spawn.respawntime,
-                    result.level,
-                  )),
+                  (spawn.respawntime = this.respawnService.getRespawnTime(spawn.zone, spawn.respawntime, result.level)),
               ),
           );
       });
@@ -433,36 +361,16 @@ export class NpcService {
   private getLoot(npcId: number) {
     return this.npcRepository
       .createQueryBuilder('npc')
-      .leftJoinAndMapMany(
-        'npc.lootTable',
-        LootTable,
-        'lootTable',
-        'npc.loottable_id = lootTable.id',
-      )
+      .leftJoinAndMapMany('npc.lootTable', LootTable, 'lootTable', 'npc.loottable_id = lootTable.id')
       .leftJoinAndMapMany(
         'lootTable.entries',
         LootTableEntry,
         'lootTableEntry',
         'lootTable.id = lootTableEntry.loottable_id',
       )
-      .leftJoinAndMapMany(
-        'lootTableEntry.lootDrop',
-        LootDrop,
-        'lootDrop',
-        'lootTableEntry.lootdrop_id = lootDrop.id',
-      )
-      .leftJoinAndMapMany(
-        'lootDrop.entries',
-        LootDropEntry,
-        'lootDropEntry',
-        'lootDrop.id = lootDropEntry.lootdrop_id',
-      )
-      .leftJoinAndMapMany(
-        'lootDropEntry.item',
-        Item,
-        'item',
-        'lootDropEntry.item_id = item.id',
-      )
+      .leftJoinAndMapMany('lootTableEntry.lootDrop', LootDrop, 'lootDrop', 'lootTableEntry.lootdrop_id = lootDrop.id')
+      .leftJoinAndMapMany('lootDrop.entries', LootDropEntry, 'lootDropEntry', 'lootDrop.id = lootDropEntry.lootdrop_id')
+      .leftJoinAndMapMany('lootDropEntry.item', Item, 'item', 'lootDropEntry.item_id = item.id')
       .where('npc.id = :npcId', { npcId })
       .select([
         'npc.name',
@@ -494,19 +402,9 @@ export class NpcService {
         'merchantEntry',
         'npc.merchant_id = merchantEntry.merchantid',
       )
-      .leftJoinAndMapMany(
-        'merchantEntry.itemData',
-        Item,
-        'item',
-        'merchantEntry.item = item.id',
-      )
+      .leftJoinAndMapMany('merchantEntry.itemData', Item, 'item', 'merchantEntry.item = item.id')
       .where('npc.id = :npcId', { npcId })
-      .select([
-        'item.name',
-        'item.icon',
-        'item.price',
-        ...this.minimumSelections.merchant,
-      ])
+      .select(['item.name', 'item.icon', 'item.price', ...this.minimumSelections.merchant])
       .getOne();
   }
 }

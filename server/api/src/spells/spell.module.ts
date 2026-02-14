@@ -5,11 +5,10 @@ import { SpellNew } from './spell-new.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Item } from '../items/item.entity';
 import { NpcSpellsEntry, NpcSpells } from './npc-spells.entity';
+import { ItemModule } from '../items/item.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([SpellNew, Item, NpcSpells, NpcSpellsEntry]),
-  ],
+  imports: [TypeOrmModule.forFeature([SpellNew, Item, NpcSpells, NpcSpellsEntry]), ItemModule],
   controllers: [SpellController],
   providers: [SpellService],
   exports: [SpellService],

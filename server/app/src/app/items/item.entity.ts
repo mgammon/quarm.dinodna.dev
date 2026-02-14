@@ -161,6 +161,7 @@ export interface Item {
   wornEffect?: SpellNew;
   procEffect?: SpellNew;
   scrollEffect?: SpellNew;
+  focusEffect?: SpellNew;
 
   average7d?: number;
   average30d?: number;
@@ -316,6 +317,8 @@ export function buildEffects(item: Item) {
     proclevel,
     wornEffect,
     wornlevel,
+    focusEffect,
+    focuslevel,
     scrollEffect,
     scrolllevel,
     clickEffect,
@@ -342,6 +345,10 @@ export function buildEffects(item: Item) {
 
   if (wornEffect) {
     effects.push(buildEffect(wornEffect, wornlevel));
+  }
+
+  if (focusEffect) {
+    effects.push(buildEffect(focusEffect, focuslevel));
   }
 
   if (scrollEffect) {
