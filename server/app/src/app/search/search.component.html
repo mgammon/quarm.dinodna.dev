@@ -1,13 +1,21 @@
-<p-autoComplete
-  field="name"
-  [suggestions]="suggestions"
-  (completeMethod)="search($event)"
-  (onSelect)="onSelect($event)"
-  [placeholder]="placeholder" 
-  scrollHeight="600px"
-  [autofocus]="true"
->
-  <ng-template let-entity pTemplate="item">
-    <app-result [entity]="entity" />
-  </ng-template>
-</p-autoComplete>
+<div style="display: inline-block; position: relative">
+  <p-autoComplete
+    field="name"
+    [style]="{ display: 'inline-block' }"
+    [suggestions]="suggestions"
+    (completeMethod)="search($event)"
+    [(ngModel)]="query"
+    (onSelect)="onSelect($event)"
+    [placeholder]="placeholder"
+    scrollHeight="600px"
+    [autofocus]="true"
+  >
+    <ng-template let-entity pTemplate="item">
+      <app-result [entity]="entity" />
+    </ng-template>
+  </p-autoComplete>
+  <div class="shortcut-container" *ngIf="!query">
+    Type <span class="shortcut">Ctrl+K</span> or
+    <span class="shortcut">/</span> to search
+  </div>
+</div>

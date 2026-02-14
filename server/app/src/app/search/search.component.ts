@@ -10,13 +10,14 @@ import { Item } from '../items/item.entity';
 import { Npc } from '../npcs/npc.entity';
 import { ResultComponent } from './result.component/result.component';
 import { SearchableEntity, SearchService, SearchType } from './search.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-search',
   standalone: true,
   templateUrl: './search.component.html',
   styleUrl: './search.component.scss',
-  imports: [CommonModule, AutoCompleteModule, ResultComponent],
+  imports: [CommonModule, AutoCompleteModule, ResultComponent, FormsModule],
 })
 export class SearchComponent {
   @Input({ required: false })
@@ -46,6 +47,8 @@ export class SearchComponent {
   @Output()
   onNpcSelected = new EventEmitter<Npc>();
 
+  public query?: string;
+
   public displayName = displayName;
   public suggestions: SearchableEntity[] = [];
 
@@ -55,6 +58,7 @@ export class SearchComponent {
     const { query } = event;
     this.suggestions = await this.searchService.search(
       query,
+      10,
       this.types,
       this.itemSearchOptions,
     );

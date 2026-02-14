@@ -1,5 +1,10 @@
-import { CUSTOM_ELEMENTS_SCHEMA, Component, ViewChild } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import {
+  CUSTOM_ELEMENTS_SCHEMA,
+  Component,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import { NavigationStart, Router, RouterOutlet } from '@angular/router';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { ChatComponent } from './auctions/chat/chat.component';
 import { MapComponent } from './map/map.component';
@@ -27,7 +32,8 @@ import { Log } from './logs/log.entity';
 import { TrackerService } from './auctions/tracker/tracker.service';
 import * as moment from 'moment';
 import { TagModule } from 'primeng/tag';
-import { CountdownComponent } from './components/countdown/countdown.component';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { SearchPageComponent } from './search/search-page/search-page.component';
 
 @Component({
   selector: 'app-root',
@@ -53,12 +59,11 @@ import { CountdownComponent } from './components/countdown/countdown.component';
     FeedbackComponent,
     ToastModule,
     TagModule,
-    CountdownComponent,
   ],
-  providers: [MessageService],
+  providers: [MessageService, DialogService],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'app';
   public themeMenuOptions = this.getThemeMenuOptions();
   @ViewChild('recentMenu') recentMenuAny?: any;
@@ -72,6 +77,8 @@ export class AppComponent {
   public liveButtonClass: string = 'yellow';
   // public showSetEqDirectory = (window as any).showDirectoryPicker;
 
+  public searchDialog?: DynamicDialogRef<SearchPageComponent>;
+
   constructor(
     public navigationService: NavigationService,
     public themeService: ThemeService,
@@ -81,7 +88,8 @@ export class AppComponent {
     private router: Router,
     // public logReaderService: LogReaderService,
     public messageService: MessageService,
-    public trackerService: TrackerService
+    public trackerService: TrackerService,
+    public dialogService: DialogService,
   ) {
     this.apiKey = this.apiService.apiKey + '';
     logService.logEvents.subscribe((logs) => {
@@ -89,6 +97,42 @@ export class AppComponent {
       const mostRecentSystemLog = systemLogs[systemLogs.length - 1];
       if (mostRecentSystemLog) {
         this.onSystemLog(mostRecentSystemLog);
+      }
+    });
+  }
+
+  openSearchDialog() {
+    if (this.searchDialog) {
+      return;
+    }
+
+    this.searchDialog = this.dialogService.open(SearchPageComponent, {
+      style: { width: '100%', minHeight: '600px', maxHeight: '600px', maxWidth: '1025px' },
+      contentStyle: {
+        overflowY: 'hidden'
+      },
+      showHeader: false,
+    });
+    const onCloseSubscription = this.searchDialog.onClose.subscribe(() => {
+      onCloseSubscription.unsubscribe();
+      this.searchDialog = undefined;
+    });
+  }
+
+  ngOnInit(): void {
+    addEventListener('keydown', (event: KeyboardEvent) => {
+      if ((event.key === 'k' && event.ctrlKey) || event.key === '/') {
+        event.preventDefault();
+        this.openSearchDialog();
+      }
+    });
+
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationStart) {
+        // Navigation starting
+        if (this.searchDialog) {
+          this.searchDialog.close();
+        }
       }
     });
   }
@@ -103,7 +147,7 @@ export class AppComponent {
   goToLiveMap() {
     if (this.locationService.currentLocation.zoneId) {
       this.router.navigateByUrl(
-        `/zones/${this.locationService.currentLocation.zoneId}?autoLoadZone=true`
+        `/zones/${this.locationService.currentLocation.zoneId}?autoLoadZone=true`,
       );
     }
   }

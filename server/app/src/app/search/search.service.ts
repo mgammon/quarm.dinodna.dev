@@ -24,6 +24,7 @@ export class SearchService {
 
   async search(
     query: string,
+    size: number,
     searchTypes?: SearchType[],
     itemSearchOptions?: {
       slots?: number[];
@@ -44,18 +45,34 @@ export class SearchService {
       return [];
     }
 
+    let querySearchTypes = searchTypes;
+    query = query.toLowerCase();
+    if (query.startsWith('zone:') || query.startsWith('z:')) {
+      querySearchTypes = [SearchType.Zone];
+      query = query.replace('zone:', '').replace('z:', '').trim();
+    } else if (query.startsWith('npc:') || query.startsWith('n:')) {
+      querySearchTypes = [SearchType.Npc];
+      query = query.replace('npc:', '').replace('n:', '').trim();
+    } else if (query.startsWith('item:') || query.startsWith('i:')) {
+      querySearchTypes = [SearchType.Item];
+      query = query.replace('item:', '').replace('i:', '').trim();
+    } else if (query.startsWith('spell') || query.startsWith('s:')) {
+      querySearchTypes = [SearchType.Spell];
+      query = query.replace('spell:', '').replace('s:', '').trim();
+    }
+
     const [items, npcs, zones, spells] = await Promise.all([
-      searchTypes.includes(SearchType.Item)
-        ? this.apiService.searchItems(query, itemSearchOptions)
+      querySearchTypes.includes(SearchType.Item)
+        ? this.apiService.searchItems(query, itemSearchOptions, 0, size)
         : [],
-      searchTypes.includes(SearchType.Npc)
-        ? await this.apiService.searchNpcs(query)
+      querySearchTypes.includes(SearchType.Npc)
+        ? await this.apiService.searchNpcs(query, 0, size)
         : [],
-      searchTypes.includes(SearchType.Zone)
-        ? this.apiService.searchZones(query)
+      querySearchTypes.includes(SearchType.Zone)
+        ? this.apiService.searchZones(query, 0, size)
         : [],
-      searchTypes.includes(SearchType.Spell)
-        ? this.apiService.searchSpells(query)
+      querySearchTypes.includes(SearchType.Spell)
+        ? this.apiService.searchSpells(query, 0, size)
         : [],
     ]);
 

@@ -1,78 +1,97 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
-  AutoCompleteCompleteEvent,
-  AutoCompleteModule,
-  AutoCompleteSelectEvent,
-} from 'primeng/autocomplete';
-import { displayName } from '../../utils';
-import { Item } from '../../items/item.entity';
-import { Npc } from '../../npcs/npc.entity';
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  signal,
+} from '@angular/core';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { throttle } from '../../utils';
 import { ResultComponent } from '../result.component/result.component';
-import { Zone } from '../../zones/zone.entity';
-import { SpellNew } from '../../spells/spell.entity';
 import { SearchableEntity, SearchService } from '../search.service';
+import { InputTextModule } from 'primeng/inputtext';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-search-page',
   standalone: true,
   templateUrl: './search-page.component.html',
   styleUrl: './search-page.component.scss',
-  imports: [CommonModule, AutoCompleteModule, ResultComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    FormsModule,
+    AutoCompleteModule,
+    ResultComponent,
+    InputTextModule,
+  ],
 })
 export class SearchPageComponent {
-  @Input({ required: false })
-  types: ('items' | 'zones' | 'npcs' | 'spells')[] = [
-    'items',
-    'zones',
-    'npcs',
-    'spells',
-  ];
+  public query?: string;
+  public results = signal<SearchableEntity[]>([]);
 
-  @Input({ required: false })
-  skipNavigation?: boolean = false;
+  public columnCount = signal(1);
 
-  @Input({ required: false })
-  placeholder: string = 'Search';
-
-  @Input({ required: false })
-  itemSearchOptions?: {
-    slots?: number[];
-    classes?: number[];
-    races?: number[];
-  };
-
-  @Output()
-  onItemSelected = new EventEmitter<Item>();
-
-  @Output()
-  onNpcSelected = new EventEmitter<Npc>();
-
-  public displayName = displayName;
-  public suggestions: (Item | Npc | Zone | SpellNew)[] = [];
+  public selectedIndex = signal(0);
 
   constructor(private searchService: SearchService) {}
 
-  async search(event: AutoCompleteCompleteEvent) {
-    const { query } = event;
-    this.suggestions = await this.searchService.search(query);
+  ngOnInit() {
+    this.setNumberOfColumns();
   }
 
-  onSelect($event: AutoCompleteSelectEvent) {
-    const entity = $event.value;
-    if (this.searchService.isItem(entity)) {
-      this.onItemSelected.emit(entity);
-    } else if (this.searchService.isNpc(entity)) {
-      this.onNpcSelected.emit(entity);
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.setNumberOfColumns();
+  }
+
+  setNumberOfColumns() {
+    const columnCount = Math.floor((window.innerWidth - 16) / 312);
+    this.columnCount.set(Math.min(columnCount, 3));
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent) {
+    const { key } = event;
+    if (key === 'Enter') {
+      const selectedIndex = this.selectedIndex() || 0;
+      const entity = this.results()[selectedIndex];
+      if (entity) {
+        this.onSelect(entity);
+      } else {
+        this.selectedIndex.set(0);
+      }
+    } else if (key === 'ArrowUp') {
+      const selectedIndex = this.selectedIndex() - this.columnCount();
+      this.selectedIndex.set(Math.max(selectedIndex, 0));
+    } else if (key === 'ArrowDown') {
+      const maxSelectedIndex = this.results().length - 1;
+      const selectedIndex = this.selectedIndex() + this.columnCount();
+      this.selectedIndex.set(Math.min(selectedIndex, maxSelectedIndex));
+    } else if (key === 'ArrowLeft') {
+      const selectedIndex = this.selectedIndex() - 1;
+      this.selectedIndex.set(Math.max(selectedIndex, 0));
+    } else if (key === 'ArrowRight') {
+      const maxSelectedIndex = this.results().length - 1;
+      const selectedIndex = this.selectedIndex() + 1;
+      this.selectedIndex.set(Math.min(selectedIndex, maxSelectedIndex));
     }
-
-    this.navigate(entity);
   }
 
-  navigate(entity: SearchableEntity) {
-    if (this.skipNavigation) {
+  search = throttle(250, async () => {
+    this.selectedIndex.set(0);
+
+    if (!this.query || this.query.length < 2) {
+      if (this.results().length > 0) {
+        this.results.set([]);
+      }
       return;
     }
+
+    this.results.set(await this.searchService.search(this.query, 30));
+  });
+
+  onSelect(entity: SearchableEntity) {
     this.searchService.navigateToEntity(entity);
   }
 }

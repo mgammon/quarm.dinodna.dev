@@ -1,4 +1,5 @@
 import { formatNumber } from '@angular/common';
+import { debounce } from 'lodash';
 
 export function displayName(name: string) {
   return name?.replace(/_/g, ' ').trim();
@@ -53,3 +54,29 @@ export function formatSeconds(seconds: number) {
 
   return [hoursString, minutesString, secString].filter((x) => x).join(' ');
 }
+
+// returns a function that will be throttled by the specified ms
+export const throttle = <T extends (...args: any[]) => any>(
+  ms: number,
+  func: T,
+): ((...args: Parameters<T>) => void) => {
+  let timeout = 0;
+  let lastCalledAt = 0;
+
+  const throttledFunction = (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    const msSinceLastCall = Date.now() - lastCalledAt;
+    const msUntilNextCall = ms - msSinceLastCall;
+    if (msUntilNextCall > 0) {
+      timeout = setTimeout(
+        () => throttledFunction(...args),
+        ms,
+      ) as unknown as number;
+    } else {
+      lastCalledAt = Date.now();
+      func(...args);
+    }
+  };
+
+  return throttledFunction;
+};

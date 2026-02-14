@@ -1,13 +1,36 @@
-<p-autoComplete
-  field="name"
-  [suggestions]="suggestions"
-  (completeMethod)="search($event)"
-  (onSelect)="onSelect($event)"
-  [placeholder]="placeholder" 
-  scrollHeight="600px"
-  [autofocus]="true"
->
-  <ng-template let-entity pTemplate="item">
-    <app-result [entity]="entity" />
-  </ng-template>
-</p-autoComplete>
+<div class="container">
+  <input
+    class="search"
+    placeholder="Search Items, NPCs, Zones, and Spells"
+    [(ngModel)]="query"
+    (ngModelChange)="search()"
+    pInputText
+    type="text"
+    pSize="large"
+  />
+  <div class="info" *ngIf="!query">
+    <p>
+      Use the <span class="shortcut">Arrow</span> keys to select a search result
+      and <span class="shortcut">Enter</span> to go to its page
+    </p>
+    <p>
+      Prefix your search to search for only NPCs (n: orc pawn) Items (i: sword),
+      Zones (z: keep), or Spells (s: wolf)
+    </p>
+  </div>
+  <div
+    class="no-results"
+    *ngIf="query && query.length > 1 && (!results() || results().length === 0)"
+  >
+    No results found
+  </div>
+  <div class="results">
+    @for (result of results(); track result; let index = $index) {
+      <app-result
+        [entity]="result"
+        [class.selected]="index === selectedIndex()"
+        (click)="onSelect(result)"
+      ></app-result>
+    }
+  </div>
+</div>

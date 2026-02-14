@@ -48,3 +48,19 @@
 :host ::ng-deep .p-autocomplete .p-overlay {
   width: 300px;
 }
+
+
+.shortcut-container {
+  display: inline-block;
+  position:absolute;
+  margin-left: -15em;
+  margin-top:1em;
+  font-size: 0.9em;
+  pointer-events: none;
+  opacity: 0.5;
+  .shortcut {
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 0.25em;
+    border-radius: 0.25em;
+  }
+}

@@ -12,6 +12,7 @@ import { AuctionsPage } from './auctions/auctions.page';
 import { CharacterComponent } from './characters/character.component';
 import { InventoryPage } from './inventory/inventory.page';
 import { BazaarPage } from './bazaar/bazaar.page';
+import { SearchPageComponent } from './search/search-page/search-page.component';
 
 const routes: Routes = [
   { path: 'items', component: ItemSearchPage },
@@ -24,6 +25,7 @@ const routes: Routes = [
   { path: 'auctions', component: AuctionsPage },
   { path: 'zones', component: ZonesPage },
   { path: 'zones/:id', component: ZoneDetailsPage },
+  { path: 'search', component: SearchPageComponent },
   { path: 'dps', component: CharacterComponent },
   { path: 'characters', component: CharacterComponent },
   { path: 'characters/:id', component: CharacterComponent },
