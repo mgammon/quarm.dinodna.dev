@@ -10,6 +10,7 @@ import { ItemLinkComponent } from '../../items/item-link.component/item-link.com
 import { Player, Slot } from '../quarm/quarm.character';
 import { ApiService } from '../../api/api.service';
 import { isEquippable } from '../quarm/quarm.attack';
+import { SearchType } from '../../search/search.service';
 
 @Component({
   selector: 'app-character-slot',
@@ -46,6 +47,8 @@ export class CharacterSlotComponent {
 
   @Output()
   onItemSelected = new EventEmitter<{ item: Item | undefined; slot: Slot }>();
+
+  public SearchType = SearchType;
 
   constructor(private apiService: ApiService) {}
 

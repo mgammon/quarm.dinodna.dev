@@ -5,26 +5,28 @@ import {
   AutoCompleteModule,
   AutoCompleteSelectEvent,
 } from 'primeng/autocomplete';
-import { displayName } from '../utils';
-import { Item } from '../items/item.entity';
-import { Npc } from '../npcs/npc.entity';
-import { ResultComponent } from './result.component/result.component';
-import { SearchableEntity, SearchService, SearchType } from './search.service';
+import { displayName } from '../../utils';
+import { Item } from '../../items/item.entity';
+import { Npc } from '../../npcs/npc.entity';
+import { ResultComponent } from '../result.component/result.component';
+import { Zone } from '../../zones/zone.entity';
+import { SpellNew } from '../../spells/spell.entity';
+import { SearchableEntity, SearchService } from '../search.service';
 
 @Component({
-  selector: 'app-search',
+  selector: 'app-search-page',
   standalone: true,
-  templateUrl: './search.component.html',
-  styleUrl: './search.component.scss',
+  templateUrl: './search-page.component.html',
+  styleUrl: './search-page.component.scss',
   imports: [CommonModule, AutoCompleteModule, ResultComponent],
 })
-export class SearchComponent {
+export class SearchPageComponent {
   @Input({ required: false })
-  types: SearchType[] = [
-    SearchType.Item,
-    SearchType.Npc,
-    SearchType.Spell,
-    SearchType.Zone,
+  types: ('items' | 'zones' | 'npcs' | 'spells')[] = [
+    'items',
+    'zones',
+    'npcs',
+    'spells',
   ];
 
   @Input({ required: false })
@@ -47,17 +49,13 @@ export class SearchComponent {
   onNpcSelected = new EventEmitter<Npc>();
 
   public displayName = displayName;
-  public suggestions: SearchableEntity[] = [];
+  public suggestions: (Item | Npc | Zone | SpellNew)[] = [];
 
   constructor(private searchService: SearchService) {}
 
   async search(event: AutoCompleteCompleteEvent) {
     const { query } = event;
-    this.suggestions = await this.searchService.search(
-      query,
-      this.types,
-      this.itemSearchOptions,
-    );
+    this.suggestions = await this.searchService.search(query);
   }
 
   onSelect($event: AutoCompleteSelectEvent) {

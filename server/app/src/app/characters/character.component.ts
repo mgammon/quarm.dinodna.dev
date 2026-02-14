@@ -33,12 +33,12 @@ import { UsageService } from '../usage.service';
 import { PanelModule } from 'primeng/panel';
 import { baseStats } from './quarm/quarm.classes';
 import { DividerModule } from 'primeng/divider';
-import { ApiService } from '../api/api.service';
 import { InventorySlotComponent } from './slots/inventory-slot.component';
 import { PriceComponent } from '../items/price.component/price.component';
 import { TabViewModule } from 'primeng/tabview';
 import { CardModule } from 'primeng/card';
 import { InventoryComponent } from './inventory/inventory.component';
+import { SearchType } from '../search/search.service';
 
 interface LabelValue<T> {
   label: string;
@@ -110,6 +110,8 @@ export class CharacterComponent {
     'int',
     'cha',
   ];
+
+  public SearchType = SearchType;
 
   constructor(
     public characterService: CharacterService,

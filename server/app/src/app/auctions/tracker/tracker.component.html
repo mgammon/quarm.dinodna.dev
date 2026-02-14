@@ -16,8 +16,8 @@
             trackerService.volume > 0.5
               ? 'pi-volume-up'
               : trackerService.volume > 0
-              ? 'pi-volume-down'
-              : 'pi-volume-off'
+                ? 'pi-volume-down'
+                : 'pi-volume-off'
           }}"
           style="color: var(--primary-color)"
         ></span>
@@ -131,8 +131,8 @@
                           (tracker.wts === true
                             ? 'Selling'
                             : tracker.wts === false
-                            ? 'Buying'
-                            : 'Any status') +
+                              ? 'Buying'
+                              : 'Any status') +
                           (tracker.price.value
                             ? ' for ' +
                               tracker.price.operator +
@@ -181,7 +181,7 @@
                 <div style="text-align: center">
                   <app-search
                     *ngIf="!tracker.item"
-                    [types]="['items']"
+                    [types]="[SearchType.Item]"
                     [skipNavigation]="true"
                     placeholder="Select an item"
                     (onItemSelected)="onItemSelected($event, tracker)"
@@ -201,8 +201,8 @@
                       tracker.wts === true
                         ? "WTS"
                         : tracker.wts === false
-                        ? "WTB"
-                        : "Any"
+                          ? "WTB"
+                          : "Any"
                     }}</p-button
                   >
                   <app-comparable-number-input

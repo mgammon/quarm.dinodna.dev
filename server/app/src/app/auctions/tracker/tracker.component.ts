@@ -25,6 +25,7 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { Subscription } from 'rxjs';
+import { SearchType } from '../../search/search.service';
 
 moment.updateLocale('en', {
   relativeTime: {
@@ -78,10 +79,12 @@ export class TrackerComponent implements OnInit, OnDestroy {
   }
   protected moment = moment;
 
+  public SearchType = SearchType;
+
   constructor(
     public trackerService: TrackerService,
     private clipboard: Clipboard,
-    private usageService: UsageService
+    private usageService: UsageService,
   ) {}
 
   ngOnInit(): void {
@@ -153,7 +156,7 @@ export class TrackerComponent implements OnInit, OnDestroy {
 
   getMatchingAuctionPriceString(matchingLog: Log, tracker: ItemTracker) {
     const matchingAuction = (matchingLog.auctions as Auction[]).find(
-      (auction) => auction.itemId === tracker.item?.id
+      (auction) => auction.itemId === tracker.item?.id,
     );
 
     if (matchingAuction && matchingAuction.price > 0) {
@@ -166,15 +169,15 @@ export class TrackerComponent implements OnInit, OnDestroy {
   getMatchingAuctionStatusString(matchingLog: Log, tracker: ItemTracker) {
     tracker.wts === true ? 'selling' : tracker.wts === false ? 'buying' : '???';
     const matchingAuction = (matchingLog.auctions as Auction[]).find(
-      (auction) => auction.itemId === tracker.item?.id
+      (auction) => auction.itemId === tracker.item?.id,
     );
 
     if (matchingAuction) {
       return matchingAuction.wts === true
         ? 'selling'
         : matchingAuction.wts === false
-        ? 'buying'
-        : '???';
+          ? 'buying'
+          : '???';
     } else {
       return '???';
     }
@@ -197,7 +200,7 @@ export class TrackerComponent implements OnInit, OnDestroy {
       this.snoozeTooltip = `Snooze this auction`;
     } else {
       const snoozedFor = moment(
-        snoozeEntry.createdAt + snoozeEntry.duration
+        snoozeEntry.createdAt + snoozeEntry.duration,
       ).fromNow(true);
       this.snoozeTooltip = `Snoozed for ${snoozedFor}`;
     }
@@ -205,13 +208,13 @@ export class TrackerComponent implements OnInit, OnDestroy {
 
   deleteMatchingLog(matchingLog: Log, tracker: ItemTracker) {
     tracker.matchingLogs = tracker.matchingLogs.filter(
-      (log) => log !== matchingLog
+      (log) => log !== matchingLog,
     );
     this.trackerService.saveLocalTrackers();
   }
   sendTell(log: Log, tracker: ItemTracker) {
     this.clipboard.copy(
-      `/tell ${log.player} I'll buy the ${tracker.item?.name}`
+      `/tell ${log.player} I'll buy the ${tracker.item?.name}`,
     );
   }
 

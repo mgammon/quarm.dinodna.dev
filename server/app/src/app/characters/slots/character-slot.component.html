@@ -28,7 +28,7 @@
   <p-overlayPanel #search>
     <div class="item-search">
       <app-search
-        [types]="['items']"
+        [types]="[SearchType.Item]"
         [skipNavigation]="true"
         [itemSearchOptions]="{
           slots: slot.slotIds,

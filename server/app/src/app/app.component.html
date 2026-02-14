@@ -29,7 +29,7 @@
           [outlined]="true"
           styleClass="white"
         ></p-button>
-        <a class="header-link" [routerLink]="'auctions'">Auctions</a>
+        <!-- <a class="header-link" [routerLink]="'auctions'">Auctions</a> -->
         <!-- <a class="header-link" [routerLink]="'bazaar'"
           >Bazaar <p-tag severity="info" value="Beta"
         /></a> -->
@@ -37,9 +37,7 @@
         <a class="header-link" [routerLink]="'npcs'">NPCs</a>
         <a class="header-link" [routerLink]="'zones'">Zones</a>
         <a class="header-link" [routerLink]="'characters'">Characters</a>
-        <a class="header-link" [routerLink]="'inventory'"
-          >Inventory <p-tag severity="info" value="Beta"
-        /></a>
+        <a class="header-link" [routerLink]="'inventory'">Inventory</a>
         <p-button
           *ngIf="locationService.currentLocation.zoneId"
           (click)="goToLiveMap()"

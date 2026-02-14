@@ -262,6 +262,14 @@ export class ApiService {
     throw new Error('Not implemented!');
   }
 
+  searchSpells(search: string, page = 0, size = 10) {
+    return this.toPromise(
+      this.http.get<SpellNew[]>(`${this.apiUrl}/spells/search/${search}`, {
+        params: { page, size },
+      }),
+    );
+  }
+
   async getAllZones(): Promise<Zone[]> {
     return this.toPromise(this.http.get<Zone[]>(`${this.apiUrl}/zones`));
   }

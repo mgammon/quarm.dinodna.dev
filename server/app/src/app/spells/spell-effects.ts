@@ -19,13 +19,9 @@ const getMaxValue = (spell: SpellNew, effectIndex: number) =>
   (spell as any)[`max${effectIndex}`];
 
 export const getEffectSpell = (spell: SpellNew, effectIndex: number) =>
-  spell.effectSpells?.find(
-    (effectSpell) => effectSpell.index === effectIndex,
-  );
+  spell.effectSpells?.find((effectSpell) => effectSpell.index === effectIndex);
 export const getEffectItem = (spell: SpellNew, effectIndex: number) =>
-  spell.effectItems?.find(
-    (effectSpell) => effectSpell.index === effectIndex,
-  );
+  spell.effectItems?.find((effectSpell) => effectSpell.index === effectIndex);
 
 interface SpellEffect {
   id: number;
@@ -199,7 +195,7 @@ export function buildEffectGeneric(
         fromAmount,
       ) || effect.effectName;
   } else if (baseDurationTexts.includes(effectBaseString)) {
-    text = `${effect.effectName} (${formatTime(baseValue) || (baseValue / 1000 + 's')})`;
+    text = `${effect.effectName} (${formatTime(baseValue) || baseValue / 1000 + 's'})`;
   } else if (baseAmountTexts.includes(effectBaseString)) {
     text =
       buildEffectText(effect.effectName, spell, effectIndex, itemEffectLevel) ||
@@ -2239,6 +2235,22 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'none',
     notes: '',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      return {
+        text: buildEffectTextPercent(
+          'Spell Haste',
+          spell,
+          effectIndex,
+          itemEffectLevel,
+          false,
+          true,
+        ),
+      };
+    },
   },
   {
     id: 128,
@@ -2249,6 +2261,22 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'none',
     notes: '',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      return {
+        text: buildEffectTextPercent(
+          'Spell Duration',
+          spell,
+          effectIndex,
+          itemEffectLevel,
+          false,
+          true,
+        ),
+      };
+    },
   },
   {
     id: 129,
@@ -2259,6 +2287,20 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'none',
     notes: '',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => ({
+      text: buildEffectTextPercent(
+        'Spell Range',
+        spell,
+        effectIndex,
+        itemEffectLevel,
+        false,
+        true,
+      ),
+    }),
   },
   {
     id: 130,
@@ -2331,14 +2373,7 @@ const spellEffects: SpellEffect[] = [
       itemEffectLevel?: number,
     ) => {
       return {
-        text: buildEffectTextPercent(
-          'Spell Mana Cost',
-          spell,
-          effectIndex,
-          itemEffectLevel,
-          false,
-          true,
-        ),
+        text: `Reduce Spell Mana Cost by ${getBaseValue(spell, effectIndex)}%`,
       };
     },
   },
@@ -2351,6 +2386,15 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'none',
     notes: '',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => {
+      return {
+        text: `Increase Spell Stun Duration by ${getBaseValue(spell, effectIndex)}%`,
+      };
+    },
   },
   {
     id: 134,
@@ -4043,6 +4087,18 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'none',
     notes: '',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => ({
+      text: buildEffectText(
+        'Spell Damage',
+        spell,
+        effectIndex,
+        itemEffectLevel,
+      ),
+    }),
   },
   {
     id: 287,
@@ -4053,6 +4109,13 @@ const spellEffects: SpellEffect[] = [
     limit: 'none',
     max: 'none',
     notes: '1 tic = 6 seconds, set base in tics',
+    buildEffectDescription: (
+      spell: SpellNew,
+      effectIndex: number,
+      itemEffectLevel?: number,
+    ) => ({
+      text: `Increase Buff Duration by ${formatTime(getBaseValue(spell, effectIndex) * 6000)}`,
+    }),
   },
   {
     id: 288,

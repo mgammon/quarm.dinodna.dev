@@ -1,0 +1,50 @@
+.search-item-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+
+  .icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-right: 1em;
+    display: inline-block;
+    // background: lightblue;
+  }
+
+  img.icon {
+    background: #ffffff11;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.25em;
+  }
+
+  .icon .pi {
+    font-size: 1.5em;
+    background: #ffffff11;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: #ffffffcc;
+    border-radius: 0.25em;
+    padding-left: calc(1em - 1rem);
+    padding-top: calc(1em - 1rem);
+  }
+
+  .name {
+    flex: 1;
+  }
+
+  .tag {
+    color: #777;
+    font-size: 0.9em;
+  }
+}
+
+:host ::ng-deep .p-autocomplete-item {
+  padding: 0.5em;
+}
+
+:host ::ng-deep .p-autocomplete-input,
+:host ::ng-deep .p-autocomplete .p-overlay {
+  width: 300px;
+}

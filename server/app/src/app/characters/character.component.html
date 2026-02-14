@@ -362,7 +362,7 @@
           <span class="p-float-label">
             <div class="item-search">
               <app-search
-                [types]="['npcs']"
+                [types]="[SearchType.Npc]"
                 [skipNavigation]="true"
                 placeholder="Select an NPC to attack"
                 (onNpcSelected)="onNpcSelected($event)"
@@ -401,7 +401,7 @@
             </thead>
             <tr>
               <th>DPS</th>
-              <td>{{ simulation.dps | number : "1.0-1" }}</td>
+              <td>{{ simulation.dps | number: "1.0-1" }}</td>
             </tr>
             <tr>
               <th>Min Primary Damage</th>
@@ -416,7 +416,7 @@
               <td>
                 {{
                   simulation.primaryDamage / simulation.primaryHits
-                    | number : "1.0-1"
+                    | number: "1.0-1"
                 }}
               </td>
             </tr>
@@ -433,25 +433,25 @@
               <td>
                 {{
                   simulation.secondaryDamage / simulation.secondaryHits
-                    | number : "1.0-1"
+                    | number: "1.0-1"
                 }}
               </td>
             </tr>
             <tr *ngIf="simulation.dualWieldSuccess > 0">
               <th>Dual Wield %</th>
-              <td>{{ simulation.dualWieldPercent | number : "1.0-1" }}%</td>
+              <td>{{ simulation.dualWieldPercent | number: "1.0-1" }}%</td>
             </tr>
             <tr *ngIf="simulation.doubleAttackSuccess > 0">
               <th>Double Attack %</th>
-              <td>{{ simulation.doubleAttackPercent | number : "1.0-1" }}%</td>
+              <td>{{ simulation.doubleAttackPercent | number: "1.0-1" }}%</td>
             </tr>
             <tr>
               <th>Hit Chance (Front)</th>
-              <td>{{ simulation.hitChanceFromFront | number : "1.1-1" }}%</td>
+              <td>{{ simulation.hitChanceFromFront | number: "1.1-1" }}%</td>
             </tr>
             <tr>
               <th>Hit Chance (Behind)</th>
-              <td>{{ simulation.hitChanceFromBehind | number : "1.1-1" }}%</td>
+              <td>{{ simulation.hitChanceFromBehind | number: "1.1-1" }}%</td>
             </tr>
           </table>
         </div>
